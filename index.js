@@ -1,5 +1,5 @@
-import { event_types, eventSource, generateRaw, chat, characters } from '/script.js';
-import { extension_settings, saveSettingsObject } from '/extensions.js';
+import { generateRaw, chat, characters } from '/script.js';
+import { event_types, eventSource, extension_settings, saveSettingsObject } from '/scripts/extensions.js';
 
 (function() {
     'use strict';
