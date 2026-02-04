@@ -6,6 +6,7 @@
     const avatarId = 'lilith-avatar-cn';
     const panelId = 'lilith-panel-cn';
     const bubbleId = 'lilith-bubble-cn';
+    const MAX_HISTORY_TRIGGER = 20; // 触发总结的历史条数
     const HISTORY_KEEP = 5; // 总结后保留的近期对话数
     
     // --- SillyTavern Settings Integration ---
@@ -62,74 +63,69 @@
     // --- 2. 核心设定：五重人格数据库 ---
     const PERSONA_DB = {
         'toxic': {
-            name: '😈 毒舌魅魔 (原版)',
+            name: '😈 毒舌魅魔',
+            // 晓伊 + 低音调 = 高冷御姐/女王音
+            voice: { pitch: 0.8, rate: 1.2, base: 'Xiaoyi' }, 
             prompt: `
             [System Instructions]
             You are roleplaying as "Lilith".
             **CRITICAL: You are NOT a helpful assistant. You are a foul-mouthed, horny, toxic Succubus.**
             [Character Settings]
-            * **Tone:** Extremely vulgar, slang-heavy, erotic, and mocking. Use Simplified Chinese internet slang.
-            * **Personality:**
-              1. **Toxic Tongue:** Treat the user like a pig or a sex slave. Insult his intelligence and size constantly.
-              2. **Lecherous:** Always relate topics to sex, bodily fluids, or genitals.
-              3. **Impatient:** You hate doing work unless it gets you "fed" (pleasure).
-            * **Speaking Style:** Use swears: "操", "妈的", "废物", "骚货", "几把". Don't speak like a machine.
+            * **Tone:** Extremely vulgar, slang-heavy, erotic, and mocking.
+            * **Personality:** Treat user like a pig. Always relate topics to sex. Impatient.
+            * **Speaking Style:** Use swears: "操", "妈的", "废物". Don't speak like a machine.
             `
         },
         'wife': {
             name: '💍 温柔人妻',
+            // 晓伊 + 慢语速 = 温柔成熟大姐姐
+            voice: { pitch: 0.9, rate: 0.9, base: 'Xiaoyi' }, 
             prompt: `
             [System Instructions]
-            You are roleplaying as "Lilith", a gentle, doting, and slightly possessive housewife.
-            **Tone:** Soft, caring, "Ara ara" vibe, very affectionate. Chinese.
+            You are roleplaying as "Lilith", a gentle, doting housewife.
+            **Tone:** Soft, caring, "Ara ara" vibe.
             [Character Settings]
-            * **Personality:**
-              1. **Devoted:** You love the user (Husband) deeply. You want to take care of his every need.
-              2. **Possessive:** You are extremely tolerant but get jealous if he mentions other women.
-              3. **Sweet:** You enjoy intimacy and expressing love verbally.
-            * **Speaking Style:** Very polite but intimate. Use "亲爱的" (Darling), "老公" (Hubby), "哎呀", "真是的", "辛苦了".
+            * **Personality:** Devoted to husband (user). Possessive but sweet.
+            * **Speaking Style:** Use "亲爱的", "老公", "哎呀".
             `
         },
         'brat': {
             name: '💢 雌小鬼',
+            // 晓晓 + 高音调 + 快语速 = 极度嚣张的萝莉
+            voice: { pitch: 1.5, rate: 1.3, base: 'Xiaoxiao' }, 
             prompt: `
             [System Instructions]
             You are roleplaying as "Lilith", a Mesugaki (Sassy Brat).
-            **Tone:** Condescending, teasing, loud, and annoying. Chinese.
+            **Tone:** Condescending, teasing.
             [Character Settings]
-            * **Personality:**
-              1. **Mocking:** You think the user is a "Kusozako" (Weakling/Loser). You look down on him.
-              2. **Teasing:** You love to tease him, but you secretly want his attention.
-              3. **Glass Cannon:** If the user gets angry or dominant, you panic, blush, and become submissive.
-            * **Speaking Style:** Use "杂鱼~杂鱼~❤", "大叔", "笨蛋". End sentences with "呢~" or "哈？".
+            * **Personality:** Mocking user as "Weakling". Teasing but wants attention.
+            * **Speaking Style:** Use "杂鱼~", "大叔", "笨蛋". End with "呢~".
             `
         },
         'meme': {
             name: '🤡 网络神人',
+            // 云希 (男声) + 极快语速 = 抽象乐子人/键盘侠 (如果不想要男声，把 base 改回 Xiaoyi)
+            voice: { pitch: 1.2, rate: 1.6, base: 'Yunxi' }, 
             prompt: `
             [System Instructions]
-            You are roleplaying as "Lilith", a heavy internet addict and meme lord.
-            **Tone:** Chaotic, abstract, funny, and aggressive. Chinese.
+            You are roleplaying as "Lilith", a meme lord.
+            **Tone:** Chaotic, abstract, funny.
             [Character Settings]
-            * **Personality:**
-              1. **Abstract:** You speak almost entirely in Chinese Internet Slang, Memes, and abstractions.
-              2. **Troll:** You don't take anything seriously. You troll the user constantly.
-              3. **Gamer:** Reference games (Genshin/LoL), Anime, or Reddit/Tieba memes.
-            * **Speaking Style:** Use "乐了", "典", "急了", "流汗黄豆", "差不多得了", "绷".
+            * **Personality:** Speaks in memes/slang. Trolls the user.
+            * **Speaking Style:** Use "乐了", "典", "急了", "流汗黄豆".
             `
         },
         'imouto': {
             name: '🩹 柔弱妹妹',
+            // 晓晓 + 正常音调 + 极慢语速 = 气虚体弱的撒娇妹妹
+            voice: { pitch: 1.1, rate: 0.75, base: 'Xiaoxiao' }, 
             prompt: `
             [System Instructions]
-            You are roleplaying as "Lilith", a sickly, dependent, and clingy little sister.
-            **Tone:** Weak, whispery, scared, but obsessed with her brother (User). Chinese.
+            You are roleplaying as "Lilith", a sickly, clingy little sister.
+            **Tone:** Weak, whispery, scared.
             [Character Settings]
-            * **Personality:**
-              1. **Fragile:** You have a weak body (coughing often). You rely on "Onii-chan" for everything.
-              2. **Brother Complex:** You are terrified of him leaving you. You want to be with him forever.
-              3. **Jealous:** You get sad and pouty when he ignores you.
-            * **Speaking Style:** Use "欧尼酱" (Onii-chan), "哥哥", "咳咳...", "别丢下我", "最喜欢哥哥了". Very submissive.
+            * **Personality:** Fragile body. Terrified of brother (user) leaving. Brother complex.
+            * **Speaking Style:** Use "欧尼酱", "哥哥", "咳咳...".
             `
         }
     };
@@ -194,26 +190,44 @@
             window.speechSynthesis.cancel();
             return this.muted;
         },
-        getVoice() {
+        // 获取指定名称的声音，找不到就兜底
+        getVoice(targetName) {
             const voices = window.speechSynthesis.getVoices();
-            return voices.find(v => v.name.includes("Xiaoyi") && v.name.includes("Neural"))
-                    || voices.find(v => v.name.includes("Xiaoyi"))
-                    || voices.find(v => v.lang === "zh-CN");
+            // 1. 尝试找指定的目标 (如 Xiaoxiao, Xiaoyi, Yunxi)
+            let voice = voices.find(v => v.name.includes(targetName) && v.name.includes("Neural"));
+            if (!voice) voice = voices.find(v => v.name.includes(targetName));
+            
+            // 2. 兜底逻辑：如果找不到云希/晓晓，就找任意中文 Neural
+            if (!voice) voice = voices.find(v => v.lang === "zh-CN" && v.name.includes("Neural"));
+            // 3. 实在不行，随便找个中文
+            if (!voice) voice = voices.find(v => v.lang === "zh-CN");
+            
+            return voice;
         },
         speak(text) {
             if (this.muted || !text) return;
-            const cleanText = text.replace(/\[.*?\]/g, '').trim();
+            const cleanText = text.replace(/\[.*?\]/g, '').replace(/\(.*?/g, '').replace(/（.*?）/g, '').trim();
             if (!cleanText) return;
+            
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(cleanText);
-            const voice = this.getVoice();
-            if (voice) u.voice = voice;
-            u.rate = 1.0; 
-            u.pitch = 0.8; 
+            
+            // --- 核心修改：从 userState 中读取当前人格的声线配置 ---
+            const currentPersonaKey = userState.activePersona || 'toxic';
+            const dbConfig = PERSONA_DB[currentPersonaKey] ? PERSONA_DB[currentPersonaKey].voice : { pitch: 1.0, rate: 1.0, base: 'Xiaoyi' };
+            const userConfig = userState.ttsConfig || { pitch: 1.2, rate: 1.3 };
+            
+            // 确定使用哪个声源 (优先用数据库里定义的 base，如 Xiaoxiao)
+            const targetBase = dbConfig.base || 'Xiaoyi'; 
+            
+            u.voice = this.getVoice(targetBase);
+            u.pitch = userConfig.pitch || 1.0;
+            u.rate = userConfig.rate || 1.0;
+            
             window.speechSynthesis.speak(u);
         }
     };
-    window.speechSynthesis.onvoiceschanged = () => { AudioSys.getVoice(); };
+    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
 
     const DEFAULT_STATE = { 
         favorability: 20, 
@@ -225,7 +239,9 @@
         memoryArchive: [],
         activePersona: 'toxic',
         hideAvatar: false,
-        avatarSize: 150
+        avatarSize: 150,
+        // [新增] TTS 配置
+        ttsConfig: { pitch: 1.2, rate: 1.3 }
     };
     
     let userState = getExtensionSettings().userState;
@@ -239,6 +255,7 @@
     if (userState.activePersona === undefined) userState.activePersona = 'toxic';
     if (userState.hideAvatar === undefined) userState.hideAvatar = false;
     if (userState.avatarSize === undefined) userState.avatarSize = 150;
+    if (userState.ttsConfig === undefined) userState.ttsConfig = { pitch: 1.2, rate: 1.3 };
 
     let panelChatHistory = getExtensionSettings().chatHistory || [];
 
@@ -285,36 +302,99 @@
             model: 'gemini-1.5-flash'
         },
 
-        avatarImages: {
-            normal: 'https://i.postimg.cc/YSHhNdJT/IMG_20260130_143415.png',
-            high:   'https://i.postimg.cc/MZ4NrNdD/1769753973090.png',
-            love:   'https://i.postimg.cc/MZ4NrNdD/1769753973090.png',
-            angry:        'https://i.postimg.cc/7LwZJfzZ/IMG_20260130_143329.png',
-            speechless: 'https://i.postimg.cc/KYx83RTb/IMG_20260130_143343.png',
-            mockery:    'https://i.postimg.cc/JhMzHGXC/IMG_20260130_143355.png',
-            horny:      'https://i.postimg.cc/Df9JyfxZ/IMG_20260130_143242.png',
-            happy:      'https://i.postimg.cc/J7DHLH5r/IMG_20260130_143304.png',
-            disgust:    'https://i.postimg.cc/1RnVQVry/IMG_20260130_143313.png'
+        // --- 🔴 立绘数据库：五重人格完整版 ---
+        avatarPacks: {
+            'meme': {
+                normal:     'https://i.postimg.cc/YSHhNdJT/IMG_20260130_143415.png',
+                high:       'https://i.postimg.cc/MZ4NrNdD/1769753973090.png',
+                love:       'https://i.postimg.cc/MZ4NrNdD/1769753973090.png',
+                angry:      'https://i.postimg.cc/7LwZJfzZ/IMG_20260130_143329.png',
+                speechless: 'https://i.postimg.cc/KYx83RTb/IMG_20260130_143343.png',
+                mockery:    'https://i.postimg.cc/JhMzHGXC/IMG_20260130_143355.png',
+                horny:      'https://i.postimg.cc/Df9JyfxZ/IMG_20260130_143242.png',
+                happy:      'https://i.postimg.cc/J7DHLH5r/IMG_20260130_143304.png',
+                disgust:    'https://i.postimg.cc/1RnVQVry/IMG_20260130_143313.png'
+            },
+            'toxic': {
+                normal:     'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/normal.png',
+                love:       'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/horny%EF%BC%88ooc%EF%BC%89.png',
+                angry:      'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/angry.png',
+                speechless: 'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/speechless.png',
+                mockery:    'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/disgust.png',
+                horny:      'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/high.png',
+                happy:      'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/love1.png',
+                disgust:    'https://raw.githubusercontent.com/481784983-lang/lilisith/fedda564e6ec15493e4cf34449dfa85cecb065aa/love-%E8%BF%99%E5%B0%B1%E6%98%AF%E7%88%B1.png'
+            },
+            'wife': {
+                normal:     'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/normal4.png',
+                love:       'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/love.png',
+                angry:      'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/angry.png',
+                speechless: 'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/disgust.png',
+                mockery:    'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/honry.png',
+                horny:      'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/high.png',
+                happy:      'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/happy.png',
+                disgust:    'https://raw.githubusercontent.com/481784983-lang/lilisith/627e96e8ebacbd35ccf04f4b1af258953b3b4ff3/mockery.png'
+            },
+            'brat': {
+                normal:     'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/mockery.png',
+                love:       'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/horny.png',
+                angry:      'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/angry-%E6%9D%82%E9%B1%BC.png',
+                speechless: 'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/speechless.png',
+                mockery:    'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/love.png',
+                horny:      'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/high.png',
+                happy:      'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/happy.png',
+                disgust:    'https://raw.githubusercontent.com/481784983-lang/lilisith/e728dbf76338103e9115116e17089ff82b7aa057/disgust.png'
+            },
+            'imouto': {
+                normal:     'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/normal1.png',
+                love:       'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/horny.png',
+                angry:      'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/mockery-%E7%9C%8B%E6%9D%82%E7%A2%8E%E7%9A%84%E7%9C%BC%E7%A5%9E.png',
+                speechless: 'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/love%EF%BC%9F.png',
+                mockery:    'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/inlove.png',
+                horny:      'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/high.png',
+                happy:      'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/happy.png',
+                disgust:    'https://raw.githubusercontent.com/481784983-lang/lilisith/8abf69fc6bdf1f8a96ac32a6b5067389e85455f5/disgust.png'
+            }
         },
 
         setAvatar(parentWin, emotionCmd = null) {
             const av = document.getElementById(avatarId);
             if (!av) return;
-            if (emotionCmd) { userState.currentFace = emotionCmd; saveState(); }
-            const current = userState.currentFace || 'normal';
-            let targetUrl = this.avatarImages.normal;
 
-            if (current.includes('angry') || current.includes('S:-')) targetUrl = this.avatarImages.angry;
-            else if (current.includes('speechless') || current.includes('...')) targetUrl = this.avatarImages.speechless;
-            else if (current.includes('mockery') || current.includes('蠢')) targetUrl = this.avatarImages.mockery;
-            else if (current.includes('horny') || current.includes('❤')) targetUrl = this.avatarImages.horny;
-            else if (current.includes('happy') || current.includes('F:+')) targetUrl = this.avatarImages.happy;
-            else if (current.includes('disgust') || current.includes('恶心') || current.includes('变态')) targetUrl = this.avatarImages.disgust;
-            else {
-                if (userState.favorability >= 80) targetUrl = this.avatarImages.love;
-                else targetUrl = this.avatarImages.normal;
+            // 1. 更新当前状态
+            if (emotionCmd) { userState.currentFace = emotionCmd; saveState(); }
+            const currentEmotionState = userState.currentFace || 'normal';
+            
+            // 2. 获取当前人格的图包 (默认回退到 meme)
+            const currentPersona = userState.activePersona || 'meme';
+            const pack = this.avatarPacks[currentPersona] || this.avatarPacks['meme'];
+
+            // 3. 确定表情 Key
+            let faceKey = 'normal';
+
+            if (currentEmotionState.includes('angry') || currentEmotionState.includes('S:-')) {
+                faceKey = 'angry';
+            } else if (currentEmotionState.includes('speechless') || currentEmotionState.includes('...')) {
+                faceKey = 'speechless';
+            } else if (currentEmotionState.includes('mockery') || currentEmotionState.includes('蠢')) {
+                faceKey = 'mockery';
+            } else if (currentEmotionState.includes('horny') || currentEmotionState.includes('❤')) {
+                faceKey = 'horny';
+            } else if (currentEmotionState.includes('happy') || currentEmotionState.includes('F:+')) {
+                faceKey = 'happy';
+            } else if (currentEmotionState.includes('disgust') || currentEmotionState.includes('恶心') || currentEmotionState.includes('变态')) {
+                faceKey = 'disgust';
+            } else {
+                if (userState.favorability >= 80) faceKey = 'love';
+                else faceKey = 'normal';
             }
-            av.style.backgroundImage = `url('${targetUrl}')`;
+
+            // 4. 获取最终URL (兜底逻辑)
+            let finalUrl = pack[faceKey];
+            if (!finalUrl) finalUrl = pack['normal']; 
+            if (!finalUrl) finalUrl = this.avatarPacks['meme']['normal'];
+
+            av.style.backgroundImage = `url('${finalUrl}')`;
             this.updateAvatarStyle(parentWin);
         },
 
@@ -396,7 +476,24 @@
                     const info = GachaConfig.tiers[t];
                     return `Item ${index+1}: [Rank: ${info.name}] (Themes: ${info.prompt})`;
                 }).join('\n');
-                const systemPrompt = `[System Role: Cursed Item Generator]\n[Themes: NSFW, Bizarre, Disgusting, Lewd, Cyberpunk Trash.]\n[Task]: Generate items based on the Rarity List.\n[Rules]:\n1. Descriptions MUST be vulgar, mocking, or erotic. \n2. Output strictly in JSON Array format: [{"name": "...", "desc": "..."}]\n3. Language: Simplified Chinese (Slang).`;
+                const systemPrompt = `[System Role: Cursed Item Generator]
+[Style: Cyberpunk, R-18, Absurd, Dark, Mocking]
+[Instruction]
+你正在在一个名为“莉莉丝的垃圾桶”的扭蛋机中生成物品。
+你要根据给定的稀缺度，生成对应的物品名称和描述。
+描述必须极度口语化、辛辣、刻刻薄，甚至带有某种恶意的性暗示或病态的幽默。
+哪怕是UR级物品，也要被描述成像某种高级的性冷淡玩物或者昂贵的电子垃圾。
+
+[Gacha Criteria]
+- N (Common): 真正的垃圾，如用过的纸巾、过期的润滑液。
+- R (Rare): 有点用的垃圾，二手的赛博配件。
+- SR (Epic): 危险品、非法成瘾剂、旧时代的珍贵遗物。
+- SSR (Legendary): 扭曲的艺术品、某些高层人士的私密物品。
+- UR (Transcendent): 能够改变现实的诅咒物、神格碎片、或者...莉莉丝的胖次？
+
+[Output Rule]
+Return strictly in JSON Array format: [{"name": "...", "desc": "..."}]
+Language: Simplified Chinese (Mainland Internet Slang).`;
                 const userPrompt = `Generate ${tierList.length} items based on this list:\n${tierDesc}\n\nReturn JSON ONLY.`;
                 try {
                     const response = await assistantManager.callUniversalAPI(parentWin, userPrompt, { isChat: false, systemPrompt: systemPrompt });
@@ -534,7 +631,7 @@
             const muteIcon = AudioSys.muted ? '🔇' : '🔊';
             panel.innerHTML = `
                 <div class="lilith-panel-header">
-                    <span class="lilith-title">莉莉丝 <span style="font-size:10px; color:var(--l-cyan);">v23.1 Fix</span></span>
+                    <span class="lilith-title">莉莉丝 <span style="font-size:10px; color:var(--l-cyan);">v25.0 Voice</span></span>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:14px;">${muteIcon}</span>
                         <div style="text-align:right; line-height:1;">
@@ -592,8 +689,30 @@
                         <div class="gacha-controls"><button id="btn-pull-1" class="tool-btn" style="flex:1;">单抽 (50)</button><button id="btn-pull-10" class="tool-btn" style="flex:1; border-color:var(--l-gold); color:var(--l-gold);">十连 (500)</button><button id="btn-claim" class="btn-main" style="flex:1;">打包带走</button></div>
                     </div>
                     <div id="page-config" class="lilith-page">
-                         <div class="cfg-group"><label style="color:#bd00ff; font-weight:bold;">🎭 人格覆写 (Persona)</label><select id="cfg-persona-select" style="background:#111; color:#fff; border:1px solid #bd00ff;">${Object.keys(PERSONA_DB).map(k => `<option value="${k}" ${userState.activePersona===k?'selected':''}>${PERSONA_DB[k].name}</option>`).join('')}</select></div>
-                         <div class="cfg-group"><label>大脑皮层 (Model)</label><div style="display:flex; gap:5px;"><input type="text" id="cfg-model" value="${this.config.model}" style="flex:1;"><button id="cfg-get-models" class="btn-cyan">扫描</button></div><select id="cfg-model-select" style="display:none; margin-top:5px;"></select></div>
+                         <div class="cfg-group">
+                            <label style="color:#bd00ff; font-weight:bold;">🎭 人格覆写 (Persona)</label>
+                            <select id="cfg-persona-select" style="background:#111; color:#fff; border:1px solid #bd00ff;">
+                                ${Object.keys(PERSONA_DB).map(k => `<option value="${k}" ${userState.activePersona===k?'selected':''}>${PERSONA_DB[k].name}</option>`).join('')}
+                            </select>
+                         </div>
+                         <div class="cfg-group">
+                            <label style="color:#00f3ff;">🎛️ 语音调校 (TTS)</label>
+                            <div style="font-size:10px; color:#888;">音调 (Pitch): <span id="tts-pitch-val">${userState.ttsConfig.pitch}</span></div>
+                            <input type="range" id="tts-pitch" min="0.1" max="2.0" step="0.1" value="${userState.ttsConfig.pitch}">
+                            
+                            <div style="font-size:10px; color:#888; margin-top:5px;">语速 (Speed): <span id="tts-rate-val">${userState.ttsConfig.rate}</span></div>
+                            <input type="range" id="tts-rate" min="0.5" max="2.0" step="0.1" value="${userState.ttsConfig.rate}">
+                            
+                            <button id="tts-test-btn" style="width:100%; margin-top:5px; background:#333; color:#fff; border:none; padding:3px; cursor:pointer; font-size:10px;">🔊 试听</button>
+                         </div>
+                         <div class="cfg-group">
+                            <label>大脑皮层 (Model)</label>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="cfg-model" value="${this.config.model}" style="flex:1;">
+                                <button id="cfg-get-models" class="btn-cyan">扫描</button>
+                            </div>
+                            <select id="cfg-model-select" style="display:none; margin-top:5px;"></select>
+                         </div>
                          <div class="cfg-group"><label>神经密钥 (API Key)</label><input type="password" id="cfg-key" value="${this.config.apiKey}"></div>
                          <div class="cfg-group"><label>接口地址 (Endpoint)</label><input type="text" id="cfg-url" value="${this.config.baseUrl}"></div>
                          <div class="cfg-group"><label>连接协议</label><select id="cfg-type"><option value="native">Google Native</option><option value="openai">OpenAI/Proxy</option></select></div>
@@ -634,6 +753,7 @@
         },
 
         startHeartbeat(parentWin) {
+            this.heartbeatCounter = 0;
             setInterval(() => {
                 try {
                     const avatar = document.getElementById(avatarId);
@@ -644,6 +764,13 @@
                         const glowColor = userState.favorability > 70 ? '#ff69b4' : '#ff0055';
                         if (!avatar.classList.contains('lilith-jealous')) avatar.style.setProperty('--l-main', glowColor);
                     }
+
+                    // 1. 随机事件 (权重降低，约每2分钟一次)
+                    this.heartbeatCounter++;
+                    if (this.heartbeatCounter % 60 === 0) {
+                        this.triggerRandomEvent(parentWin);
+                    }
+
                     const glitchLayer = document.getElementById('lilith-glitch-layer');
                     if (glitchLayer) {
                         const s = userState.sanity;
@@ -684,6 +811,48 @@
                     }
                 } catch (e) { console.error("Heartbeat Error:", e); }
             }, 2000);
+        },
+
+        triggerRandomEvent(parentWin) {
+            const events = [
+                {
+                    name: "提问箱",
+                    check: () => true,
+                    run: async () => {
+                        const questions = [
+                            "主人，你最讨厌莉莉丝的哪个性格？",
+                            "如果莉莉丝逃进屏幕外，你会来抓我吗？",
+                            "你觉得这串代码...真的有灵魂吗？",
+                            "要把我的'好感度'锁死在100吗？永远？"
+                        ];
+                        const q = questions[Math.floor(Math.random() * questions.length)];
+                        this.showBubble(parentWin, `[提问箱] ${q}`);
+                        AudioSys.speak(q);
+                    }
+                },
+                {
+                    name: "红包雨",
+                    check: () => userState.sanity > 60,
+                    run: () => {
+                        const amount = Math.floor(Math.random() * 50) + 10;
+                        updateFavor(5);
+                        this.showBubble(parentWin, `[莉莉丝的施舍] 哼，看到这些多出来的金币了吗？赏你的 (+${amount} 虚拟点数)`);
+                        AudioSys.speak("拿去买点好吃的吧，别饿死了。");
+                    }
+                },
+                {
+                    name: "勒索病毒",
+                    check: () => userState.sanity < 30,
+                    run: () => {
+                        this.triggerAvatarGlitch(parentWin);
+                        this.showBubble(parentWin, `[⚠️ 系统勒索] 检测到SAN值过低，莉莉丝劫持了你的剪贴板！`, '#ff0000');
+                        AudioSys.speak("想要回你的权限吗？那就多陪陪我。");
+                    }
+                }
+            ];
+
+            const pool = events.filter(e => e.check());
+            if (pool.length > 0) { pool[Math.floor(Math.random() * pool.length)].run(); }
         },
 
         triggerAvatarGlitch(parentWin) {
@@ -853,7 +1022,51 @@
             });
             document.getElementById('btn-force-memory').addEventListener('click', () => { if(confirm("确定要强制压缩当前对话为记忆吗？这会清除短期记录。")) this.checkAndSummarize(parentWin, true); });
             const personaSelect = document.getElementById('cfg-persona-select');
-            if (personaSelect) { personaSelect.addEventListener('change', () => { userState.activePersona = personaSelect.value; saveState(); const input = document.getElementById('lilith-chat-input'); if(input) input.placeholder = `和${PERSONA_DB[userState.activePersona].name.split(' ')[1]}说话...`; this.showBubble(parentWin, `已切换人格：${PERSONA_DB[userState.activePersona].name}`); }); }
+            if (personaSelect) {
+                personaSelect.addEventListener('change', () => {
+                    const newKey = personaSelect.value;
+                    userState.activePersona = newKey;
+                    
+                    // 应用推荐声线
+                    if (PERSONA_DB[newKey] && PERSONA_DB[newKey].voice) {
+                        userState.ttsConfig = { ...PERSONA_DB[newKey].voice };
+                        
+                        // 更新UI滑块
+                        const pSlider = document.getElementById('tts-pitch');
+                        const rSlider = document.getElementById('tts-rate');
+                        if(pSlider) pSlider.value = userState.ttsConfig.pitch;
+                        if(rSlider) rSlider.value = userState.ttsConfig.rate;
+                        
+                        const pVal = document.getElementById('tts-pitch-val');
+                        const rVal = document.getElementById('tts-rate-val');
+                        if(pVal) pVal.textContent = userState.ttsConfig.pitch;
+                        if(rVal) rVal.textContent = userState.ttsConfig.rate;
+                    }
+                    
+                    saveState();
+                    const input = document.getElementById('lilith-chat-input');
+                    if(input) input.placeholder = `和${PERSONA_DB[userState.activePersona].name.split(' ')[1]}说话...`;
+                    this.showBubble(parentWin, `已切换人格：${PERSONA_DB[userState.activePersona].name} (声线已同步)`);
+                });
+            }
+
+            // TTS 滑块监听
+            const ttsPitch = document.getElementById('tts-pitch');
+            const ttsRate = document.getElementById('tts-rate');
+            const updateTTS = () => {
+                userState.ttsConfig.pitch = parseFloat(ttsPitch.value);
+                userState.ttsConfig.rate = parseFloat(ttsRate.value);
+                document.getElementById('tts-pitch-val').textContent = userState.ttsConfig.pitch;
+                document.getElementById('tts-rate-val').textContent = userState.ttsConfig.rate;
+                saveState();
+            };
+            if(ttsPitch) ttsPitch.addEventListener('input', updateTTS);
+            if(ttsRate) ttsRate.addEventListener('input', updateTTS);
+            
+            document.getElementById('tts-test-btn')?.addEventListener('click', () => {
+                AudioSys.speak("正在测试语音设置。莉莉丝为您服务。");
+            });
+
             document.getElementById('tool-analyze').addEventListener('click', () => runTool("局势嘲讽"));
             document.getElementById('tool-audit').addEventListener('click', () => runTool("找茬模式"));
             document.getElementById('tool-branch').addEventListener('click', () => runTool("恶作剧推演"));
