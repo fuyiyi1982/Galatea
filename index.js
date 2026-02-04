@@ -1,5 +1,5 @@
-import { generateRaw, chat, characters } from '/script.js';
-import { event_types, eventSource, extension_settings, saveSettingsObject } from '/scripts/extensions.js';
+import { event_types, eventSource, generateRaw, chat, characters } from '../../../../script.js';
+import { extension_settings, saveSettingsObject } from '../../../extensions.js';
 
 (function() {
     'use strict';
@@ -958,6 +958,12 @@ import { event_types, eventSource, extension_settings, saveSettingsObject } from
         }
     }
 
-    // 模块模式下直接尝试初始化
-    init();
+    if (document.readyState === 'complete') {
+        init();
+    } else {
+        jQuery(window).on('load', function() {
+            init();
+        });
+    }
+
 })();
