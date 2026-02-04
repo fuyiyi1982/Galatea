@@ -71,6 +71,7 @@
 }
 
 #lilith-panel-cn.pos-right, #lilith-panel-cn.pos-left { left: auto; right: auto; top: auto; border: 1px solid #444; border-top: 2px solid var(--l-main); }
+#lilith-panel-cn.pos-top-align { top: auto; bottom: 0; transform: translateY(-100%) translateY(40px); }
 
 .lilith-panel-header { 
     padding: 0 15px 5px 15px; 
