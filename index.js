@@ -153,7 +153,7 @@
         },
         speak(text) {
             if (this.muted || !text) return;
-            const cleanText = text.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+            const cleanText = text.replace(/\[.*?\]/g, '').trim();
             if (!cleanText) return;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(cleanText);
@@ -164,6 +164,7 @@
             window.speechSynthesis.speak(u);
         }
     };
+    window.speechSynthesis.onvoiceschanged = () => { AudioSys.getVoice(); };
 
     const DEFAULT_STATE = { 
         favorability: 20, 
@@ -789,7 +790,7 @@
                 } else {
                     let modelId = model; if (!modelId.startsWith('models/') && !url.includes(modelId)) modelId = 'models/' + modelId;
                     fetchUrl = `${url}/v1beta/${modelId}:generateContent?key=${apiKey}`;
-                    let promptText = isChat ? msgs.map(m => `[${m.role === 'lilith' ? 'Model' : (m.role==='system'?'System':'User')}]: ${m.content}`).join('\n') : msgs[0].content;
+                    let promptText = isChat ? msgs.map(m => `[${m.role === 'lilith' ? 'Model' : (m.role==='system'?'System':'User')}]: ${m.content}`).join('\\n') : msgs[0].content;
                     fetchHeaders = { 'Content-Type': 'application/json' }; fetchBody = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: promptText }] }], generationConfig: { maxOutputTokens: 4096 } });
                 }
                 const response = await fetch(fetchUrl, { method: 'POST', headers: fetchHeaders, body: fetchBody });
@@ -826,7 +827,7 @@
     }
 
     // 监听消息渲染事件
-    function handleMessageRendered(type, messageId) {
+    function handleMessageRendered(type, messageId, shouldSpeak = false) {
         const messageElement = $(`.mes[mes_id="${messageId}"]`);
         if (!messageElement.length || messageElement.find('.lilith-chat-ui').length) return;
 
@@ -846,6 +847,10 @@
                 </div>
             `;
             textElement.html(newHtml);
+            if (shouldSpeak) {
+                 const textToSpeak = content.replace(/<[^>]*>/g, '').trim(); 
+                 AudioSys.speak(textToSpeak);
+            }
         }
     }
 
@@ -859,7 +864,7 @@
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === 1 && $(node).hasClass('mes')) {
                         const mesId = $(node).attr('mes_id');
-                        if (mesId) handleMessageRendered(null, mesId);
+                        if (mesId) handleMessageRendered(null, mesId, true);
                     }
                 });
             });
@@ -871,7 +876,7 @@
             // 处理已有消息
             $('.mes').each(function() {
                 const mesId = $(this).attr('mes_id');
-                if (mesId) handleMessageRendered(null, mesId);
+                if (mesId) handleMessageRendered(null, mesId, false);
             });
         }
     });
