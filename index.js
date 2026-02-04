@@ -451,20 +451,20 @@
             if (lastMsg.mes.includes('[莉莉丝]')) return;
 
             this.showBubble(parentWin, "正在生成吐槽...", "#bd00ff");
-            const roastPrompt = `[Task]: Read the following message from a character and "Roast" it or comment on it from Lilith's perspective (Toxic/Funny).\n[Message]: "${lastMsg.mes}"\n[Output]: Just the comment. Short (1-2 sentences). Chinese.`;
-            const comment = await this.callUniversalAPI(parentWin, roastPrompt, { isChat: false, mode: 'roast' });
+            const roastPrompt = `[Task]: Read the following message. Insert a short, toxic/funny comment from Lilith (marked as [莉莉丝] comment...) at the most comedically appropriate point in the text (e.g. after a stupid statement). \n[Rules]:\n1. Return the FULL original text with the insertion.\n2. Do NOT change the original text content, only insert.\n3. The insertion must start with [莉莉丝].\n[Message]: "${lastMsg.mes}"`;
+            const newContent = await this.callUniversalAPI(parentWin, roastPrompt, { isChat: false, mode: 'roast' });
             
-            if (comment) {
-                // Append to the message in ST
-                const newContent = `${lastMsg.mes}\n\n[莉莉丝] ${comment}`;
-                
+            if (newContent && newContent.includes('[莉莉丝]')) {
                 // Update in ST
                 if (Array.isArray(window.chat)) {
                     window.chat[window.chat.length - 1].mes = newContent;
                     if (window.updateMessage) window.updateMessage(window.chat.length - 1, newContent); 
-                    else if (window.reloadCurrentChat) window.reloadCurrentChat(); // Fallback
+                    else if (window.reloadCurrentChat) window.reloadCurrentChat(); 
                 }
-                AudioSys.speak(comment);
+                
+                // Extract just the comment for TTS
+                const match = newContent.match(/\[莉莉丝\]\s*(.*?)($|\n)/);
+                if (match && match[1]) AudioSys.speak(match[1]);
             }
         },
 
