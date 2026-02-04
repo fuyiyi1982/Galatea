@@ -422,10 +422,25 @@ import { extension_settings, saveSettingsObject } from '../../../extensions.js';
 
         initStruct(parentWin) {
             if (document.getElementById(containerId)) return;
-            const glitchLayer = document.createElement('div'); glitchLayer.id = 'lilith-glitch-layer'; glitchLayer.className = 'screen-glitch-layer'; document.body.appendChild(glitchLayer);
-            const wrapper = document.createElement('div'); wrapper.id = containerId; wrapper.style.left = '100px'; wrapper.style.top = '100px';
-            const avatar = document.createElement('div'); avatar.id = avatarId; avatar.className = 'avatar-breathing';
-            const panel = document.createElement('div'); panel.id = panelId; panel.style.display = 'none';
+            console.log("莉莉丝助手: 开始构建 UI 结构...");
+            
+            const glitchLayer = document.createElement('div'); 
+            glitchLayer.id = 'lilith-glitch-layer'; 
+            glitchLayer.className = 'screen-glitch-layer'; 
+            document.body.appendChild(glitchLayer);
+
+            const wrapper = document.createElement('div'); 
+            wrapper.id = containerId; 
+            wrapper.style.cssText = 'left: 100px; top: 100px; display: flex !important;'; 
+            
+            const avatar = document.createElement('div'); 
+            avatar.id = avatarId; 
+            avatar.className = 'avatar-breathing';
+            
+            const panel = document.createElement('div'); 
+            panel.id = panelId; 
+            panel.style.display = 'none';
+            
             ['mousedown', 'touchstart', 'click'].forEach(evt => panel.addEventListener(evt, e => e.stopPropagation()));
             const muteIcon = AudioSys.muted ? '🔇' : '🔊';
             panel.innerHTML = `
@@ -504,10 +519,20 @@ import { extension_settings, saveSettingsObject } from '../../../extensions.js';
                     </div>
                 </div>
             `;
-            wrapper.appendChild(panel); wrapper.appendChild(avatar); document.body.appendChild(wrapper);
-            this.bindDrag(parentWin, wrapper, avatar, panel); this.bindPanelEvents(parentWin); this.startHeartbeat(parentWin); this.restoreChatHistory(parentWin); this.renderMemoryUI(parentWin); 
+            wrapper.appendChild(panel); 
+            wrapper.appendChild(avatar); 
+            document.body.appendChild(wrapper);
             
-            updateUI();
+            this.bindDrag(parentWin, wrapper, avatar, panel); 
+            this.bindPanelEvents(parentWin); 
+            this.startHeartbeat(parentWin); 
+            this.restoreChatHistory(parentWin); 
+            this.renderMemoryUI(parentWin); 
+            
+            setTimeout(() => {
+                updateUI();
+                console.log("莉莉丝助手: UI 初始化完成。");
+            }, 500);
         },
 
         restoreChatHistory(parentWin) {
@@ -920,13 +945,18 @@ import { extension_settings, saveSettingsObject } from '../../../extensions.js';
 
     // --- ST Extension Loader ---
     function init() {
+        console.log("莉莉丝助手: 正在加载接口资源...");
         assistantManager.initStruct();
         eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (idx) => assistantManager.onMessageAdded(idx));
         eventSource.on(event_types.USER_MESSAGE_RENDERED, (idx) => assistantManager.onMessageAdded(idx));
     }
 
-    jQuery(document).ready(function() {
+    if (document.readyState === 'complete') {
         init();
-    });
+    } else {
+        jQuery(window).on('load', function() {
+            init();
+        });
+    }
 
 })();
