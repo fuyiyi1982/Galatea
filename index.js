@@ -121,15 +121,6 @@
     [System Note: Use explicit language.]
     `;
 
-    const LILITH_UI_REGEX = {
-        "scriptName": "[UI]Lilith专属UI_Fix",
-        "findRegex": "(\\[莉莉丝\\])\\s*([^\\n]*)",
-        "replaceString": "<div class=\"lilith-chat-ui\"><div class=\"lilith-chat-avatar\"></div><div class=\"lilith-chat-text\">$2</div></div><style>div.lilith-chat-ui{width:100%;max-width:900px;margin:5px 0;background:linear-gradient(90deg,rgba(48,13,28,0.95) 0%,rgba(128,20,60,0.9) 100%);border-left:4px solid #FF69B4;border-right:4px solid #FF69B4;box-shadow:0 0 15px rgba(255,105,180,0.5),inset 0 0 10px rgba(0,0,0,0.3);border-radius:8px;display:flex;align-items:center;padding:10px;overflow:hidden;color:#f0f0f0;font-family:'Inter','Noto Sans SC',sans-serif}div.lilith-chat-avatar{width:60px;height:60px;min-width:60px;background-image:url('https://i.postimg.cc/rmD7bxxH/IMG-20251102-000620.jpg');background-size:cover;background-position:center;border-radius:50%;border:2px solid #FF69B4;margin-right:15px;box-shadow:0 0 10px rgba(255,105,180,0.7)}div.lilith-chat-text{font-size:0.95em;line-height:1.6;font-weight:500;text-shadow:0 0 5px rgba(255,105,180,0.5)}</style>",
-        "placement": [2],
-        "markdownOnly": true,
-        "runOnEdit": true
-    };
-
     // --- 4. 辅助函数 ---
     function getDynamicPersona() {
         const f = userState.favorability;
@@ -251,25 +242,19 @@
             if (!av) return;
             if (emotionCmd) { userState.currentFace = emotionCmd; saveState(); }
             const current = userState.currentFace || 'normal';
-            let targetUrl = assistantManager.avatarImages.normal;
+            let targetUrl = this.avatarImages.normal;
 
-            // 增强：使用更健壮的匹配逻辑
-            const face = current.toLowerCase();
-            if (face.includes('angry') || face.includes('s:-')) targetUrl = assistantManager.avatarImages.angry;
-            else if (face.includes('speechless') || face.includes('...') || face.includes('…')) targetUrl = assistantManager.avatarImages.speechless;
-            else if (face.includes('mockery') || face.includes('蠢') || face.includes('杂鱼')) targetUrl = assistantManager.avatarImages.mockery;
-            else if (face.includes('horny') || face.includes('❤') || face.includes('想要')) targetUrl = assistantManager.avatarImages.horny;
-            else if (face.includes('happy') || face.includes('f:+') || face.includes('笑')) targetUrl = assistantManager.avatarImages.happy;
-            else if (face.includes('disgust') || face.includes('恶心') || face.includes('变态')) targetUrl = assistantManager.avatarImages.disgust;
+            if (current.includes('angry') || current.includes('S:-')) targetUrl = this.avatarImages.angry;
+            else if (current.includes('speechless') || current.includes('...')) targetUrl = this.avatarImages.speechless;
+            else if (current.includes('mockery') || current.includes('蠢')) targetUrl = this.avatarImages.mockery;
+            else if (current.includes('horny') || current.includes('❤')) targetUrl = this.avatarImages.horny;
+            else if (current.includes('happy') || current.includes('F:+')) targetUrl = this.avatarImages.happy;
+            else if (current.includes('disgust') || current.includes('恶心') || current.includes('变态')) targetUrl = this.avatarImages.disgust;
             else {
-                if (userState.favorability >= 80) targetUrl = assistantManager.avatarImages.love;
-                else targetUrl = assistantManager.avatarImages.normal;
+                if (userState.favorability >= 80) targetUrl = this.avatarImages.love;
+                else targetUrl = this.avatarImages.normal;
             }
-            
-            // 确保 URL 格式正确
-            if (targetUrl) {
-                av.style.backgroundImage = `url('${targetUrl}')`;
-            }
+            av.style.backgroundImage = `url('${targetUrl}')`;
         },
 
         lastActivityTime: Date.now(),
@@ -418,17 +403,6 @@
             }
         },
 
-        installRegex() {
-            if (window.extension_settings && window.extension_settings.regex_scripts) {
-                const scripts = window.extension_settings.regex_scripts;
-                if (!scripts.find(s => s.scriptName === LILITH_UI_REGEX.scriptName)) {
-                    scripts.push(LILITH_UI_REGEX);
-                    if (window.saveSettings) window.saveSettings();
-                    console.log("[Lilith] Regex script installed.");
-                }
-            }
-        },
-
         updateFP(parentWin, newVal) {
             userState.fatePoints = newVal; saveState();
             const fpEl = document.getElementById('gacha-fp-val');
@@ -437,31 +411,10 @@
 
         initStruct(parentWin) {
             if (document.getElementById(containerId)) return;
-            
-            // 确保 context 正确 (如果是 iframe 环境)
-            const doc = document;
-            
-            const glitchLayer = doc.createElement('div'); 
-            glitchLayer.id = 'lilith-glitch-layer'; 
-            glitchLayer.className = 'screen-glitch-layer'; 
-            doc.body.appendChild(glitchLayer);
-
-            const wrapper = doc.createElement('div'); 
-            wrapper.id = containerId; 
-            wrapper.style.left = '100px'; 
-            wrapper.style.top = '100px';
-
-            const avatar = doc.createElement('div'); 
-            avatar.id = avatarId;
-            // 增强：初始样式补丁，防止加载 CSS 延迟导致不可见
-            avatar.style.width = '100px';
-            avatar.style.height = '100px';
-            avatar.style.display = 'block';
-            avatar.style.backgroundImage = `url('${this.avatarImages.normal}')`;
-
-            const panel = doc.createElement('div'); 
-            panel.id = panelId; 
-            panel.style.display = 'none';
+            const glitchLayer = document.createElement('div'); glitchLayer.id = 'lilith-glitch-layer'; glitchLayer.className = 'screen-glitch-layer'; document.body.appendChild(glitchLayer);
+            const wrapper = document.createElement('div'); wrapper.id = containerId; wrapper.style.left = '100px'; wrapper.style.top = '100px';
+            const avatar = document.createElement('div'); avatar.id = avatarId;
+            const panel = document.createElement('div'); panel.id = panelId; panel.style.display = 'none';
             ['mousedown', 'touchstart', 'click'].forEach(evt => panel.addEventListener(evt, e => e.stopPropagation()));
             const muteIcon = AudioSys.muted ? '🔇' : '🔊';
             panel.innerHTML = `
@@ -536,7 +489,6 @@
             `;
             wrapper.appendChild(panel); wrapper.appendChild(avatar); document.body.appendChild(wrapper);
             this.bindDrag(parentWin, wrapper, avatar, panel); this.bindPanelEvents(parentWin); this.startHeartbeat(parentWin); this.restoreChatHistory(parentWin); this.renderMemoryUI(parentWin); 
-            this.installRegex();
             
             updateUI();
         },
@@ -865,18 +817,63 @@
 
     // --- ST Extension Loader ---
     function init() {
-        // 尝试获取 ST 的 parentWin 注入，如果没有则使用 window
-        const win = (typeof window !== 'undefined') ? window : this;
-        assistantManager.initStruct(win);
-    }
-
-    // 适配各种加载环境
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        init();
-    } else {
-        jQuery(document).ready(function() {
-            init();
+        assistantManager.initStruct();
+        
+        // 注册消息渲染钩子 (实现 regex 脚本的功能)
+        $(document).on('click', '.lilith-chat-ui', function() {
+           // 点击时可以做点什么，比如播放语音
         });
     }
+
+    // 监听消息渲染事件
+    function handleMessageRendered(type, messageId) {
+        const messageElement = $(`.mes[mes_id="${messageId}"]`);
+        if (!messageElement.length || messageElement.find('.lilith-chat-ui').length) return;
+
+        const textElement = messageElement.find('.mes_text');
+        let html = textElement.html();
+        
+        // 匹配 [莉莉丝] 开头的消息
+        const regex = /\[莉莉丝\]\s*([\s\S]*)/;
+        const match = html.match(regex);
+        
+        if (match) {
+            const content = match[1];
+            const newHtml = `
+                <div class="lilith-chat-ui">
+                    <div class="lilith-chat-avatar"></div>
+                    <div class="lilith-chat-text">${content}</div> 
+                </div>
+            `;
+            textElement.html(newHtml);
+        }
+    }
+
+    // 这里的 jQuery(document).ready 是 ST 加载插件的常规方式
+    jQuery(document).ready(function() {
+        init();
+        
+        // 绑定消息渲染观测
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1 && $(node).hasClass('mes')) {
+                        const mesId = $(node).attr('mes_id');
+                        if (mesId) handleMessageRendered(null, mesId);
+                    }
+                });
+            });
+        });
+
+        const chatContainer = document.getElementById('chat');
+        if (chatContainer) {
+            observer.observe(chatContainer, { childList: true });
+            // 处理已有消息
+            $('.mes').each(function() {
+                const mesId = $(this).attr('mes_id');
+                if (mesId) handleMessageRendered(null, mesId);
+            });
+        }
+    });
 
 })();
