@@ -722,12 +722,12 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                                      msgText.includes('```'); // 代码块
 
                     if (userState.commentMode === 'random' && !isComplex) {
-                        // 使用单换行而不是双换行，避免触发 Markdown 的新段落 <p>，从而保护主题美化结构
-                        const pDelimiter = '\n'; 
+                        // 还原为 \n\n 分隔，确保 Markdown 段落结构不被破坏
+                        const pDelimiter = '\n\n'; 
                         const parts = msgText.split(pDelimiter).filter(p => p.trim());
                         if (parts.length >= 2) {
                             const insertIndex = Math.floor(Math.random() * (parts.length - 1)) + 1;
-                            parts.splice(insertIndex, 0, `\n${cleanComment}\n`);
+                            parts.splice(insertIndex, 0, cleanComment);
                             targetMsgRef.mes = parts.join(pDelimiter);
                         } else {
                             targetMsgRef.mes = msgText.trim() + `\n\n${cleanComment}`;
@@ -742,14 +742,15 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     // 3. 触发渲染
                     console.log('[Lilith] Updating message block for index:', finalIndex);
                     try {
-                        const freshContext = SillyTavern.getContext();
-                        // 修复 TypeError: 确保索引在范围内且函数存在
-                        if (typeof updateMessageBlock === 'function' && finalIndex >= 0 && finalIndex < freshContext.chat.length) {
-                             updateMessageBlock(finalIndex);
-                        } else if (freshContext.updateMessageBlock && typeof freshContext.updateMessageBlock === 'function') {
-                             freshContext.updateMessageBlock(finalIndex);
+                        // 彻底解决 TypeError: 只有当全局 chat 数组确实存在该索引且有内容时才刷新
+                        if (typeof chat !== 'undefined' && chat[finalIndex] && chat[finalIndex].mes) {
+                             if (typeof updateMessageBlock === 'function') {
+                                 updateMessageBlock(finalIndex);
+                             } else if (context.updateMessageBlock) {
+                                 context.updateMessageBlock(finalIndex);
+                             }
                         } else {
-                             // 如果局部刷新失败，尝试全局刷新
+                             console.warn('[Lilith] Cache/Global chat mismatch. Skipping native refresh.');
                              if (typeof viewAllMessages === 'function') viewAllMessages();
                         }
                     } catch (err) {
@@ -1494,9 +1495,9 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 let existing = regexList.find(r => r.scriptName === regexName);
                 const regexTemplate = {
                     scriptName: regexName,
-                    // 优化正则：增加兼容性，支持 \n 作为边界，保护美化结构
+                    // 优化正则：匹配 [莉莉丝] 到段落末尾，并确保生成的 HTML 是紧凑的
                     findRegex: "(\\[莉莉丝\\])\\s*([\\s\\S]*?)(?=\\n|$)",
-                    replaceString: `<div class="lilith-chat-ui"><div class="lilith-chat-avatar"></div><div class="lilith-chat-text">$2</div></div>`,
+                    replaceString: `<div class="lilith-chat-ui" style="display:flex !important; visibility:visible !important;"><div class="lilith-chat-avatar"></div><div class="lilith-chat-text">$2</div></div>`,
                     trimStrings: [],
                     placement: [2],
                     disabled: false,

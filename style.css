@@ -10,34 +10,32 @@
 
 /* 消息美化 (来自 regex 脚本) */
 div.lilith-chat-ui {
-    width: auto; /* 改为 auto，避免撑破气泡 UI */
+    width: 100%; 
     max-width: 100%; 
-    margin: 10px 0; 
-    background: linear-gradient(90deg, rgba(48, 13, 28, 0.95) 0%, rgba(128, 20, 60, 0.9) 100%);
-    border-left: 4px solid #FF69B4; 
-    border-right: 2px solid rgba(255, 105, 180, 0.3);
-    box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
+    margin: 12px 0; 
+    background: linear-gradient(90deg, rgba(48, 13, 28, 0.95) 0%, rgba(128, 20, 60, 0.9) 100%) !important;
+    border-left: 4px solid #FF69B4 !important; 
     border-radius: 12px;
-    display: flex;
+    display: flex !important;
     align-items: center;
     padding: 12px;
-    overflow: visible; /* 允许阴影溢出 */
-    color: #f0f0f0;
-    font-family: inherit; /* 继承正文字体，保持风格统一 */
-    position: relative;
-    z-index: 5;
+    color: #f0f0f0 !important;
+    box-sizing: border-box;
+    /* 解决破坏美化结构的关键：阻止父级 flex 压缩 */
+    flex-shrink: 0;
+    clear: both;
 }
 
 div.lilith-chat-avatar {
-    width: 60px;
-    height: 60px;
-    min-width: 60px;
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
     background-size: cover;
     background-position: center;
     border-radius: 50%;
     border: 2px solid #FF69B4;
     margin-right: 15px;
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+    flex-shrink: 0;
 }
 
 div.lilith-chat-text {
