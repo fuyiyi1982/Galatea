@@ -1530,26 +1530,27 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 const config = SillyTavern.getContext();
                 const regexName = "[Lilith] 专属 UI 注入";
                 
-                // 在 SillyTavern 中，正则脚本通常存储在 extensionSettings.regex 中
-                // 兼容性处理：尝试从 extensionSettings 或全局 settings 查找
-                let regexList = config.extensionSettings?.regex;
+                // 在 SillyTavern 中，正则脚本通常存储在 settings.regex 中
+                // 确保我们能获取到正确的正则列表
+                let regexList = config.settings?.regex;
                 
                 if (!regexList && typeof window !== 'undefined' && window.settings) {
                     regexList = window.settings.regex;
                 }
 
                 if (!regexList) {
-                    console.error('[Lilith] Regex list not found in extensionSettings or window.settings');
+                    console.error('[Lilith] Regex list not found in settings or window.settings');
                     return;
                 }
                 
                 let existing = regexList.find(r => r.scriptName === regexName);
                 const regexTemplate = {
+                    id: "lilith-ui-injector-v2", // 添加唯一标识符
                     scriptName: regexName,
                     // 优化正则：匹配 [莉莉丝] 到每行末尾 (美化版)
                     findRegex: "(\\[莉莉丝\\])\\s*([^\\n]*)",
-                    // 使用 DIV 结构配合 Style.css 中的 .lilith-chat-ui 样式
-                    replaceString: `\n<div class="lilith-chat-ui">\n    <div class="lilith-chat-avatar"></div>\n    <div class="lilith-chat-text">$2</div> \n</div>\n`,
+                    // 使用 SPAN 结构以匹配 Style.css 中的样式定义，并支持内联渲染
+                    replaceString: `\n<span class="lilith-chat-ui-wrapper">\n    <span class="lilith-chat-ui">\n        <span class="lilith-chat-avatar"></span>\n        <span class="lilith-chat-text">$2</span>\n    </span>\n</span>\n`,
                     trimStrings: [],
                     placement: [2],
                     disabled: false,
@@ -1565,9 +1566,10 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     console.log('[Lilith] Global Regex not found, injecting...');
                     regexList.push(regexTemplate);
                     if (config.saveSettingsDebounced) config.saveSettingsDebounced();
-                } else if (existing.disabled) {
-                    console.log('[Lilith] Global Regex found but disabled, enabling...');
-                    existing.disabled = false;
+                } else {
+                    // 强制更新已有正则的内容（美化版本）
+                    console.log('[Lilith] Global Regex found, ensuring content is up to date...');
+                    Object.assign(existing, regexTemplate);
                     if (config.saveSettingsDebounced) config.saveSettingsDebounced();
                 }
             } catch (e) {
