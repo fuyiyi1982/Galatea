@@ -240,6 +240,8 @@
         activePersona: 'toxic',
         hideAvatar: false,
         avatarSize: 150,
+        commentMode: 'random', // 'random', 'bottom', 'top'
+        commentFrequency: 30, // 默认 30% 概率
         // [新增] TTS 配置
         ttsConfig: { pitch: 1.2, rate: 1.3 }
     };
@@ -255,6 +257,7 @@
     if (userState.activePersona === undefined) userState.activePersona = 'toxic';
     if (userState.hideAvatar === undefined) userState.hideAvatar = false;
     if (userState.avatarSize === undefined) userState.avatarSize = 150;
+    if (userState.commentMode === undefined) userState.commentMode = 'random';
     if (userState.ttsConfig === undefined) userState.ttsConfig = { pitch: 1.2, rate: 1.3 };
     if (userState.commentFrequency === undefined) userState.commentFrequency = 50;
 
@@ -709,16 +712,25 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     const targetMsgRef = chatData[finalIndex];
                     if (!targetMsgRef) throw new Error("Could not find targets message in chat array");
 
-                    // 2. 更新内存数据 - 随机选择插入位置
+                    // 2. 更新内存数据 - 根据模式选择插入位置
                     const pDelimiter = '\n\n';
-                    const parts = targetMsgRef.mes.split(pDelimiter).filter(p => p.trim());
-                    
-                    if (parts.length >= 2) {
-                        const insertIndex = Math.floor(Math.random() * (parts.length - 1)) + 1;
-                        parts.splice(insertIndex, 0, comment.trim());
-                        targetMsgRef.mes = parts.join(pDelimiter);
+                    const cleanComment = comment.trim();
+
+                    if (userState.commentMode === 'random') {
+                        const parts = targetMsgRef.mes.split(pDelimiter).filter(p => p.trim());
+                        if (parts.length >= 2) {
+                            const insertIndex = Math.floor(Math.random() * (parts.length - 1)) + 1;
+                            parts.splice(insertIndex, 0, cleanComment);
+                            targetMsgRef.mes = parts.join(pDelimiter);
+                        } else {
+                            targetMsgRef.mes += `\n\n${cleanComment}`;
+                        }
+                    } else if (userState.commentMode === 'top') {
+                        // 置于顶端
+                        targetMsgRef.mes = `${cleanComment}\n\n` + targetMsgRef.mes.trim();
                     } else {
-                        targetMsgRef.mes += `\n\n${comment.trim()}`;
+                        // 始终追加在末尾
+                        targetMsgRef.mes = targetMsgRef.mes.trim() + `\n\n${cleanComment}`;
                     }
                     
                     // 3. 触发渲染
@@ -859,9 +871,17 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                             </select>
                          </div>
                          <div class="cfg-group">
-                            <label style="color:#ff0055; font-weight:bold;">💬 吐槽频率 (Interaction)</label>
+                            <label style="color:#ff0055; font-weight:bold;">💬 吐槽设定 (Interjection)</label>
                             <div style="font-size:10px; color:#888;">吐槽概率: <span id="cfg-freq-val">${userState.commentFrequency || 50}</span>%</div>
                             <input type="range" id="cfg-freq" min="0" max="100" step="5" value="${userState.commentFrequency || 50}" style="accent-color:#ff0055;" oninput="document.getElementById('cfg-freq-val').textContent = this.value">
+                            
+                            <div style="margin-top:8px;">
+                                <label style="font-size:12px; color:#ccc;">插入模式:</label>
+                                <select id="cfg-comment-mode" style="background:#111; color:#fff; border:1px solid #444; font-size:12px; height:24px;">
+                                    <option value="random" ${userState.commentMode === 'random' ? 'selected' : ''}>🎲 随机插入正文 (断句处)</option>
+                                    <option value="bottom" ${userState.commentMode === 'bottom' ? 'selected' : ''}>⬇️ 始终追加在末尾</option>
+                                </select>
+                            </div>
                          </div>
                          <div class="cfg-group">
                             <label style="color:#00f3ff;">🎛️ 语音调校 (TTS)</label>
@@ -1213,9 +1233,16 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     }
                     
                     saveState();
-                    const input = document.getElementById('lilith-chat-input');
-                    if(input) input.placeholder = `和${PERSONA_DB[userState.activePersona].name.split(' ')[1]}说话...`;
-                    this.showBubble(parentWin, `已切换人格：${PERSONA_DB[userState.activePersona].name} (声线已同步)`);
+                });
+            }
+
+            // Comment Mode Selector
+            const commentModeSelect = document.getElementById('cfg-comment-mode');
+            if (commentModeSelect) {
+                commentModeSelect.addEventListener('change', () => {
+                    userState.commentMode = commentModeSelect.value;
+                    saveState();
+                    this.showBubble(parentWin, `模式已切换: ${userState.commentMode === 'random' ? '随机正文插入' : '末尾追加'}`);
                 });
             }
 
@@ -1362,10 +1389,73 @@ The user just received a reply. Your job is to interject with a short, sharp, an
         assistantManager.setAvatar();
     }
 
+    async function initUI() {
+        try {
+            const htmlPath = `/scripts/extensions/third-party/lilith-assistant/settings.html`;
+            const settingsHtml = await $.get(htmlPath);
+            $('#extensions_settings').append(settingsHtml);
+
+            // 绑定数据
+            const $freq = $('#lilith-comment-frequency');
+            const $freqVal = $('#lilith-freq-value');
+            const $mode = $('#lilith-comment-mode');
+            const $hideAvatar = $('#lilith-hide-avatar');
+            const $avatarSize = $('#lilith-avatar-size');
+
+            $freq.val(userState.commentFrequency || 0);
+            $freqVal.text(`${userState.commentFrequency || 0}%`);
+            $mode.val(userState.commentMode || 'random');
+            $hideAvatar.prop('checked', userState.hideAvatar);
+            $avatarSize.val(userState.avatarSize || 150);
+
+            // 绑定事件
+            $freq.on('input', (e) => {
+                const val = parseInt($(e.target).val());
+                userState.commentFrequency = val;
+                $freqVal.text(`${val}%`);
+                saveExtensionSettings();
+            });
+
+            $mode.on('change', (e) => {
+                userState.commentMode = $(e.target).val();
+                saveExtensionSettings();
+            });
+
+            $hideAvatar.on('change', (e) => {
+                userState.hideAvatar = $(e.target).prop('checked');
+                assistantManager.setAvatar();
+                saveExtensionSettings();
+            });
+
+            $avatarSize.on('input', (e) => {
+                userState.avatarSize = parseInt($(e.target).val());
+                assistantManager.setAvatar();
+                saveExtensionSettings();
+            });
+
+            $('#lilith-reset-state').on('click', () => {
+                if (confirm('确定要重置莉莉丝的状态吗？这会清空好感度与记忆。')) {
+                    userState.favorability = 20;
+                    userState.sanity = 80;
+                    userState.fatePoints = 1000;
+                    userState.gachaInventory = [];
+                    updateUI();
+                    saveExtensionSettings();
+                    alert('状态已重置');
+                }
+            });
+
+            console.log('[Lilith] Settings UI initialized');
+        } catch (err) {
+            console.error('[Lilith] Failed to load settings UI:', err);
+        }
+    }
+
     // --- ST Extension Loader ---
     function init() {
         console.log('[Lilith] Initializing Assistant Extension...');
         assistantManager.initStruct();
+        initUI();
         
         // 自动注入/更新全局正则
         (function ensureGlobalRegex() {
@@ -1389,7 +1479,8 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 let existing = regexList.find(r => r.scriptName === regexName);
                 const regexTemplate = {
                     scriptName: regexName,
-                    findRegex: "(\\[莉莉丝\\])\\s*([^\\n]*)",
+                    // 优化正则：支持跨行匹配，直到遇到双换行或结尾
+                    findRegex: "(\\[莉莉丝\\])\\s*([\\s\\S]*?)(?=\\n\\n|$)",
                     replaceString: `\n<div class="lilith-chat-ui">\n    <div class="lilith-chat-avatar"></div>\n    <div class="lilith-chat-text">$2</div> \n</div>\n`,
                     trimStrings: [],
                     placement: [2],
@@ -1479,32 +1570,36 @@ The user just received a reply. Your job is to interject with a short, sharp, an
     // 监听消息渲染事件
     function handleMessageRendered(type, messageId, shouldSpeak = false) {
         const messageElement = $(`.mes[mes_id="${messageId}"]`);
-        if (!messageElement.length || messageElement.find('.lilith-chat-ui').length) return;
+        if (!messageElement.length) return;
 
         const textElement = messageElement.find('.mes_text');
         let html = textElement.html();
+        if (!html || !html.includes('[莉莉丝]')) return;
         
-        // 匹配 [莉莉丝] 极其内容，直到遇到段落结尾或换行
-        // 这里的正则支持莉莉丝出现在正文中间，只替换吐槽所在的段落
-        const regex = /\[莉莉丝\]\s*([\s\S]*?)(?=(?:<br\s*\/?>\s*){2,}|<\/p>|$)/i;
-        const match = html.match(regex);
+        // 匹配 [莉莉丝] 及其内容，直到遇到段落结尾、双换行或 HTML 标签结束
+        const regex = /\[莉莉丝\]\s*([\s\S]*?)(?=(?:<br\s*\/?>\s*){2,}|<\/p>|\n\n|$)/gi;
         
-        if (match) {
-            const fullMatch = match[0];
-            const content = match[1].trim();
-            const uiHtml = `
+        let hasChanged = false;
+        let lastComment = "";
+
+        const newHtml = html.replace(regex, (match, content) => {
+            hasChanged = true;
+            lastComment = content.trim();
+            return `
                 <div class="lilith-chat-ui">
                     <div class="lilith-chat-avatar"></div>
-                    <div class="lilith-chat-text">${content}</div> 
+                    <div class="lilith-chat-text">${lastComment}</div> 
                 </div>
             `;
+        });
+        
+        if (hasChanged) {
+            // 如果已经包含 UI 类名，且 HTML 内容没变（意味着正则已经处理过），则不重复赋值
+            if (messageElement.find('.lilith-chat-ui').length && html === newHtml) return;
             
-            // 替换原始文本中的匹配部分
-            const newHtml = html.replace(fullMatch, uiHtml);
             textElement.html(newHtml);
-            
-            if (shouldSpeak) {
-                 const textToSpeak = content.replace(/<[^>]*>/g, '').trim(); 
+            if (shouldSpeak && lastComment) {
+                 const textToSpeak = lastComment.replace(/<[^>]*>/g, '').trim(); 
                  AudioSys.speak(textToSpeak);
             }
         }

@@ -1,0 +1,51 @@
+<div id="lilith-assistant-settings" class="inline-drawer">
+    <div class="inline-drawer-toggle inline-drawer-header">
+        <b>莉莉丝助手 (Lilith Assistant)</b>
+        <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
+    </div>
+    <div class="inline-drawer-content">
+        <div class="settings_section">
+            <p style="font-size: 0.9em; opacity: 0.8;">人格化的 AI 吐槽助手。您可以设置吐槽的频率、位置以及开启/关闭各项功能。</p>
+        </div>
+
+        <hr class="sysHR" />
+
+        <!-- 吐槽频率设置 -->
+        <div class="settings_section">
+            <label for="lilith-comment-frequency">吐槽触发概率 (0-100%):</label>
+            <div class="flex-container alignItemCenter">
+                <input type="range" id="lilith-comment-frequency" min="0" max="100" step="1" style="flex: 1; margin-right: 10px;">
+                <span id="lilith-freq-value" style="min-width: 40px; text-align: right;">0%</span>
+            </div>
+        </div>
+
+        <!-- 插入位置设置 -->
+        <div class="settings_section">
+            <label for="lilith-comment-mode">吐槽插入位置 (正文互动):</label>
+            <select id="lilith-comment-mode" class="text_pole">
+                <option value="random">随机插入段落间 (参考 ChatU8)</option>
+                <option value="bottom">始终追加在末尾</option>
+                <option value="top">始终置于顶端</option>
+            </select>
+        </div>
+
+        <hr class="sysHR" />
+
+        <!-- 开关选项 -->
+        <div class="settings_section flex-container alignItemCenter">
+            <input type="checkbox" id="lilith-hide-avatar">
+            <label for="lilith-hide-avatar">隐藏右下角看板娘 (仅保留正文渲染)</label>
+        </div>
+
+        <div class="settings_section">
+            <label for="lilith-avatar-size">看板娘显示尺寸 (px):</label>
+            <input type="number" id="lilith-avatar-size" class="text_pole" min="50" max="500" step="10">
+        </div>
+
+        <hr class="sysHR" />
+
+        <div class="settings_section">
+            <button id="lilith-reset-state" class="menu_button" style="color: var(--red);">重置好感度与状态</button>
+        </div>
+    </div>
+</div>
