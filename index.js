@@ -694,28 +694,32 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     }
                     
                     // 2. 更新 DOM 并触发渲染
-                    if (typeof context.printMessages === 'function') {
-                        // 强制 ST 重新从 chat 数组渲染，这会应用新的正则
+                    const targetIndex = context.chat.findIndex(m => m.mes_id == messageId);
+                    const finalIndex = targetIndex !== -1 ? targetIndex : (typeof messageId === 'number' ? messageId : context.chat.length - 1);
+
+                    if (typeof context.updateMessageBlock === 'function') {
+                        console.log('[Lilith] Updating message block at index:', finalIndex);
+                        context.updateMessageBlock(finalIndex);
+                    } else if (typeof context.printMessages === 'function') {
                         context.printMessages();
-                    } else if (typeof context.renderMessages === 'function') {
-                        context.renderMessages();
-                    } else {
-                        // 降级硬刷新当前消息
-                        const textElement = $(`.mes[mes_id="${messageId}"] .mes_text`) || $('.mes:last .mes_text');
-                        if (textElement.length) {
-                             // 如果正则被正确注入，浏览器会自动渲染样式
-                             // 注意：ST 的正则脚本通常在消息被注入 DOM 前处理文本
-                             // 这里手动模拟一次正则替换
-                             let html = targetMsg.mes.replace(/\n/g, '<br>');
-                             html = html.replace(/\[莉莉丝\]\s*([^\n<]*)/g, `
+                    }
+
+                    // 3. 双保险：如果 UI 没反应，直接暴力修改当前最后几个消息的 HTML
+                    setTimeout(() => {
+                        const targetEl = $(`.mes[mes_id="${messageId}"] .mes_text`).last();
+                        if (targetEl.length && !targetEl.html().includes('lilith-chat-ui')) {
+                            console.log('[Lilith] Manual DOM Patching for message', messageId);
+                            // 手动模拟正则替换渲染
+                            const rawText = targetMsg.mes;
+                            const rendered = rawText.replace(/\n/g, '<br>').replace(/\[莉莉丝\]\s*([^\n<]*)/g, `
                                 <div class="lilith-chat-ui">
                                     <div class="lilith-chat-avatar"></div>
                                     <div class="lilith-chat-text">$1</div>
                                 </div>
-                             `);
-                             textElement.html(html);
+                            `);
+                            targetEl.html(rendered);
                         }
-                    }
+                    }, 100);
 
                     const textToSpeak = comment.replace('[莉莉丝]', '').replace(/<[^>]*>/g, '').trim(); 
                     AudioSys.speak(textToSpeak);
