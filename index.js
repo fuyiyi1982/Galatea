@@ -985,10 +985,27 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                         if (Math.random() > 0.5) { updateFavor(-1); this.showBubble(parentWin, "好感度 -1 (你真冷淡)", "#f00"); }
                     }
                     const context = getPageContext(2); if (context.length === 0) return;
-                    const lastMsg = context[context.length - 1]; const msgHash = lastMsg.message.substring(0, 50) + lastMsg.name + lastMsg.message.length;
+                    const lastMsg = context[context.length - 1]; 
+                    
+                    // [Lilith] 专属UI消息检测 (用于自动语音)
+                    let isSpecialLilith = false;
+                    const chatDiv = document.getElementById('chat');
+                    if (chatDiv) {
+                        const lastMsgEl = chatDiv.querySelector('.mes:last-child');
+                        if (lastMsgEl && lastMsgEl.querySelector('.lilith-chat-ui')) isSpecialLilith = true;
+                    }
+
+                    let msgHash = lastMsg.message.substring(0, 50) + lastMsg.name + lastMsg.message.length;
+                    if (isSpecialLilith) msgHash = 'LILITH_UI_' + msgHash;
+
                     if (msgHash !== userState.lastMsgHash && lastMsg.name !== 'System') {
                         userState.lastMsgHash = msgHash; saveState(); this.triggerAvatarGlitch(parentWin);
-                        if (lastMsg.name === 'User' || lastMsg.name === 'You') {
+                        
+                        if (isSpecialLilith) {
+                            const clean = lastMsg.message.replace(/\[[SF]:.*?\]/g, '').trim();
+                            if(clean) AudioSys.speak(clean);
+                        } 
+                        else if (lastMsg.name === 'User' || lastMsg.name === 'You') {
                             const jealousKeywords = ['爱你', '老婆', '喜欢你', 'marry', 'love you', 'wife'];
                             if (userState.favorability > 40 && jealousKeywords.some(k => lastMsg.message.includes(k))) {
                                 const avatar = document.getElementById(avatarId); avatar.classList.add('lilith-jealous');
@@ -1526,10 +1543,10 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 let existing = regexList.find(r => r.scriptName === regexName);
                 const regexTemplate = {
                     scriptName: regexName,
-                    // 优化正则：匹配 [莉莉丝] 到段落末尾，并确保生成的 HTML 是紧凑的
-                    findRegex: "(\\[莉莉丝\\])\\s*([\\s\\S]*?)(?=\\n|$)",
-                    // 使用 span 而不是 div 作为基础容器，配合 block 样式，极大地减少对正文 P 标签布局的破坏
-                    replaceString: `<span class="lilith-chat-ui-wrapper"><span class="lilith-chat-ui"><span class="lilith-chat-avatar"></span><span class="lilith-chat-text">$2</span></span></span>`,
+                    // 优化正则：匹配 [莉莉丝] 到每行末尾 (美化版)
+                    findRegex: "(\\[莉莉丝\\])\\s*([^\\n]*)",
+                    // 使用 DIV 结构配合 Style.css 中的 .lilith-chat-ui 样式
+                    replaceString: `\n<div class="lilith-chat-ui">\n    <div class="lilith-chat-avatar"></div>\n    <div class="lilith-chat-text">$2</div> \n</div>\n`,
                     trimStrings: [],
                     placement: [2],
                     disabled: false,
@@ -1538,7 +1555,7 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     runOnEdit: true,
                     substituteRegex: 0,
                     minDepth: null,
-                    maxDepth: null
+                    maxDepth: 2
                 };
 
                 if (!existing) {
