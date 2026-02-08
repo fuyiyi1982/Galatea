@@ -92,7 +92,7 @@ div.lilith-chat-text {
     transform: translateX(-50%);
     width: 220px; 
     max-width: 80vw;
-    margin-bottom: 10px; /* 气泡与头像的间距 */
+    margin-bottom: 2px; /* 紧贴头像框 */
     background: rgba(0,0,0,0.9); 
     border: 1px solid var(--l-main);
     border-top: 4px solid var(--l-main);
