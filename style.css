@@ -30,7 +30,6 @@ div.lilith-chat-avatar {
     width: 60px;
     height: 60px;
     min-width: 60px;
-    background-image: var(--lilith-avatar-current); /* 使用 JS 动态设置的变量 */
     background-size: cover;
     background-position: center;
     border-radius: 50%;
@@ -54,32 +53,23 @@ div.lilith-chat-text {
     flex-direction: column; 
     align-items: center; 
     width: 360px;            
-    max-width: 95vw;
     font-family: var(--l-font); 
     letter-spacing: 0.5px; 
     pointer-events: none; 
 }
 
-#lilith-avatar-box {
-    position: relative;
-    z-index: 20;
-    pointer-events: none; /* 让鼠标事件穿透到 avatar */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: -40px; /* 抵消面板顶部空白 */
-}
-
 #lilith-avatar-cn { 
+    order: -1;
     position: relative; 
-    z-index: 21;
+    z-index: 20;
     width: 80px; height: 80px; 
-    background: url('assets/meme_normal.png') center/cover; 
+    background-size: cover;
+    background-position: center;
     clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%);
     border: 2px solid var(--l-main); 
     box-shadow: 0 0 25px rgba(255, 0, 85, 0.4); 
     cursor: move; 
-    /* margin-bottom: -40px; 移到了 avatar-box */
+    margin-bottom: -40px;
     transition: 0.2s;
     pointer-events: auto;
 }
@@ -87,24 +77,18 @@ div.lilith-chat-text {
 
 #lilith-bubble-cn { 
     position: absolute; 
-    bottom: 100%; /* 精确位于容器顶部 */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 220px; 
-    max-width: 80vw;
-    margin-bottom: -20px; /* 使气泡与头像框重合 */
+    top: 10px; 
+    left: 90px;
+    width: 180px; 
     background: rgba(0,0,0,0.9); 
     border: 1px solid var(--l-main);
-    border-top: 4px solid var(--l-main);
+    border-left: 4px solid var(--l-main);
     color: #fff; padding: 10px; font-size: 12px; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     backdrop-filter: blur(5px);
     z-index: 30;
     cursor: pointer;
     pointer-events: auto;
-    border-radius: 8px;
-    line-height: 1.4;
-    word-break: break-all;
 }
 
 #lilith-panel-cn { 
@@ -318,7 +302,6 @@ div.lilith-chat-text {
 @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px,0); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(2px,0); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px,0); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(2px,0); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(-2px,0); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(2px,0); } }
 @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px,0); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px,0); } 40% { clip-path: inset(70% 0 30% 0); transform: translate(2px,0); } 60% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 80% { clip-path: inset(50% 0 20% 0); transform: translate(2px,0); } 100% { clip-path: inset(10% 0 80% 0); transform: translate(-2px,0); } }
 
-.msg.lilith {
     color: #ffb3c1;
     border-left: 2px solid var(--l-main);
 }
@@ -425,51 +408,6 @@ div.lilith-chat-text {
     pointer-events: none;
     z-index: 10;
 }
-
-/* 抽屉栏按钮增强 */
-#lilith-drawer-btn {
-    position: relative;
-    overflow: hidden;
-    user-select: none;
-}
-
-#lilith-drawer-btn::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 0, 85, 0.1), transparent);
-    transform: translateX(-100%);
-    transition: 0.5s;
-}
-
-#lilith-drawer-btn:hover::before {
-    transform: translateX(100%);
-}
-
-@media screen and (max-width: 600px) {
-    #lilith-wrapper-cn { width: 280px; }
-    #lilith-panel-cn { height: 450px; max-height: 70vh; }
-    .tools-grid { grid-template-columns: 1fr 1fr; }
-    .tool-btn { padding: 6px 2px; font-size: 10px; }
-    #lilith-bubble-cn { width: 180px; font-size: 11px; }
-    #lilith-avatar-cn { width: 60px; height: 60px; }
-}
-
-@media screen and (max-width: 480px) {
-    div.lilith-chat-ui {
-        padding: 5px;
-    }
-    div.lilith-chat-avatar {
-        width: 45px;
-        height: 45px;
-        min-width: 45px;
-        margin-right: 8px;
-    }
-    div.lilith-chat-text {
-        font-size: 0.85em;
-    }
-}
-
 
 /* ��������ť��ǿ */
 #lilith-drawer-btn {
