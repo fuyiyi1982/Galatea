@@ -1316,10 +1316,20 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 const config = SillyTavern.getContext();
                 const regexName = "[Lilith] 专属 UI 注入";
                 
-                // 确保正则数组存在
-                if (!config.settings.regex) config.settings.regex = [];
+                // 在 SillyTavern 中，正则脚本通常存储在 extensionSettings.regex 中
+                // 兼容性处理：尝试从 extensionSettings 或全局 settings 查找
+                let regexList = config.extensionSettings?.regex;
                 
-                let existing = config.settings.regex.find(r => r.scriptName === regexName);
+                if (!regexList && typeof window !== 'undefined' && window.settings) {
+                    regexList = window.settings.regex;
+                }
+
+                if (!regexList) {
+                    console.error('[Lilith] Regex list not found in extensionSettings or window.settings');
+                    return;
+                }
+                
+                let existing = regexList.find(r => r.scriptName === regexName);
                 const regexTemplate = {
                     scriptName: regexName,
                     findRegex: "(\\[莉莉丝\\])\\s*([^\\n]*)",
@@ -1337,12 +1347,12 @@ The user just received a reply. Your job is to interject with a short, sharp, an
 
                 if (!existing) {
                     console.log('[Lilith] Global Regex not found, injecting...');
-                    config.settings.regex.push(regexTemplate);
-                    config.saveSettingsDebounced();
+                    regexList.push(regexTemplate);
+                    if (config.saveSettingsDebounced) config.saveSettingsDebounced();
                 } else if (existing.disabled) {
                     console.log('[Lilith] Global Regex found but disabled, enabling...');
                     existing.disabled = false;
-                    config.saveSettingsDebounced();
+                    if (config.saveSettingsDebounced) config.saveSettingsDebounced();
                 }
             } catch (e) {
                 console.error('[Lilith] Failed to inject global regex:', e);
