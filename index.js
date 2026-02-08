@@ -725,14 +725,31 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                         let delimiter = '\n\n';
                         let parts = msgText.split(delimiter).filter(p => p.trim());
 
-                        // 降级策略：如果双换行没有足够的段落，尝试单换行
+                        // 1. 降级策略 A：尝试单换行
                         if (parts.length < 2) {
                              const singleParts = msgText.split('\n').filter(p => p.trim());
-                             // 只有当单换行切分出足够多的非空行时才使用，避免切碎短句
                              if (singleParts.length >= 3) {
                                  delimiter = '\n';
                                  parts = singleParts;
                              }
+                        }
+
+                        // 2. 降级策略 B：尝试按中英文标点断句 (。！？!?)
+                        if (parts.length < 2) {
+                            // 匹配标点及其后的空白
+                            const sentenceRegex = /([。！？!?;])\s*/g;
+                            const rawParts = msgText.split(sentenceRegex);
+                            
+                            let combined = [];
+                            for (let i = 0; i < rawParts.length; i += 2) {
+                                let s = (rawParts[i] || "") + (rawParts[i+1] || "");
+                                if (s.trim()) combined.push(s);
+                            }
+                            
+                            if (combined.length >= 3) {
+                                delimiter = ''; // 标点已保留，不需要额外连接符
+                                parts = combined;
+                            }
                         }
 
                         if (parts.length >= 2) {
@@ -1530,30 +1547,32 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 const config = SillyTavern.getContext();
                 const regexName = "[Lilith] 专属 UI 注入";
                 
-                // 在 SillyTavern 中，正则脚本通常存储在 settings.regex 中
-                // 确保我们能获取到正确的正则列表
-                let regexList = config.settings?.regex;
+                // 尝试多种路径获取正则列表，SillyTavern 版本不同路径可能不同
+                let regexList = null;
+                if (config.settings && Array.isArray(config.settings.regex)) regexList = config.settings.regex;
+                else if (config.settings && Array.isArray(config.settings.regex_scripts)) regexList = config.settings.regex_scripts;
+                else if (typeof window !== 'undefined' && window.settings && Array.isArray(window.settings.regex)) regexList = window.settings.regex;
+                else if (typeof window !== 'undefined' && window.settings && Array.isArray(window.settings.regex_scripts)) regexList = window.settings.regex_scripts;
+                else if (typeof window !== 'undefined' && Array.isArray(window.regex)) regexList = window.regex;
                 
-                if (!regexList && typeof window !== 'undefined' && window.settings) {
-                    regexList = window.settings.regex;
-                }
-
                 if (!regexList) {
-                    console.error('[Lilith] Regex list not found in settings or window.settings');
+                    // 打印详细信息锁定问题路径
+                    console.log('[Lilith] Regex list not found. ConfigSettings:', !!config.settings, 'WindowSettings:', !!(typeof window !== 'undefined' && window.settings), 'Will retry...');
+                    setTimeout(ensureGlobalRegex, 3000);
                     return;
                 }
                 
                 let existing = regexList.find(r => r.scriptName === regexName);
                 const regexTemplate = {
-                    id: "lilith-ui-injector-v2", // 添加唯一标识符
+                    id: "lilith-ui-injector-v2", // 唯一标识符
                     scriptName: regexName,
                     // 优化正则：匹配 [莉莉丝] 到每行末尾 (美化版)
                     findRegex: "(\\[莉莉丝\\])\\s*([^\\n]*)",
                     // 使用 SPAN 结构以匹配 Style.css 中的样式定义，并支持内联渲染
                     replaceString: `\n<span class="lilith-chat-ui-wrapper">\n    <span class="lilith-chat-ui">\n        <span class="lilith-chat-avatar"></span>\n        <span class="lilith-chat-text">$2</span>\n    </span>\n</span>\n`,
                     trimStrings: [],
-                    placement: [2],
-                    disabled: false,
+                    placement: [2], // 1=Before, 2=After, 3=Both
+                    disabled: false, // 持续确保开启
                     markdownOnly: true,
                     promptOnly: false,
                     runOnEdit: true,
@@ -1563,13 +1582,14 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                 };
 
                 if (!existing) {
-                    console.log('[Lilith] Global Regex not found, injecting...');
+                    console.log('[Lilith] Global Regex not found, injecting and enabling...');
                     regexList.push(regexTemplate);
                     if (config.saveSettingsDebounced) config.saveSettingsDebounced();
                 } else {
-                    // 强制更新已有正则的内容（美化版本）
-                    console.log('[Lilith] Global Regex found, ensuring content is up to date...');
+                    // 强制开启并更新内容
+                    console.log('[Lilith] Global Regex found, ensuring content is up to date and ENABLED...');
                     Object.assign(existing, regexTemplate);
+                    existing.disabled = false;
                     if (config.saveSettingsDebounced) config.saveSettingsDebounced();
                 }
             } catch (e) {
