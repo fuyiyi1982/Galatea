@@ -694,21 +694,31 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     }
                     
                     // 2. 更新 DOM 并触发渲染
-                    if (typeof context.renderMessages === 'function') {
-                        // 强制 ST 重新读取内存中的 mes 并渲染，这会自动应用正则美化
+                    if (typeof context.printMessages === 'function') {
+                        // 强制 ST 重新从 chat 数组渲染，这会应用新的正则
+                        context.printMessages();
+                    } else if (typeof context.renderMessages === 'function') {
                         context.renderMessages();
-                        const textToSpeak = comment.replace('[莉莉丝]', '').replace(/<[^>]*>/g, '').trim(); 
-                        AudioSys.speak(textToSpeak);
                     } else {
-                        // 降级硬刷新预览
+                        // 降级硬刷新当前消息
                         const textElement = $(`.mes[mes_id="${messageId}"] .mes_text`) || $('.mes:last .mes_text');
                         if (textElement.length) {
-                             // 直接全量重写 HTML，确保正则能生效（如果正则已通过 ensureGlobalRegex 注入）
-                             // 这里我们手动触发一下 handleMessageRendered 以防万一
-                             textElement.html(targetMsg.mes.replace(/\n/g, '<br>')); 
-                             handleMessageRendered(null, messageId, true);
+                             // 如果正则被正确注入，浏览器会自动渲染样式
+                             // 注意：ST 的正则脚本通常在消息被注入 DOM 前处理文本
+                             // 这里手动模拟一次正则替换
+                             let html = targetMsg.mes.replace(/\n/g, '<br>');
+                             html = html.replace(/\[莉莉丝\]\s*([^\n<]*)/g, `
+                                <div class="lilith-chat-ui">
+                                    <div class="lilith-chat-avatar"></div>
+                                    <div class="lilith-chat-text">$1</div>
+                                </div>
+                             `);
+                             textElement.html(html);
                         }
                     }
+
+                    const textToSpeak = comment.replace('[莉莉丝]', '').replace(/<[^>]*>/g, '').trim(); 
+                    AudioSys.speak(textToSpeak);
 
                     // 3. 保存到 ST 存档
                     if (typeof context.saveChat === 'function') context.saveChat();
