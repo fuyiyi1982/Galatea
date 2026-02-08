@@ -1302,21 +1302,29 @@ Instruction:
             if (eventSource && event_types) {
                 console.log('[Lilith] Event listeners registering...');
 
-                // 1. 注册消息接收监听 (实时评论)
-                eventSource.on(event_types.MESSAGE_RECEIVED, async (messageId) => {
+                // 1. 注册回复结束监听 (生成结束后注入吐槽)
+                eventSource.on(event_types.GENERATION_ENDED, async () => {
                     const chatData = SillyTavern.getContext().chat;
-                    const msg = chatData.find(m => m.mes_id == messageId);
+                    if (!chatData || chatData.length === 0) return;
+
+                    // 获取最后一条消息 (通常就是刚生成的回复)
+                    const lastMsg = chatData[chatData.length - 1];
+                    const messageId = lastMsg.mes_id;
                     
-                    console.log(`[Lilith] MESSAGE_RECEIVED: ${messageId}`, msg ? 'Found' : 'Not Found');
+                    console.log(`[Lilith] GENERATION_ENDED. Last message ID: ${messageId}`);
                     
-                    if (msg && !msg.is_user && !msg.is_system && !msg.mes.includes('[莉莉丝]')) {
+                    // 只有 AI 的回复才触发吐槽，且确保内容不是空的，且没被吐槽过
+                    if (lastMsg && !lastMsg.is_user && !lastMsg.is_system && lastMsg.mes && !lastMsg.mes.includes('[莉莉丝]')) {
                         const freq = userState.commentFrequency || 0;
                         const dice = Math.random() * 100;
                         console.log(`[Lilith] Dice: ${dice.toFixed(2)} / Threshold: ${freq}`);
                         
                         if (dice < freq) {
-                            console.log('[Lilith] Interaction triggered!');
-                            assistantManager.triggerRealtimeComment(messageId);
+                            console.log('[Lilith] Interaction triggered after generation!');
+                            // 稍微延迟一点点，确保酒馆内部状态同步完成
+                            setTimeout(() => {
+                                assistantManager.triggerRealtimeComment(messageId);
+                            }, 500);
                         }
                     }
                 });
