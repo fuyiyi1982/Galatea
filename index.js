@@ -1142,7 +1142,10 @@ The user just received a reply. Your job is to interject with a short, sharp, an
             if (userState.sanity < 30) b.style.borderColor = '#ff0000';
             b.onclick = () => b.remove(); 
             document.getElementById(containerId).appendChild(b);
-            setTimeout(() => { if(b.parentNode) b.remove(); }, 8000);
+            
+            // 动态时长计算: 基础 5秒 + 每字 0.35秒 (确保语音/阅读能完成)
+            const duration = Math.max(5000, msg.length * 350);
+            setTimeout(() => { if(b.parentNode) b.remove(); }, duration);
         },
 
         async fetchModels(parentWin) {
