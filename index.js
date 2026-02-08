@@ -694,12 +694,19 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     }
                     
                     // 2. 更新 DOM 并触发渲染
-                    const targetIndex = context.chat.findIndex(m => m.mes_id == messageId);
-                    const finalIndex = targetIndex !== -1 ? targetIndex : (typeof messageId === 'number' ? messageId : context.chat.length - 1);
+                    const chatData = SillyTavern.getContext().chat;
+                    const targetIndex = chatData.findIndex(m => m.mes_id == messageId);
+                    // 确保索引在有效范围内
+                    const finalIndex = targetIndex !== -1 ? targetIndex : (chatData.length - 1);
 
-                    if (typeof context.updateMessageBlock === 'function') {
+                    if (typeof context.updateMessageBlock === 'function' && chatData[finalIndex]) {
                         console.log('[Lilith] Updating message block at index:', finalIndex);
-                        context.updateMessageBlock(finalIndex);
+                        try {
+                            context.updateMessageBlock(finalIndex);
+                        } catch (err) {
+                            console.warn('[Lilith] updateMessageBlock failed, falling back to printMessages', err);
+                            if (context.printMessages) context.printMessages();
+                        }
                     } else if (typeof context.printMessages === 'function') {
                         context.printMessages();
                     }
