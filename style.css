@@ -16,9 +16,10 @@
 }
 
 span.lilith-chat-ui {
-    display: inline-block !important; /* 切回 inline-block，比 flex 更兼容文本流 */
-    width: auto;      /* 自动宽度 */
-    min-width: 50%;   /* 至少占据一半 */
+    display: inline-flex !important; /* 使用 inline-flex 修复包裹和布局问题 */
+    align-items: center;  /* 垂直居中对齐 */
+    width: auto;      
+    min-width: 50%;   
     max-width: 100%; 
     background: linear-gradient(90deg, rgba(48, 13, 28, 0.95) 0%, rgba(128, 20, 60, 0.9) 100%) !important;
     border-left: 4px solid #FF69B4 !important; 
@@ -31,7 +32,8 @@ span.lilith-chat-ui {
 }
 
 span.lilith-chat-avatar {
-    display: inline-block;
+    display: block;
+    flex-shrink: 0; /* 防止头像被压缩 */
     width: 40px;
     height: 40px;
     min-width: 40px;
@@ -40,16 +42,15 @@ span.lilith-chat-avatar {
     border-radius: 50%;
     border: 2px solid #FF69B4;
     margin-right: 10px;
-    vertical-align: middle;
 }
 
 span.lilith-chat-text {
-    display: inline-block;
+    display: block;
+    flex: 1;      /* 占据剩余空间 */
+    min-width: 0; /* 关键：允许 flex 子项收缩，防止溢出 */
     font-size: 0.9em;
     line-height: 1.4;
     word-break: break-word;
-    vertical-align: middle;
-    width: calc(100% - 60px); /* 手动计算剩余宽度，避免 flex 挤压 */
 }
 
 div.lilith-chat-text {

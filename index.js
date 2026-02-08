@@ -745,19 +745,21 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     // 重新启用自动刷新机制 (用户需求: 吐槽后自动刷新酒馆)
                     setTimeout(async () => {
                          try {
+                            const ctx = SillyTavern.getContext();
+
                             // 1. 尝试保存最新的聊天数据到磁盘
-                            // SillyTavern 通常有两个保存函数: saveChat() (全局) 或 context.saveChat()
-                            if (typeof saveChat === 'function') {
+                            if (ctx.saveChat) {
+                                await ctx.saveChat();
+                            } else if (typeof saveChat === 'function') {
                                 await saveChat();
-                            } else {
-                                const ctx = SillyTavern.getContext();
-                                if (ctx.saveChat) await ctx.saveChat();
                             }
 
                             // 2. 刷新当前聊天视图 (Reload Current Chat)
-                            // 这会重新加载 DOM，确保所有 UI Script (如编辑、删除按钮) 功能正常
-                            if (typeof reloadCurrentChat === 'function') {
-                                console.log('[Lilith] Reloading current chat to apply changes...');
+                            if (ctx.reloadCurrentChat) {
+                                console.log('[Lilith] Reloading current chat via Context API...');
+                                await ctx.reloadCurrentChat();
+                            } else if (typeof reloadCurrentChat === 'function') {
+                                console.log('[Lilith] Reloading current chat via Global API...');
                                 await reloadCurrentChat();
                             } else if (typeof viewAllMessages === 'function') {
                                 viewAllMessages();
