@@ -256,6 +256,7 @@
     if (userState.hideAvatar === undefined) userState.hideAvatar = false;
     if (userState.avatarSize === undefined) userState.avatarSize = 150;
     if (userState.ttsConfig === undefined) userState.ttsConfig = { pitch: 1.2, rate: 1.3 };
+    if (userState.commentFrequency === undefined) userState.commentFrequency = 50;
 
     let panelChatHistory = getExtensionSettings().chatHistory || [];
 
@@ -639,6 +640,67 @@ Language: Simplified Chinese (Mainland Internet Slang).`;
             if (fpEl) { fpEl.textContent = userState.fatePoints; fpEl.style.color = '#00ff00'; setTimeout(() => { fpEl.style.color = 'var(--l-gold)'; }, 800); }
         },
 
+        async triggerRealtimeComment(messageId) {
+            const context = SillyTavern.getContext();
+            const targetMsg = context.chat.find(m => m.mes_id == messageId);
+            if (!targetMsg) return;
+
+            const chatLog = getPageContext(5).map(m => `${m.name}: ${m.message}`).join('\n');
+            const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['toxic'];
+            
+            const systemPrompt = `[System Task: Chat Interjection]
+You are ${persona.name}. You are observing the user's conversation with another character.
+The user just received a reply. Your job is to interject with a short, sharp, and very ${userState.activePersona} comment.
+Instruction:
+- Keep it short (under 50 words).
+- MUST start with "[莉莉丝]".
+- If Toxic: Mock the character for being too weak or the user for being a simp.
+- If Brat: Call them LOSERS.
+- If Wife: Be slightly jealous or teasing.
+- Output ONLY the comment.`;
+
+            const userPrompt = `Current Chat Context:\n${chatLog}\n\n[Task]: Comment on the last message from ${targetMsg.name}.`;
+
+            try {
+                const comment = await this.callUniversalAPI(window, userPrompt, { isChat: false, systemPrompt: systemPrompt });
+                if (comment && comment.includes('[莉莉丝]')) {
+                    // 1. 更新内存数据 - 随机选择插入位置 (不在固定末尾)
+                    const parts = targetMsg.mes.split('\n\n').filter(p => p.trim());
+                    if (parts.length >= 2) {
+                        // 如果有多段，随机插在中间某一段之后
+                        const insertIndex = Math.floor(Math.random() * (parts.length - 1)) + 1;
+                        parts.splice(insertIndex, 0, comment.trim());
+                        targetMsg.mes = parts.join('\n\n');
+                    } else {
+                        // 只有一段，直接追加
+                        targetMsg.mes += `\n\n${comment.trim()}`;
+                    }
+                    
+                    // 2. 更新 DOM 并触发渲染 (让渲染器处理所有正则)
+                    if (typeof context.renderMessages === 'function') {
+                        context.renderMessages();
+                        // 语音播报新评论
+                        const textToSpeak = comment.replace('[莉莉丝]', '').replace(/<[^>]*>/g, '').trim(); 
+                        AudioSys.speak(textToSpeak);
+                    } else {
+                        // 降级刷新
+                        const textElement = $(`.mes[mes_id="${messageId}"] .mes_text`);
+                        if (textElement.length) {
+                             textElement.append(`<br><br>${comment.trim()}`);
+                             handleMessageRendered(null, messageId, true);
+                        }
+                    }
+
+                    // 3. 保存到 ST 存档
+                    if (typeof context.saveChat === 'function') context.saveChat();
+                    
+                    console.log('[Lilith] Comment injected and rendered for message', messageId);
+                }
+            } catch (e) {
+                console.error('[Lilith] Failed to trigger comment:', e);
+            }
+        },
+
         initStruct(parentWin) {
             if (document.getElementById(containerId)) return;
             const glitchLayer = document.createElement('div'); glitchLayer.id = 'lilith-glitch-layer'; glitchLayer.className = 'screen-glitch-layer'; document.body.appendChild(glitchLayer);
@@ -719,6 +781,11 @@ Language: Simplified Chinese (Mainland Internet Slang).`;
                             <select id="cfg-persona-select" style="background:#111; color:#fff; border:1px solid #bd00ff;">
                                 ${Object.keys(PERSONA_DB).map(k => `<option value="${k}" ${userState.activePersona===k?'selected':''}>${PERSONA_DB[k].name}</option>`).join('')}
                             </select>
+                         </div>
+                         <div class="cfg-group">
+                            <label style="color:#ff0055; font-weight:bold;">💬 吐槽频率 (Interaction)</label>
+                            <div style="font-size:10px; color:#888;">吐槽概率: <span id="cfg-freq-val">${userState.commentFrequency || 50}</span>%</div>
+                            <input type="range" id="cfg-freq" min="0" max="100" step="5" value="${userState.commentFrequency || 50}" style="accent-color:#ff0055;" oninput="document.getElementById('cfg-freq-val').textContent = this.value">
                          </div>
                          <div class="cfg-group">
                             <label style="color:#00f3ff;">🎛️ 语音调校 (TTS)</label>
@@ -1089,6 +1156,16 @@ Language: Simplified Chinese (Mainland Internet Slang).`;
             if(ttsPitch) ttsPitch.addEventListener('input', updateTTS);
             if(ttsRate) ttsRate.addEventListener('input', updateTTS);
             
+            // Interaction Frequency Slider
+            const freqSlider = document.getElementById('cfg-freq');
+            if (freqSlider) {
+                freqSlider.addEventListener('input', () => {
+                    userState.commentFrequency = parseInt(freqSlider.value);
+                    document.getElementById('cfg-freq-val').textContent = userState.commentFrequency;
+                    saveState();
+                });
+            }
+
             document.getElementById('tts-test-btn')?.addEventListener('click', () => {
                 AudioSys.speak("正在测试语音设置。莉莉丝为您服务。");
             });
@@ -1213,9 +1290,45 @@ Language: Simplified Chinese (Mainland Internet Slang).`;
     function init() {
         assistantManager.initStruct();
         
-        // 注册消息渲染钩子 (实现 regex 脚本的功能)
+        const { eventSource, event_types, updateChatMetadata, saveChat: stSaveChat, chat } = SillyTavern.getContext();
+
+        // 1. 注册消息接收监听 (实时评论)
+        if (eventSource && event_types) {
+             eventSource.on(event_types.MESSAGE_RECEIVED, async (messageId) => {
+                 // 获取刚收到的消息
+                 const chatData = SillyTavern.getContext().chat;
+                 const msg = chatData.find(m => m.mes_id == messageId);
+                 
+                 // 只有 AI 的回复才触发吐槽 (或者根据需求，非莉莉丝本人发的消息)
+                 if (msg && !msg.is_user && !msg.is_system && !msg.mes.includes('[莉莉丝]')) {
+                     const freq = userState.commentFrequency || 0;
+                     if (Math.random() * 100 < freq) {
+                         console.log('[Lilith] Random interaction triggered.');
+                         assistantManager.triggerRealtimeComment(messageId);
+                     }
+                 }
+             });
+
+             // 2. 注册发送前过滤 (不发送吐槽内容给 AI)
+             eventSource.on(event_types.GENERATE_BEFORE_COMBINE_PROMPTS, (data) => {
+                 console.log('[Lilith] Prompt filtering active.');
+                 // 这里的 data.chat 是发送给 AI 的聊天记录副本
+                 if (data && data.chat) {
+                     data.chat.forEach(msg => {
+                         if (msg.mes) {
+                             // 移除 [莉莉丝] 开头的块，直到换行或结束
+                             // 这样 AI 就看不见莉莉丝插入在正文里的吐槽了
+                             msg.mes = msg.mes.replace(/\[莉莉丝\][\s\S]*?(?=\n\n|$)/g, '').trim();
+                         }
+                     });
+                 }
+             });
+        }
+
+        // 注册消息渲染钩子
         $(document).on('click', '.lilith-chat-ui', function() {
-           // 点击时可以做点什么，比如播放语音
+           const text = $(this).find('.lilith-chat-text').text();
+           if (text) AudioSys.speak(text);
         });
     }
 
@@ -1227,19 +1340,25 @@ Language: Simplified Chinese (Mainland Internet Slang).`;
         const textElement = messageElement.find('.mes_text');
         let html = textElement.html();
         
-        // 匹配 [莉莉丝] 开头的消息
-        const regex = /\[莉莉丝\]\s*([\s\S]*)/;
+        // 匹配 [莉莉丝] 极其内容，直到遇到段落结尾或换行
+        // 这里的正则支持莉莉丝出现在正文中间，只替换吐槽所在的段落
+        const regex = /\[莉莉丝\]\s*([\s\S]*?)(?=(?:<br\s*\/?>\s*){2,}|<\/p>|$)/i;
         const match = html.match(regex);
         
         if (match) {
-            const content = match[1];
-            const newHtml = `
+            const fullMatch = match[0];
+            const content = match[1].trim();
+            const uiHtml = `
                 <div class="lilith-chat-ui">
                     <div class="lilith-chat-avatar"></div>
                     <div class="lilith-chat-text">${content}</div> 
                 </div>
             `;
+            
+            // 替换原始文本中的匹配部分
+            const newHtml = html.replace(fullMatch, uiHtml);
             textElement.html(newHtml);
+            
             if (shouldSpeak) {
                  const textToSpeak = content.replace(/<[^>]*>/g, '').trim(); 
                  AudioSys.speak(textToSpeak);
