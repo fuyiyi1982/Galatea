@@ -739,16 +739,41 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                         targetMsgRef.mes = msgText.trim() + `\n\n${cleanComment}`;
                     }
                     
-                    // 3. 触发渲染
+                    // 3. 触发渲染与数据同步
                     console.log('[Lilith] Updating message block for index:', finalIndex);
 
-                    // [Fix] 移除不稳定的 updateMessageBlock 调用
-                    // 直接使用下方的 Manual DOM Patch 进行视觉更新
-                    // 内存中的 chat 数据已更新，下次重绘会自动生效
-                    console.log('[Lilith] Skipping potentially unstable API refresh, relying on manual DOM patch.');
-                    
-                    // 4. 彻底暴力 DOM 补丁 (全量扫描并应用)
-                    // 增加延迟确保酒馆自己的渲染已经完成，然后我们覆盖它
+                    // 重新启用自动刷新机制 (用户需求: 吐槽后自动刷新酒馆)
+                    setTimeout(async () => {
+                         try {
+                            // 1. 尝试保存最新的聊天数据到磁盘
+                            // SillyTavern 通常有两个保存函数: saveChat() (全局) 或 context.saveChat()
+                            if (typeof saveChat === 'function') {
+                                await saveChat();
+                            } else {
+                                const ctx = SillyTavern.getContext();
+                                if (ctx.saveChat) await ctx.saveChat();
+                            }
+
+                            // 2. 刷新当前聊天视图 (Reload Current Chat)
+                            // 这会重新加载 DOM，确保所有 UI Script (如编辑、删除按钮) 功能正常
+                            if (typeof reloadCurrentChat === 'function') {
+                                console.log('[Lilith] Reloading current chat to apply changes...');
+                                await reloadCurrentChat();
+                            } else if (typeof viewAllMessages === 'function') {
+                                viewAllMessages();
+                            } else {
+                                console.warn('[Lilith] No refresh function found. UI might be desynced until manual refresh.');
+                            }
+                         } catch (e) {
+                             console.error('[Lilith] Auto-refresh failed:', e);
+                         }
+                    }, 500); // 500ms 延迟，确保数据写入完成
+
+                    // 4. [已弃用] 手动 DOM 补丁
+                    // 由于我们现在调用了 reloadCurrentChat，全量刷新会覆盖页面，
+                    // 所以手动补丁不再必要，且可能导致闪烁。
+                    // 但为了在刷新前的短暂间隙提供反馈，我们保留一个轻量级的补丁。
+                    console.log('[Lilith] Applying temporary visual patch...');
                     setTimeout(() => {
                         // 寻找对应消息 ID 的文本框，或者寻找包含 [莉莉丝] 且未被渲染的元素
                         const $textElements = $(`.mes[mes_id="${messageId}"] .mes_text`).length ? 
