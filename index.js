@@ -1040,8 +1040,48 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     check: () => userState.sanity < 30,
                     run: () => {
                         this.triggerAvatarGlitch(parentWin);
-                        this.showBubble(parentWin, `[⚠️ 系统勒索] 检测到SAN值过低，莉莉丝劫持了你的剪贴板！`, '#ff0000');
-                        AudioSys.speak("想要回你的权限吗？那就多陪陪我。");
+                        
+                        const overlayId = 'lilith-overlay-blocker';
+                        if (document.getElementById(overlayId)) return;
+                        
+                        const overlay = document.createElement('div');
+                        overlay.id = overlayId;
+                        overlay.className = 'ransom-overlay';
+                        overlay.innerHTML = `
+                            <div class="ransom-box">
+                                <h2 style="color:red; margin:0;">🔒 SYSTEM LOCKED by LILITH</h2>
+                                <p>检测到莉莉丝SAN值过低 (Current: ${userState.sanity}%)</p>
+                                <p>你的操作权限已被强制锁定。</p>
+                                <p>想要解锁？支付 <strong>100 FP</strong> 给我买点好吃的。</p>
+                                <div style="margin-top:20px; display:flex; gap:10px;">
+                                    <button id="btn-pay-ransom" style="flex:1; background:#0f0; border:none; padding:10px; cursor:pointer; font-weight:bold;">给钱 (100 FP)</button>
+                                    <button id="btn-refuse-ransom" style="flex:1; background:#555; border:none; padding:10px; cursor:pointer; color:#ccc;">拒绝 (好感 -5)</button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(overlay);
+                        AudioSys.speak("打劫，交出FP来。", 0.6);
+
+                        document.getElementById('btn-pay-ransom').onclick = () => {
+                            if (userState.fatePoints >= 100) {
+                                userState.fatePoints -= 100;
+                                updateFavor(2);
+                                saveState();
+                                AudioSys.speak("哼，算你识相。");
+                                overlay.remove();
+                                this.showBubble(parentWin, `已支付 100 FP 赎金。`);
+                                assistantManager.updateFP(parentWin, userState.fatePoints);
+                            } else {
+                                AudioSys.speak("穷鬼！没钱还想赎身？滚！");
+                                alert("【莉莉丝】：没钱？那就继续关着吧！(点击确定强制关闭)");
+                                overlay.remove(); 
+                            }
+                        };
+                        document.getElementById('btn-refuse-ransom').onclick = () => {
+                            updateFavor(-5);
+                            AudioSys.speak("切，小气鬼。");
+                            overlay.remove();
+                        };
                     }
                 }
             ];
