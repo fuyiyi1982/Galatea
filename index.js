@@ -167,6 +167,22 @@
     `;
 
     // --- 4. 辅助函数 ---
+    
+    /**
+     * 将路径转换为合法的 URL
+     * 如果是相对路径，则补全为酒馆插件内部路径
+     * 支持网络图片 (http/https) 和 Base64
+     */
+    function toUrl(path) {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/') || path.startsWith('blob:')) {
+            return path;
+        }
+        // 补全酒馆插件内置存储路径 (假设文件夹名为 lilith-assistant)
+        // 这样用户只需要把图片放在插件目录下的 assets 文件夹，然后写 "assets/xxx.png" 即可
+        return `scripts/extensions/lilith-assistant/${path}`;
+    }
+
     function getDynamicPersona() {
         const f = userState.favorability;
         const s = userState.sanity;
@@ -304,6 +320,7 @@
         },
 
         // --- 🔴 立绘数据库：五重人格完整版 ---
+        // 支持内置存储 (相对路径，如 "assets/xxx.png") 或 网络图片 (http/https)
         avatarPacks: {
             'meme': {
                 normal:     'https://i.postimg.cc/YSHhNdJT/IMG_20260130_143415.png',
@@ -395,7 +412,13 @@
             if (!finalUrl) finalUrl = pack['normal']; 
             if (!finalUrl) finalUrl = this.avatarPacks['meme']['normal'];
 
-            av.style.backgroundImage = `url('${finalUrl}')`;
+            // 使用 toUrl 处理路径，支持内置存储
+            const processedUrl = toUrl(finalUrl);
+            av.style.backgroundImage = `url('${processedUrl}')`;
+            
+            // 同时更新全局 CSS 变量，供聊天卡片等使用
+            document.documentElement.style.setProperty('--lilith-avatar-current', `url('${processedUrl}')`);
+            
             this.updateAvatarStyle(parentWin);
         },
 
@@ -1330,7 +1353,7 @@ The user just received a reply. Your job is to interject with a short, sharp, an
             const newRule = {
                 name: "【莉莉丝】吐槽卡片渲染",
                 regex: "\\[莉莉丝\\]([\\s\\S]*?)(?=\\n\n|$)", 
-                replacement: " <div class=\"lilith-chat-ui\"><div class=\"lilith-chat-avatar\"></div><div class=\"lilith-chat-text\">$1</div></div>",
+                replacement: " <div class=\"lilith-chat-ui\"><div class=\"lilith-chat-avatar\" style=\"background-image: var(--lilith-avatar-current)\"></div><div class=\"lilith-chat-text\">$1</div></div>",
                 placement: [2], // 仅聊天正文
                 disabled: false,
                 markdownOnly: false,
@@ -1425,17 +1448,20 @@ The user just received a reply. Your job is to interject with a short, sharp, an
         const textElement = messageElement.find('.mes_text');
         let html = textElement.html();
         
-        // 匹配 [莉莉丝] 极其内容，直到遇到段落结尾或换行
-        // 这里的正则支持莉莉丝出现在正文中间，只替换吐槽所在的段落
+        // 匹配 [莉莉丝] 极其内容
         const regex = /\[莉莉丝\]\s*([\s\S]*?)(?=(?:<br\s*\/?>\s*){2,}|<\/p>|$)/i;
         const match = html.match(regex);
         
         if (match) {
             const fullMatch = match[0];
             const content = match[1].trim();
+            
+            // 获取当前立绘 URL (从 CSS 变量或默认值)
+            const currentAvatar = getComputedStyle(document.documentElement).getPropertyValue('--lilith-avatar-current') || `url('${toUrl('https://i.postimg.cc/rmD7bxxH/IMG-20251102-000620.jpg')}')`;
+
             const uiHtml = `
                 <div class="lilith-chat-ui">
-                    <div class="lilith-chat-avatar"></div>
+                    <div class="lilith-chat-avatar" style="background-image: ${currentAvatar}"></div>
                     <div class="lilith-chat-text">${content}</div> 
                 </div>
             `;
