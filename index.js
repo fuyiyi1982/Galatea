@@ -643,9 +643,15 @@ Language: Simplified Chinese (Mainland Internet Slang).`;
         async triggerRealtimeComment(messageId) {
             console.log('[Lilith] triggerRealtimeComment called for', messageId);
             const context = SillyTavern.getContext();
-            const targetMsg = context.chat.find(m => m.mes_id == messageId);
+            
+            // 尝试通过 mes_id 查找，如果找不到且 messageId 是数字，尝试通过数组索引查找
+            let targetMsg = context.chat.find(m => m.mes_id == messageId);
+            if (!targetMsg && typeof messageId === 'number') {
+                targetMsg = context.chat[messageId];
+            }
+            
             if (!targetMsg) {
-                console.error('[Lilith] targetMsg not found in chat array!');
+                console.error('[Lilith] targetMsg not found in chat array! (ID/Index was:', messageId, ')');
                 return;
             }
 
@@ -687,11 +693,15 @@ Instruction:
                         const textToSpeak = comment.replace('[莉莉丝]', '').replace(/<[^>]*>/g, '').trim(); 
                         AudioSys.speak(textToSpeak);
                     } else {
-                        // 降级刷新
-                        const textElement = $(`.mes[mes_id="${messageId}"] .mes_text`);
+                        // 降级刷新：尝试按 ID 找，找不到找最后一条
+                        let textElement = $(`.mes[mes_id="${messageId}"] .mes_text`);
+                        if (!textElement.length) textElement = $('.mes:last .mes_text');
+                        
                         if (textElement.length) {
                              textElement.append(`<br><br>${comment.trim()}`);
-                             handleMessageRendered(null, messageId, true);
+                             // 重新调用处理函数美化 UI
+                             const finalMesId = textElement.closest('.mes').attr('mes_id');
+                             handleMessageRendered(null, finalMesId, true);
                         }
                     }
 
@@ -1309,20 +1319,19 @@ Instruction:
 
                     // 获取最后一条消息 (通常就是刚生成的回复)
                     const lastMsg = chatData[chatData.length - 1];
-                    const messageId = lastMsg.mes_id;
+                    const messageId = lastMsg.mes_id !== undefined ? lastMsg.mes_id : (chatData.length - 1);
                     
-                    console.log(`[Lilith] GENERATION_ENDED. Last message ID: ${messageId}`);
+                    console.log(`[Lilith] GENERATION_ENDED. Using Message Key: ${messageId}`);
                     
-                    // 只有 AI 的回复才触发吐槽，且确保内容不是空的，且没被吐槽过
+                    // 只有 AI 的回复才触发吐槽
                     if (lastMsg && !lastMsg.is_user && !lastMsg.is_system && lastMsg.mes && !lastMsg.mes.includes('[莉莉丝]')) {
                         const freq = userState.commentFrequency || 0;
                         const dice = Math.random() * 100;
-                        console.log(`[Lilith] Dice: ${dice.toFixed(2)} / Threshold: ${freq}`);
                         
                         if (dice < freq) {
                             console.log('[Lilith] Interaction triggered after generation!');
-                            // 稍微延迟一点点，确保酒馆内部状态同步完成
                             setTimeout(() => {
+                                // 传递 ID 或者 Index
                                 assistantManager.triggerRealtimeComment(messageId);
                             }, 500);
                         }
