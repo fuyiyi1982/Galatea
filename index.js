@@ -806,11 +806,21 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                             // 3. 吐槽播报
                             AudioSys.speak(cleanComment.replace(/\[莉莉丝\]/g, '').trim());
 
-                            // 4. 确保消息在视口内 (可选，防止长消息被顶出)
+                            // 4. 精确聚焦：如果修改的是最后一条消息，直接强制滚动到底部；否则聚焦到消息末尾
                             setTimeout(() => {
-                                const el = document.querySelector(`[mes_id="${messageId}"]`);
-                                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                            }, 200);
+                                const currentChat = SillyTavern.getContext().chat;
+                                if (finalIndex >= currentChat.length - 1) {
+                                    if (typeof scrollChatToBottom === 'function') {
+                                        scrollChatToBottom();
+                                    } else {
+                                        const chatContainer = document.getElementById('chat');
+                                        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                                    }
+                                } else {
+                                    const el = document.querySelector(`[mes_id="${messageId}"]`);
+                                    if (el) el.scrollIntoView({ behavior: 'auto', block: 'end' });
+                                }
+                            }, 100);
 
                             console.log('[Lilith] Comment injected and refreshed for message', messageId);
                          } catch (e) {
