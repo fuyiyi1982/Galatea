@@ -140,6 +140,7 @@ export const UIManager = {
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                             </button>
                             <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'toxic'].name.split(' ')[1]}聊天...">
+                            <button id="lilith-manual-comment-chat" title="强制吐槽" style="color:var(--l-cyan);"><i class="fa-solid fa-comment-dots"></i></button>
                             <button id="lilith-chat-send" title="发送">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
@@ -534,6 +535,11 @@ export const UIManager = {
         };
         sendBtn?.addEventListener('click', doSend);
         input?.addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.stopPropagation(); doSend(); } });
+
+        // Manual Comment
+        document.getElementById('lilith-manual-comment-chat')?.addEventListener('click', () => {
+            assistant.manualComment();
+        });
 
         // Polish
         document.getElementById('lilith-polish-btn')?.addEventListener('click', async () => {
