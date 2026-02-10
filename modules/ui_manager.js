@@ -136,11 +136,13 @@ export const UIManager = {
                     <div id="lilith-chat-history"></div>
                     <div class="lilith-chat-footer">
                         <div class="lilith-input-row">
+                            <button id="lilith-manual-comment-chat" title="强制吐槽" style="color:var(--l-cyan);">
+                                <i class="fa-solid fa-comment-dots"></i>
+                            </button>
                             <button id="lilith-polish-btn" title="搞颜色/润色" style="color:#ff0055;">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                             </button>
                             <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'toxic'].name.split(' ')[1]}聊天...">
-                            <button id="lilith-manual-comment-chat" title="强制吐槽" style="color:var(--l-cyan);"><i class="fa-solid fa-comment-dots"></i></button>
                             <button id="lilith-chat-send" title="发送">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
