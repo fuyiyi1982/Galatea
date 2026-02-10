@@ -566,6 +566,11 @@
             }
         }
 
+        // 3. [Specific Cleanup] Remove "chatu8" as requested
+        if (userState.extractionEnabled || userState.textReplacementEnabled) {
+            result = result.replace(/chatu8/gi, '');
+        }
+
         return result;
     }
 
@@ -999,6 +1004,13 @@ ${itemLines}
 You are ${persona.name}. You are observing the user's conversation with another character.
 The user just received a reply. Your job is to interject with a short, sharp, and very ${userState.activePersona} comment.
 
+[PLACEMENT LOGIC]
+Instead of just appending to the end, you should find a contextually relevant position within the message to inject your comment.
+1. Analyze the message content and choose a specific sentence or concept to react to.
+2. Provide your reasoning inside a <thought> block.
+3. Your comment must start with "[莉莉丝]".
+4. Provide the EXACT original phrase (around 5-15 words) from the target message that your comment should follow, marked with [Anchor].
+
 [DIVERSITY INSTRUCTIONS]
 - Do NOT repeat previous sentiments. 
 - Choose ONE angle: 
@@ -1009,15 +1021,23 @@ The user just received a reply. Your job is to interject with a short, sharp, an
 - If Sanity < 30: Be erratic, obsessive, or slightly unhinged.
 
 [FORMAT]
-- Keep it short (under 40 words).
-- MUST start with "[莉莉丝]".
-- Output ONLY the comment text.`;
+<thought>Your reasoning for placement and content...</thought>
+[莉莉丝]Your comment text here.
+[Anchor]The exact text from the original message you want to follow.`;
 
-            const userPrompt = `Current Chat Context:\n${chatLog}\n\n[Task]: Provide a UNIQUE, sharp comment on the last message.`;
+            const userPrompt = `Target Message to comment on:
+"""
+${targetMsg.mes}
+"""
+
+Current Chat Context:
+${chatLog}
+
+[Task]: Provide a sharp interjection. Ensure the [Anchor] matches the target message exactly.`;
 
             try {
-                const comment = await this.callUniversalAPI(window, userPrompt, { isChat: false, systemPrompt: systemPrompt });
-                if (comment && comment.includes('[莉莉丝]')) {
+                const response = await this.callUniversalAPI(window, userPrompt, { isChat: false, systemPrompt: systemPrompt });
+                if (response && response.includes('[莉莉丝]')) {
                     // 获取最新上下文并确保我们正在修改正确的对象（再次锁 index，防御性处理）
                     const currentContext = SillyTavern.getContext();
                     const liveChatData = currentContext.chat || [];
@@ -1034,8 +1054,22 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     const targetMsgRef = liveChatData[liveIndex];
                     if (!targetMsgRef) throw new Error("Could not find target message in chat array");
 
-                    // 2. 更新内存数据 - 根据模式选择插入位置
-                    const cleanComment = comment.trim();
+                    // 2. 解析 AI 回复
+                    let cleanComment = "";
+                    let anchorText = "";
+                    
+                    const commentMatch = response.match(/\[莉莉丝\]\s*([\s\S]*?)(?=\[Anchor\]|$)/);
+                    if (commentMatch) cleanComment = "[莉莉丝] " + commentMatch[1].trim();
+                    
+                    const anchorMatch = response.match(/\[Anchor\]\s*([\s\S]*)/);
+                    if (anchorMatch) anchorText = anchorMatch[1].trim();
+
+                    // 如果解析失败，兜底使用整个 response 中包含 [莉莉丝] 的部分
+                    if (!cleanComment) {
+                        const fallbackMatch = response.match(/\[莉莉丝\].*$/m);
+                        cleanComment = fallbackMatch ? fallbackMatch[0].trim() : response.trim();
+                    }
+
                     const msgText = targetMsgRef.mes;
                     
                     let targetContent = msgText;
@@ -1078,48 +1112,62 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                     } else if (userState.commentMode === 'bottom') {
                         newContent = `${targetContent.trimEnd()}\n\n${cleanComment}`;
                     } else {
-                        // --- Random Mode: 智能语义插入 ---
-                        const lines = targetContent.split('\n');
-                        let inCodeBlock = false;
-                        const safePoints = [];
+                        // --- AI AI-Driven Mode: 根据 Anchor 注入 ---
+                        let injected = false;
+                        if (anchorText && targetContent.includes(anchorText)) {
+                            // 尝试找到 anchorText 并插入其后
+                            const pos = targetContent.indexOf(anchorText) + anchorText.length;
+                            // 检查后续是否已经是换行，或者需要添加换行
+                            const suffixText = targetContent.substring(pos);
+                            const needsLeadingNewline = !targetContent.substring(0, pos).endsWith('\n');
+                            const needsTrailingNewline = !suffixText.startsWith('\n');
 
-                        for (let i = 0; i < lines.length; i++) {
-                            const line = lines[i].trim();
-                            // 1. 状态追踪：避开代码块、表格、列表
-                            if (line.startsWith('```')) {
-                                inCodeBlock = !inCodeBlock;
-                                continue;
-                            }
-                            if (inCodeBlock || line.includes('|') || /^[*+\-]\s|^\d+\.\s/.test(line)) continue;
+                            newContent = targetContent.substring(0, pos) + 
+                                         (needsLeadingNewline ? '\n\n' : '\n') + 
+                                         cleanComment + 
+                                         (needsTrailingNewline ? '\n\n' : '\n') + 
+                                         suffixText;
                             
-                            // 2. 评分逻辑：优先选择带结束标点的行
-                            if (line.length > 1 && i < lines.length - 1) {
-                                const priority = /[。！？!?.]$/.test(line) ? 2 : 1;
-                                safePoints.push({ index: i, priority });
-                            }
+                            console.log(`[Lilith] AI-driven insertion after anchor: "${anchorText.substring(0, 20)}..."`);
+                            injected = true;
                         }
 
-                        if (safePoints.length > 0) {
-                            // 权重筛选：优先选高优先级点
-                            const highPrio = safePoints.filter(p => p.priority === 2);
-                            const candidates = highPrio.length > 0 ? highPrio : safePoints;
-                            const pick = candidates[Math.floor(Math.random() * candidates.length)];
-                            const targetPoint = pick.index;
+                        if (!injected) {
+                            // --- Fallback to Smart Random Mode ---
+                            const lines = targetContent.split('\n');
+                            let inCodeBlock = false;
+                            const safePoints = [];
 
-                            // 3. 智能间距处理
-                            const nextLineEmpty = lines[targetPoint + 1] !== undefined && lines[targetPoint + 1].trim() === "";
-                            const prevLineEmpty = lines[targetPoint].trim() === "";
-                            
-                            let insertBatch = [cleanComment];
-                            if (!prevLineEmpty) insertBatch.unshift("");
-                            if (!nextLineEmpty) insertBatch.push("");
-                            
-                            lines.splice(targetPoint + 1, 0, ...insertBatch);
-                            newContent = lines.join('\n');
-                            console.log(`[Lilith] Smart insertion at line ${targetPoint} (Priority: ${pick.priority})`);
-                        } else {
-                            // 没找到合适位置，兜底到底部
-                            newContent = `${targetContent.trimEnd()}\n\n${cleanComment}`;
+                            for (let i = 0; i < lines.length; i++) {
+                                const line = lines[i].trim();
+                                if (line.startsWith('```')) { inCodeBlock = !inCodeBlock; continue; }
+                                if (inCodeBlock || line.includes('|') || /^[*+\-]\s|^\d+\.\s/.test(line)) continue;
+                                
+                                if (line.length > 1 && i < lines.length - 1) {
+                                    const priority = /[。！？!?.]$/.test(line) ? 2 : 1;
+                                    safePoints.push({ index: i, priority });
+                                }
+                            }
+
+                            if (safePoints.length > 0) {
+                                const highPrio = safePoints.filter(p => p.priority === 2);
+                                const candidates = highPrio.length > 0 ? highPrio : safePoints;
+                                const pick = candidates[Math.floor(Math.random() * candidates.length)];
+                                const targetPoint = pick.index;
+
+                                const nextLineEmpty = lines[targetPoint + 1] !== undefined && lines[targetPoint + 1].trim() === "";
+                                const prevLineEmpty = lines[targetPoint].trim() === "";
+                                
+                                let insertBatch = [cleanComment];
+                                if (!prevLineEmpty) insertBatch.unshift("");
+                                if (!nextLineEmpty) insertBatch.push("");
+                                
+                                lines.splice(targetPoint + 1, 0, ...insertBatch);
+                                newContent = lines.join('\n');
+                                console.log(`[Lilith] Fallback smart insertion at line ${targetPoint}`);
+                            } else {
+                                newContent = `${targetContent.trimEnd()}\n\n${cleanComment}`;
+                            }
                         }
                     }
                     
@@ -1211,7 +1259,7 @@ The user just received a reply. Your job is to interject with a short, sharp, an
             const muteIcon = AudioSys.muted ? '🔇' : '🔊';
             panel.innerHTML = `
                 <div class="lilith-panel-header">
-                    <span class="lilith-title">莉莉丝 <span style="font-size:10px; color:var(--l-cyan);">v1.0.0 Release</span></span>
+                    <span class="lilith-title">莉莉丝 <span style="font-size:10px; color:var(--l-cyan);">v1.0.1 Stable</span></span>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:14px;">${muteIcon}</span>
                         <div style="text-align:right; line-height:1;">
@@ -1283,8 +1331,9 @@ The user just received a reply. Your job is to interject with a short, sharp, an
                             <div style="margin-top:8px;">
                                 <label style="font-size:12px; color:#ccc;">插入模式:</label>
                                 <select id="cfg-comment-mode" style="background:#111; color:#fff; border:1px solid #444; font-size:12px; height:24px;">
-                                    <option value="random" ${userState.commentMode === 'random' ? 'selected' : ''}>🎲 随机插入正文 (断句处)</option>
+                                    <option value="random" ${userState.commentMode === 'random' ? 'selected' : ''}>� AI 自动定位 (智能注入)</option>
                                     <option value="bottom" ${userState.commentMode === 'bottom' ? 'selected' : ''}>⬇️ 始终追加在末尾</option>
+                                    <option value="top" ${userState.commentMode === 'top' ? 'selected' : ''}>⬆️ 始终置于顶端</option>
                                 </select>
                             </div>
                          </div>
@@ -1705,9 +1754,16 @@ The user just received a reply. Your job is to interject with a short, sharp, an
             const commentModeSelect = document.getElementById('cfg-comment-mode');
             if (commentModeSelect) {
                 commentModeSelect.addEventListener('change', () => {
-                    userState.commentMode = commentModeSelect.value;
+                    const newVal = commentModeSelect.value;
+                    userState.commentMode = newVal;
                     saveState();
-                    this.showBubble(parentWin, `模式已切换: ${userState.commentMode === 'random' ? '随机正文插入' : '末尾追加'}`);
+                    
+                    // [Sync] Update Main Settings UI
+                    const mainModeSelect = document.getElementById('lilith-comment-mode');
+                    if(mainModeSelect) mainModeSelect.value = newVal;
+
+                    const modeLabels = { 'random': 'AI 自动定位', 'bottom': '末尾追加', 'top': '置于顶端' };
+                    this.showBubble(parentWin, `模式已切换: ${modeLabels[newVal] || newVal}`);
                 });
             }
 
