@@ -1,0 +1,885 @@
+// modules/assistant_manager.js
+import { extensionName, avatarId, bubbleId, MAX_HISTORY_TRIGGER, HISTORY_KEEP, PERSONA_DB, GachaConfig, WRITER_PERSONA, JAILBREAK } from './config.js';
+import { userState, saveState, saveChat, panelChatHistory, updateFavor, updateSanity } from './storage.js';
+import { AudioSys } from './audio.js';
+import { getDynamicPersona } from './persona.js';
+import { getPageContext, createSmartRegExp } from './utils.js';
+import { UIManager } from './ui_manager.js';
+
+export const assistantManager = {
+    config: {
+        apiType: 'native',
+        baseUrl: 'https://generativelanguage.googleapis.com',
+        apiKey: '',
+        model: 'gemini-1.5-flash'
+    },
+
+    extensionPath: `/scripts/extensions/third-party/${extensionName}`,
+    
+    sendToSillyTavern(parentWin, text, autoSend = true) {
+        const input = parentWin.document.getElementById('send_textarea');
+        if (input) {
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+            nativeInputValueSetter.call(input, text);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            if (autoSend) {
+                const btn = parentWin.document.getElementById('send_but');
+                if (btn) btn.click();
+            }
+        }
+    },
+
+    gachaSystem: {
+        timer: null,
+        calculateTiers(count) {
+            const results = [];
+            for (let i = 0; i < count; i++) {
+                const rand = Math.random() * 100;
+                let selected = 'mortal';
+                let sum = 0;
+                for (const [key, val] of Object.entries(GachaConfig.tiers)) {
+                    sum += val.prob;
+                    if (rand <= sum) { selected = key; break; }
+                }
+                results.push(selected);
+            }
+            return results.sort((a, b) => GachaConfig.tiers[a].prob - GachaConfig.tiers[b].prob);
+        },
+        async generateItems(parentWin, tierList) {
+            const tierDesc = tierList.map((t, index) => {
+                const info = GachaConfig.tiers[t];
+                return `Item ${index+1}: [Rank: ${info.name}] (Power Level: ${info.power})`;
+            }).join('\\n');
+
+            const systemPrompt = `
+                [System Role: Fantasy Gacha Generator (Lilith Edition)]
+                [Tone: Erotic, Dark Fantasy, Detailed, slightly mocking if the item is trash.]
+                
+                [Task]: Generate items based on the provided Rank list.
+                
+                [Categories (Randomly assign one category to each item)]:
+                1. **Weapon/Equipment**: Swords, armor, staffs.
+                2. **Material/Potion**: Crafting parts, alchemy potions, fluids.
+                3. **Magic Tool**: Rings, amulets, orbs.
+                4. **Disposable Scroll**: One-time use magic spells.
+                5. **Skill Book**: Spells, martial arts manuals.
+                6. **Lilith's Special Toy (NSFW)**: Sex toys or erotic magic tools provided by Lilith.
+                7. **Clothing (NSFW)**: Lingerie, cosplay, armor with exposure, various styles.
+
+                [Strict Constraints]:
+                * **Mortal (凡阶)**: MUST be mundane. Cannot change reality. Can be trash or simple tools.
+                * **Epic/Demigod (史诗/半神)**: MUST be powerful. Even if it's a sex toy, it must have mind-breaking or reality-bending effects. NO TRASH ALLOWED.
+                * **Category 6 & 7**: Must be erotic/lewd in description.
+                * **Language**: Simplified Chinese.
+                
+                [Output Format]:
+                Strictly a JSON Array: [{"name": "Item Name", "desc": "Category: [Type] | Description...", "category_id": 1}]
+                `;
+
+            const userPrompt = `Generate ${tierList.length} items based on this list:\\n${tierDesc}\\n\\nReturn JSON ONLY. No markdown code blocks.`;
+
+            try {
+                let response = await assistantManager.callUniversalAPI(parentWin, userPrompt, { isChat: false, systemPrompt: systemPrompt });
+                if (!response) throw new Error("API No Response");
+                
+                const firstBracket = response.indexOf('[');
+                const lastBracket = response.lastIndexOf(']');
+                if (firstBracket !== -1 && lastBracket !== -1) {
+                    response = response.substring(firstBracket, lastBracket + 1);
+                } else {
+                    response = response.replace(/```json/g, '').replace(/```/g, '').trim();
+                }
+                
+                const items = JSON.parse(response);
+                
+                return items.map((item, i) => ({
+                    tier: tierList[i] || 'mortal',
+                    info: GachaConfig.tiers[tierList[i]] || GachaConfig.tiers['mortal'],
+                    name: item.name || '未知物品',
+                    desc: item.desc || '物品数据解析失败...'
+                }));
+
+            } catch (e) {
+                console.error(e);
+                AudioSys.speak("切，运气太差，数据都加载不出来。");
+                return tierList.map(t => ({
+                    tier: t,
+                    info: GachaConfig.tiers[t],
+                    name: "无法识别的残渣",
+                    desc: "因为API被玩坏了或者是被系统拦截了，这东西无法显示。"
+                }));
+            }
+        },
+        async doPull(parentWin, count) {
+            const totalCost = count * GachaConfig.cost;
+            const stage = document.getElementById('gacha-visual-area');
+            if (this.timer) clearTimeout(this.timer);
+            stage.innerHTML = '';
+            if (userState.fatePoints < totalCost) {
+                stage.innerHTML = `<div style="color:var(--l-main); margin-top:50px; text-align:center;">🚫 也没钱啊穷鬼<br><small style="color:#888">手动改下数字会死吗？</small></div>`;
+                AudioSys.speak("没钱就滚，别浪费老娘时间。");
+                return;
+            }
+            userState.fatePoints -= totalCost;
+            saveState();
+            UIManager.updateFP(parentWin, userState.fatePoints);
+            try { assistantManager.sendToSillyTavern(parentWin, `/echo [系统] 消耗 ${totalCost} FP`, false); } catch(e){}
+            
+            stage.innerHTML = `
+                <div class="summon-circle"></div>
+                <div style="position:absolute; bottom:10px; width:100%; text-align:center; color:var(--l-cyan); font-size:10px;">❤ 正在榨取命运红线...</div>
+                <div id="gacha-flash" class="summon-flash"></div>
+            `;
+            AudioSys.speak("正在翻垃圾堆...稍等。");
+            const tiers = this.calculateTiers(count);
+            const itemPromise = this.generateItems(parentWin, tiers);
+            const minTime = new Promise(r => setTimeout(r, 1500)); 
+            const [items, _] = await Promise.all([itemPromise, minTime]);
+            const flash = document.getElementById('gacha-flash');
+            if(flash) flash.classList.add('flash-anim');
+            setTimeout(() => {
+                stage.innerHTML = '';
+                const closeBtn = document.createElement('div');
+                closeBtn.className = 'gacha-close-btn';
+                closeBtn.innerHTML = '✖';
+                closeBtn.onclick = () => {
+                    stage.innerHTML = '<div style="color:#444; margin-top:50px;">[ 既然抽完了就滚吧 ]</div>';
+                    if(this.timer) clearTimeout(this.timer);
+                };
+                stage.appendChild(closeBtn);
+                items.forEach((res, i) => {
+                    userState.gachaInventory.push(res);
+                    setTimeout(() => {
+                        const card = document.createElement('div');
+                        card.className = `gacha-card ${res.tier}`;
+                        card.style.animation = 'card-entry 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                        card.title = res.desc;
+                        const infoColor = res.info ? res.info.color : '#fff';
+                        const infoName = res.info ? res.info.name : '???';
+                        card.innerHTML = `
+                            <div style="color:${infoColor}; font-weight:bold; font-size:9px; margin-bottom:2px;">${infoName}</div>
+                            <div style="font-size:11px; line-height:1.2; overflow:hidden; font-weight:bold; height:26px;">${res.name}</div>
+                            <div class="tier-bar" style="background:${infoColor}"></div>
+                        `;
+                        card.onclick = () => { alert(`【${res.name}】\\n品质：${infoName}\\n\\n${res.desc}`); };
+                        stage.appendChild(card);
+                    }, i * 150);
+                });
+                saveState();
+                this.updateInventoryUI();
+                AudioSys.speak("也就这种成色，和你真配。");
+                this.timer = setTimeout(() => {
+                     stage.innerHTML = '<div style="color:#444; margin-top:50px;">[ 太磨叽了，小鸡吧男 ]</div>';
+                }, 20000 + (count * 150));
+            }, 400);
+        },
+        updateInventoryUI() {
+            const list = document.getElementById('gacha-inv-list');
+            if (!list) return;
+            list.innerHTML = '';
+            [...userState.gachaInventory].reverse().forEach((item) => {
+                const row = document.createElement('div');
+                row.className = 'inv-item';
+                row.style.cursor = "help";
+                row.title = item.desc;
+                const color = item.info ? item.info.color : '#888';
+                const rankName = item.info ? item.info.name : '未知';
+                row.innerHTML = `
+                    <span style="color:${color}; flex-shrink:0;">[${rankName}]</span>
+                    <span style="margin-left:5px; color:#ddd;">${item.name}</span>
+                `;
+                list.appendChild(row);
+            });
+        },
+        claimRewards(parentWin) {
+            if (userState.gachaInventory.length === 0) {
+                AudioSys.speak("没东西领个屁啊？");
+                return;
+            }
+            const itemLines = userState.gachaInventory.map(i => {
+                 const rank = i.info ? i.info.name : '未知';
+                 return `★ [${rank}] 【${i.name}】：${i.desc}`;
+            }).join('\\n');
+            const exportText = `\n(莉莉丝嫌弃地把抽到的东西扔到了你脸上.全部加入背包)\n=== 📦 获得物品清单 ===\n${itemLines}\n=======================\n`.trim();
+            assistantManager.sendToSillyTavern(parentWin, exportText, false);
+            UIManager.showBubble("物资清单已填入。");
+            userState.gachaInventory = [];
+            saveState();
+            this.updateInventoryUI();
+        }
+    },
+
+    async checkAndSummarize(parentWin, force = false) {
+        if (!force && panelChatHistory.length < MAX_HISTORY_TRIGGER) return;
+        if (panelChatHistory.length <= HISTORY_KEEP && !force) return;
+
+        UIManager.showBubble("正在整理肮脏的记忆...", "#bd00ff");
+        
+        const toSummarize = panelChatHistory.slice(0, Math.max(0, panelChatHistory.length - HISTORY_KEEP));
+        const keepHistory = panelChatHistory.slice(Math.max(0, panelChatHistory.length - HISTORY_KEEP));
+
+        if (toSummarize.length === 0) {
+            UIManager.showBubble("没什么可总结的。", "#f00");
+            return;
+        }
+
+        const textBlock = toSummarize.map(m => `${m.role}: ${m.content}`).join('\n');
+        const prompt = `
+            [System Task: Memory Consolidation]
+            Summarize the following conversation in Simplified Chinese.
+            Focus on: Key events, User's fetishes revealed, Relationship changes, and Lilith's current mood cause.
+            Keep it concise (under 200 words).
+            Conversation:
+            ${textBlock}
+            `;
+
+        try {
+            const summary = await this.callUniversalAPI(parentWin, prompt, { 
+                isChat: false, 
+                mode: 'memory_internal', 
+                systemPrompt: "You are a database system recording events."
+            });
+
+            if (summary) {
+                userState.memoryArchive.push(summary.trim());
+                // 裁剪历史记录
+                panelChatHistory.length = 0;
+                panelChatHistory.push(...keepHistory);
+                saveChat();
+                saveState();
+                
+                UIManager.renderMemoryUI();
+                UIManager.showBubble("记忆已归档。", "#0f0");
+            } else {
+                 UIManager.showBubble("记忆总结失败 (API返回空)", "#f00");
+            }
+        } catch (e) {
+            console.error("Summary failed", e);
+            UIManager.showBubble("记忆总结出错: " + e.message, "#f00");
+        }
+    },
+
+    async callUniversalAPI(parentWin, text, options = {}) {
+        const { isChat = false, mode = "normal", systemPrompt = null } = options; 
+        const isInternal = mode === 'memory_internal';
+        const { apiType, apiKey, baseUrl, model } = this.config; 
+        if (!apiKey) return null;
+        
+        let url = baseUrl.replace(/\/$/, ''); 
+        let finalSystemPrompt = systemPrompt || getDynamicPersona();
+        
+        const memoryBlock = userState.memoryArchive.length > 0 ? `\n[Long-term Memory / Previous Context]:\n${userState.memoryArchive.join('\n')}\n` : "";
+        
+        if (!isInternal) { 
+            if (mode === "roast") finalSystemPrompt += "\n[Task: Roast within story context. Short. Toxic.]"; 
+            else if (isChat) { 
+                finalSystemPrompt += `\n${JAILBREAK}\n[Constraint: Response must be detailed.]`; 
+                finalSystemPrompt += memoryBlock; 
+            } else finalSystemPrompt += `\n${JAILBREAK}`; 
+        }
+        
+        try {
+            let msgs = isChat && !isInternal ? [{ role: 'system', content: finalSystemPrompt }, ...panelChatHistory, { role: 'user', content: text }] : [{ role: 'user', content: finalSystemPrompt + "\n" + text }];
+            let fetchUrl, fetchBody, fetchHeaders;
+            if (apiType === 'openai') {
+                if (!url.endsWith('/v1')) url += '/v1'; 
+                fetchUrl = `${url}/chat/completions`; 
+                fetchHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+                fetchBody = JSON.stringify({ model: model, messages: msgs, max_tokens: 4096, temperature: 1.0 });
+            } else {
+                let modelId = model; 
+                if (!modelId.startsWith('models/') && !url.includes(modelId)) modelId = 'models/' + modelId;
+                fetchUrl = `${url}/v1beta/${modelId}:generateContent?key=${apiKey}`;
+                let promptText = isChat ? msgs.map(m => `[${m.role === 'lilith' ? 'Model' : (m.role==='system'?'System':'User')}]: ${m.content}`).join('\\n') : msgs[0].content;
+                fetchHeaders = { 'Content-Type': 'application/json' }; 
+                fetchBody = JSON.stringify({ 
+                    contents: [{ role: 'user', parts: [{ text: promptText }] }], 
+                    generationConfig: { maxOutputTokens: 4096 },
+                    safetySettings: [
+                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                    ]
+                });
+            }
+            const response = await fetch(fetchUrl, { method: 'POST', headers: fetchHeaders, body: fetchBody });
+            const data = await response.json();
+            let reply = apiType === 'openai' ? data.choices?.[0]?.message?.content : data.candidates?.[0]?.content?.parts?.[0]?.text;
+            reply = reply?.trim();
+            if (isChat && reply && !isInternal) { 
+                // [修复] 此处不再直接 push，交给 addChatMsg 统一处理
+                this.checkAndSummarize(parentWin);
+            }
+            return reply;
+        } catch(e) { console.error("API Error:", e); return null; }
+    },
+
+    async triggerRealtimeComment(messageId) {
+        console.log('[Lilith] triggerRealtimeComment called for messageId', messageId);
+        const context = SillyTavern.getContext();
+        const chatData = context.chat || [];
+
+        let targetIndex = chatData.findIndex(m =>
+            (typeof m.message_id === 'number' && m.message_id === messageId) ||
+            (typeof m.mesid === 'number' && m.mesid === messageId)
+        );
+
+        if (targetIndex === -1) {
+            targetIndex = chatData.length - 1;
+        }
+
+        const targetMsg = chatData[targetIndex];
+        if (!targetMsg || targetMsg.is_user || targetMsg.is_system) {
+            console.error('[Lilith] targetMsg invalid for comment (not an AI reply). messageId:', messageId, 'index:', targetIndex);
+            return;
+        }
+
+        // UI Feedback (Imported from ui_manager later if needed)
+        // For now, assume global availability or we refactor ui interaction
+        const thinkingPrompts = [
+            "让我看看你又说了什么蠢话... 💭",
+            "思考中... 这种回复也亏你想得出来。 💢",
+            "正在构思如何优雅地吐槽你... 🔍",
+            "正在锐评中... ⚖️"
+        ];
+        const randomThinking = thinkingPrompts[Math.floor(Math.random() * thinkingPrompts.length)];
+        
+        // Internal event or callback might be better, but let's stick to direct call if possible
+        const bubble = document.getElementById('lilith-bubble-cn');
+        if (bubble) bubble.textContent = randomThinking;
+
+        const chatLog = getPageContext(5, userState).map(m => `${m.name}: ${m.message}`).join('\n');
+        const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['toxic'];
+        
+        const systemPrompt = `[System Task: Chat Interjection]
+You are ${persona.name}. You are observing the user's conversation with another character.
+The user just received a reply. Your job is to interject with a short, sharp, and very ${userState.activePersona} comment.
+
+[PLACEMENT LOGIC]
+Instead of just appending to the end, you should find a contextually relevant position within the message to inject your comment.
+1. Analyze the message content and choose a specific sentence or concept to react to.
+2. Provide your reasoning inside a <thought> block.
+3. Your comment must start with "[莉莉丝]".
+4. Provide the EXACT original phrase (around 5-15 words) from the target message that your comment should follow, marked with [Anchor].
+
+[DIVERSITY INSTRUCTIONS]
+- Do NOT repeat previous sentiments. 
+- Choose ONE angle: 
+  1. Roast the AI character's behavior. 
+  2. Tease the user's reaction. 
+  3. Complain about the "boring" plot. 
+  4. Break the 4th wall (talk about the "story").
+- If Sanity < 30: Be erratic, obsessive, or slightly unhinged.
+
+[FORMAT]
+<thought>Your reasoning for placement and content...</thought>
+[莉莉丝]Your comment text here.
+[Anchor]The exact text from the original message you want to follow.`;
+
+        const userPrompt = `Target Message to comment on:
+"""
+${targetMsg.mes}
+"""
+
+Current Chat Context:
+${chatLog}
+
+[Task]: Provide a sharp interjection. Ensure the [Anchor] matches the target message exactly.`;
+
+        try {
+            const response = await this.callUniversalAPI(window, userPrompt, { isChat: false, systemPrompt: systemPrompt });
+            if (response && response.includes('[莉莉丝]')) {
+                const comment = response.split('[莉莉丝]')[1].split('[Anchor]')[0].trim();
+                const anchorText = response.includes('[Anchor]') ? response.split('[Anchor]')[1].trim() : "";
+
+                const context = SillyTavern.getContext();
+                const chat = context.chat;
+                const msg = chat[targetIndex];
+                
+                if (msg && comment) {
+                    let newContent = msg.mes;
+                    if (anchorText && newContent.includes(anchorText)) {
+                        newContent = newContent.replace(anchorText, `${anchorText}\n\n[莉莉丝] ${comment}`);
+                    } else {
+                        newContent += `\n\n[莉莉丝] ${comment}`;
+                    }
+                    
+                    msg.mes = newContent;
+                    // Check if updateMessage exists or just saveChat
+                    if (typeof SillyTavern.saveChat === 'function') SillyTavern.saveChat();
+                    
+                    context.eventSource.emit(context.event_types.MESSAGE_UPDATED, messageId);
+                    UIManager.showBubble(`刚才吐槽了你一下，哼。`, "#bd00ff");
+                }
+                
+                AudioSys.speak(comment);
+            }
+        } catch (e) {
+            console.error('[Lilith] Failed to trigger comment:', e);
+        }
+    },
+
+    async runTool(parentWin, name) {
+        const toolOutput = document.getElementById('tool-output-area');
+        if (!toolOutput) return;
+        toolOutput.innerHTML = `<div class="scan-line-s"></div><div style="color:var(--l-cyan);">⚡ 正在运行肮脏的协议 [${name}]...</div>`;
+
+        const contextMsg = getPageContext(name === "废物体检报告" ? 100 : 25);
+        const contextStr = contextMsg.map(m => `[${m.name}]: ${m.message}`).join('\n');
+        const safeContext = `[TARGET DATA START]\n${contextStr}\n[TARGET DATA END]`;
+
+        let specificPrompt = "";
+        let isInteractive = false;
+        let sysPersona = getDynamicPersona();
+
+        if (name === "强制福利事件") {
+            sysPersona = WRITER_PERSONA;
+            specificPrompt = `Generate a single, vivid, erotic event happening to the User right now.
+            **Constraint:** Write strictly in **First Person (I/Me)** perspective of the User.
+            **Constraint:** Do NOT offer choices. Just describe the lucky lewd scenario.
+            **Language:** Chinese (Lewd/Novel style).`;
+            isInteractive = true;
+        } 
+        else if (name === "催眠洗脑") {
+            const intention = prompt("【系统后门已打开】\n你想让那个可怜的角色产生什么错觉？\n(例如：认为自己是我的宠物狗)");
+            if (!intention) { toolOutput.innerHTML = "啧，不敢了吗？"; return; }
+            toolOutput.innerHTML = `<div style="color:#bd00ff;">💉 正在注入污秽思想...</div>`;
+            sysPersona = `[System Mode: Coding Machine]\nTask: Convert intent to a strict SillyTavern [System Note]. Output ONLY the note code.`;
+            specificPrompt = `Intent: "${intention}". Return ONLY: [System Note: ...].`;
+        } 
+        else if (name === "替你回复") {
+            sysPersona = WRITER_PERSONA;
+            specificPrompt = `Generate 3 reply options for the User (Perspective: **First Person "I"**):
+            1. [上策] (High EQ/Charming/Erotic) - Best outcome.
+            2. [中策] (Normal/Safe) - Average outcome.
+            3. [下策] (Stupid/Funny/Troll) - Worst outcome.
+            Format:
+            1. [上策] Content...
+            2. [中策] Content...
+            3. [下策] Content...
+            Return in Chinese.`;
+            isInteractive = true;
+        } 
+        else if (name === "恶作剧推演") {
+            sysPersona = WRITER_PERSONA;
+            specificPrompt = `Based on the plot, suggest 3 actions for the User (**Perspective: First Person "I"**):\n1. [作死/R18] (Suicide/Horny)\n2. [正常] (Boring)\n3. [变态] (Pervert/Fetish)\nOutput in Chinese.`;
+            isInteractive = true;
+        }
+        else if (name === "废物体检报告") {
+            const userMsgs = contextMsg.filter(m => m.name !== 'System' && !m.name.includes('Lilith')).map(m => `[${m.name}]: ${m.message}`).join('\n');
+            if (userMsgs.length < 5) { toolOutput.innerHTML = `<div style="color:#f00">⚠️ 样本太少，没法看。</div>`; return; }
+            toolOutput.innerHTML = `<div style="color:var(--l-main);">📋 正在检查你的性癖...</div>`;
+            specificPrompt = `Analyze 'User'. Toxic report.\n[Format]:\n【📋 雄性生物观察报告】\n> 编号: Loser-${Math.floor(Math.random()*999)}\n> 性癖XP: ...\n> 智商水平: (Mock him)\n> 危险等级: ...\n> 莉莉丝评价: (Be extremely toxic)`;
+            sysPersona = `${getDynamicPersona()}\n${userMsgs}`;
+        } 
+        else if (name === "局势嘲讽") { specificPrompt = "Mock the current situation and the user's performance. Be very rude."; }
+        else if (name === "找茬模式") { specificPrompt = "Find logic holes or stupid behavior. Laugh at them."; }
+        else if (name === "性癖羞辱") { specificPrompt = "Analyze the User's fetish exposed in logs. Kink-shame him hard."; }
+
+        const fullPrompt = `${sysPersona}\n${safeContext}\n${JAILBREAK}\n[COMMAND: ${specificPrompt}]`;
+        const reply = await this.callUniversalAPI(parentWin, fullPrompt, { isChat: false });
+
+        toolOutput.innerHTML = '';
+
+        if (name === "催眠洗脑" && reply) {
+            const cleanNote = reply.replace(/```/g, '').trim();
+            this.sendToSillyTavern(parentWin, cleanNote + "\n", false);
+            toolOutput.innerHTML = `<div style="color:#0f0;">✅ 注入完成</div><div style="font-size:10px; color:#888;">${cleanNote}</div>`;
+            AudioSys.speak("哼，脑子坏掉了吧。");
+            UIManager.showBubble("催眠指令已填入。");
+        }
+        else if (isInteractive && reply) {
+            toolOutput.innerHTML = `<div class="tool-result-header">💠 ${name}结果</div><div id="branch-container"></div>`;
+            const container = document.getElementById('branch-container');
+            
+            if (name === "强制福利事件") {
+                 const card = document.createElement('div');
+                 card.className = 'branch-card';
+                 card.style.borderColor = '#ff0055';
+                 card.style.background = 'rgba(255,0,85,0.1)';
+                 card.innerHTML = `<div style="font-size:10px; color:#ff0055">[福利事件]</div><div style="font-size:12px; color:#ddd;">${reply}</div>`;
+                 card.onclick = () => { this.sendToSillyTavern(parentWin, reply, false); };
+                 container.appendChild(card);
+                 return;
+            }
+
+            let lines = reply.split('\n').filter(line => /^\d+\./.test(line) || line.includes('['));
+            if (lines.length === 0) lines = [reply];
+
+            lines.forEach(line => {
+                const match = line.match(/\[(.*?)\]\s*(.*)/);
+                const tag = match ? match[1] : "选项";
+                const content = match ? match[2] : line.replace(/^\d+[\.\:：]\s*/, '').trim();
+
+                let colorStyle = "border-color: #444;";
+                let cost = 0;
+                let tagDisplay = tag;
+
+                if (name === "替你回复") {
+                    if (tag.includes("上策")) { cost = -50; colorStyle = "border-color: #00f3ff; background: rgba(0,243,255,0.1);"; tagDisplay += " (-50FP)"; }
+                    else if (tag.includes("中策")) { cost = -25; colorStyle = "border-color: #00ff00; background: rgba(0,255,0,0.1);"; tagDisplay += " (-25FP)"; }
+                    else if (tag.includes("下策")) { cost = 10; colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);"; tagDisplay += " (+10FP)"; }
+                } else {
+                    if (tag.includes("作死") || tag.includes("Risk") || tag.includes("色")) colorStyle = "border-color: #ff0055; background: rgba(255,0,85,0.1);";
+                    else if (tag.includes("奇怪")) colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);";
+                }
+
+                const card = document.createElement('div');
+                card.className = 'branch-card';
+                card.style.cssText = `margin-bottom:8px; padding:10px; border:1px solid; border-left-width:4px; cursor:pointer; transition:0.2s; ${colorStyle}`;
+                card.innerHTML = `<div style="font-size:10px; font-weight:bold; color:#aaa; margin-bottom:4px;">[${tagDisplay}]</div><div style="font-size:12px; color:#ddd; line-height:1.4;">${content}</div>`;
+
+                card.onclick = () => {
+                    card.style.opacity = '0.5'; card.style.transform = 'scale(0.98)';
+                    if (cost !== 0) {
+                        userState.fatePoints += cost;
+                        saveState();
+                        const payload = `${content} | /setvar key=fate_points value=${userState.fatePoints}`;
+                        this.sendToSillyTavern(parentWin, payload, false);
+                        UIManager.showBubble(`已填入 (FP变动: ${cost})`);
+                        const fpEl = document.getElementById('gacha-fp-val');
+                        if (fpEl) fpEl.textContent = userState.fatePoints;
+                    } else {
+                        this.sendToSillyTavern(parentWin, content, false);
+                        UIManager.showBubble(`已填入：[${tag}] 路线`);
+                    }
+                };
+                container.appendChild(card);
+            });
+        } else {
+            toolOutput.innerHTML = `<div class="tool-result-header">🔰 莉莉丝的评价</div><div class="tool-result-body" style="white-space: pre-wrap;">${(reply||'无数据').replace(/\*\*(.*?)\*\*/g, '<span class="hl">$1</span>')}</div>`;
+            if(name === "废物体检报告") AudioSys.speak("真是一份恶心的报告。");
+        }
+    },
+
+    triggerRandomEvent(parentWin) {
+        // 降低到 0.5% 的心跳概率 (每2秒检查一次)
+        if (Math.random() > 0.005) return;
+
+        const events = [
+            {
+                id: 'trivia_time',
+                weight: 30,
+                run: () => {
+                    const answers = ['我爱你', '喜欢', 'yes', '爱'];
+                    const reward = 50;
+                    const msg = "【突击检查】\n现在立刻马上说你爱我！(3秒内)";
+                    UIManager.showBubble(msg, "#ff0055");
+                    AudioSys.speak("喂！突击检查！说你爱我！");
+                    
+                    const checkInput = () => {
+                        const context = SillyTavern.getContext();
+                        const chat = context.chat || [];
+                        const lastMsg = chat[chat.length - 1];
+                        if (lastMsg && lastMsg.is_user && answers.some(a => lastMsg.mes.includes(a))) {
+                            AudioSys.speak("哼，算你过关。");
+                            UIManager.showBubble(`奖励 ${reward} FP`, "#0f0");
+                            updateFavor(2);
+                            userState.fatePoints += reward;
+                            saveState();
+                            const fpEl = document.getElementById('gacha-fp-val');
+                            if (fpEl) fpEl.textContent = userState.fatePoints;
+                        } else {
+                            AudioSys.speak("啧，看来你并不爱我啊。");
+                            updateFavor(-1);
+                            saveState();
+                        }
+                    };
+                    setTimeout(checkInput, 5000); 
+                }
+            },
+            {
+                id: 'lucky_money',
+                weight: 20,
+                run: () => {
+                    const amt = Math.floor(Math.random() * 50) + 10;
+                    userState.fatePoints += amt;
+                    saveState();
+                    const fpEl = document.getElementById('gacha-fp-val');
+                    if (fpEl) fpEl.textContent = userState.fatePoints;
+                    UIManager.showBubble(`地上捡到了 ${amt} FP，运气不错嘛。`, "#ffd700");
+                    AudioSys.speak("地上捡到了钱？分我一半。");
+                }
+            },
+            {
+                id: 'stare',
+                weight: 30,
+                run: () => {
+                    const av = document.getElementById(avatarId);
+                    if (av) {
+                        av.classList.add('lilith-jealous');
+                        UIManager.showBubble("盯.........");
+                        setTimeout(() => av.classList.remove('lilith-jealous'), 3000);
+                    }
+                }
+            },
+            {
+                id: 'ransomware',
+                weight: 2,
+                run: () => {
+                    const overlayId = 'lilith-overlay-blocker';
+                    if (document.getElementById(overlayId)) return;
+                    const overlay = document.createElement('div');
+                    overlay.id = overlayId;
+                    overlay.className = 'ransom-overlay';
+                    overlay.innerHTML = `
+                        <div class="ransom-box">
+                            <h2 style="color:red; margin:0;">🔒 SYSTEM LOCKED by LILITH</h2>
+                            <p>你的操作权限已被锁定。</p>
+                            <p>想要解锁？支付 <strong>100 FP</strong> 给我买零食。</p>
+                            <div style="margin-top:20px; display:flex; gap:10px;">
+                                <button id="btn-pay-ransom" style="flex:1; background:#0f0; border:none; padding:10px; cursor:pointer; font-weight:bold;">给钱 (100 FP)</button>
+                                <button id="btn-refuse-ransom" style="flex:1; background:#555; border:none; padding:10px; cursor:pointer; color:#ccc;">拒绝 (好感 -5)</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(overlay);
+                    AudioSys.speak("打劫，交出FP来。", 0.6);
+
+                    document.getElementById('btn-pay-ransom').onclick = () => {
+                        if (userState.fatePoints >= 100) {
+                            userState.fatePoints -= 100;
+                            updateFavor(2);
+                            saveState();
+                            const fpEl = document.getElementById('gacha-fp-val');
+                            if (fpEl) fpEl.textContent = userState.fatePoints;
+                            AudioSys.speak("哼，算你识相。");
+                            overlay.remove();
+                        } else {
+                            alert("穷鬼！没钱还想赎身？滚！");
+                            overlay.remove();
+                        }
+                    };
+                    document.getElementById('btn-refuse-ransom').onclick = () => {
+                        updateFavor(-5);
+                        saveState();
+                        AudioSys.speak("切，小气鬼。");
+                        overlay.remove();
+                    };
+                }
+            }
+        ];
+        const totalWeight = events.reduce((acc, e) => acc + (e.weight || 10), 0);
+        let random = Math.random() * totalWeight;
+        for (const event of events) {
+            if (random < (event.weight || 10)) {
+                event.run();
+                break;
+            }
+            random -= (event.weight || 10);
+        }
+    },
+
+    triggerAvatarGlitch() {
+        const av = document.getElementById(avatarId); 
+        if(av) { av.classList.add('glitch-anim'); setTimeout(() => av.classList.remove('glitch-anim'), 300); }
+    },
+
+    bindActivityListeners(parentWin) {
+        ['mousemove', 'keydown', 'click', 'scroll'].forEach(evt => {
+            parentWin.document.addEventListener(evt, () => {
+                this.lastActivityTime = Date.now();
+                this.isIdleTriggered = false;
+            }, { passive: true });
+        });
+    },
+
+    heartbeatCounter: 0,
+    lastActivityTime: Date.now(),
+    isIdleTriggered: false,
+
+    startHeartbeat(parentWin) {
+        setInterval(() => {
+            try {
+                const avatar = document.getElementById(avatarId);
+                if (avatar) {
+                    // 同步呼吸速度 (Sanity越低，呼吸越快)
+                    const s = userState.sanity;
+                    const breathSpeed = s < 30 ? '0.6s' : (s < 60 ? '1.2s' : '3s');
+                    avatar.style.animationDuration = breathSpeed;
+                    
+                    // 根据好感度调整发光颜色
+                    const f = userState.favorability;
+                    const glowColor = f > 80 ? 'var(--l-cyan)' : (f > 40 ? 'var(--l-main)' : '#ff0000');
+                    avatar.style.borderColor = glowColor;
+                    
+                    // 新增：更新进度环百分比
+                    avatar.style.setProperty('--l-sanity-pct', `${s}%`);
+                    avatar.style.setProperty('--l-favor-pct', `${f}%`);
+                }
+
+                this.heartbeatCounter++;
+                this.triggerRandomEvent(parentWin);
+
+                const glitchLayer = document.getElementById('lilith-glitch-layer');
+                if (glitchLayer) {
+                    const s = userState.sanity;
+                    if (s < 30) {
+                        glitchLayer.style.opacity = '1';
+                        if (!glitchLayer.classList.contains('sanity-critical')) {
+                            glitchLayer.classList.add('sanity-critical');
+                            if (Math.random() < 0.1) AudioSys.speak("坏掉了...要坏掉了...哈啊...");
+                        }
+                    } else if (s < 60) {
+                        if (Math.random() < 0.1) { glitchLayer.style.opacity = '0.3'; glitchLayer.style.background = 'rgba(255,0,0,0.1)'; setTimeout(() => { glitchLayer.style.opacity = '0'; }, 200); }
+                        glitchLayer.classList.remove('sanity-critical');
+                    } else { glitchLayer.style.opacity = '0'; glitchLayer.classList.remove('sanity-critical'); }
+                }
+
+                const idleTime = Date.now() - this.lastActivityTime;
+                if (idleTime > 180000 && !this.isIdleTriggered) {
+                    this.isIdleTriggered = true;
+                    const idleMsgs = ["你是死在电脑前了吗？恶心。", "喂，放置play也要有个限度吧？", "我的身体好热...你居然不理我？渣男。", "再不动一下，我就要去找别的男人了哦？"];
+                    const randomMsg = idleMsgs[Math.floor(Math.random() * idleMsgs.length)];
+                    UIManager.showBubble(randomMsg); 
+                    AudioSys.speak(randomMsg);
+                    if (Math.random() > 0.5) { 
+                        updateFavor(-1); 
+                        UIManager.showBubble("好感度 -1 (你真冷淡)", "#f00"); 
+                    }
+                }
+            } catch (e) { console.error("Heartbeat Error:", e); }
+        }, 2000);
+    },
+
+    async fetchModels() {
+        const { apiType, apiKey, baseUrl } = this.config;
+        const msgBox = document.getElementById('cfg-msg'); 
+        const select = document.getElementById('cfg-model-select'); 
+        const input = document.getElementById('cfg-model');
+        if(!apiKey) { if(msgBox) msgBox.textContent = "❌ 没Key玩个屁"; return; }
+        if(msgBox) msgBox.textContent = "⏳ 正在摸索...";
+        try {
+            let url = baseUrl.replace(/\/$/, ''); 
+            let fetchedModels = [];
+            if (apiType === 'openai') {
+                if (!url.endsWith('/v1')) url += '/v1';
+                const res = await fetch(`${url}/models`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+                const data = await res.json(); 
+                if(data.data) fetchedModels = data.data.map(m => m.id);
+            } else {
+                const res = await fetch(`${url}/v1beta/models?key=${apiKey}`);
+                const data = await res.json(); 
+                if(data.models) fetchedModels = data.models.map(m => m.name.replace('models/', ''));
+            }
+            if(fetchedModels.length > 0) {
+                if(select) {
+                    select.innerHTML = `<option value="">⬇️ 选一个合适的肉体 (${fetchedModels.length})</option>` + fetchedModels.map(m => `<option value="${m}">${m}</option>`).join('');
+                    select.style.display = 'block'; 
+                    select.onchange = () => { if(select.value) input.value = select.value; };
+                }
+                if(msgBox) msgBox.textContent = "✅ 连接上了";
+            } else { if(msgBox) msgBox.textContent = "⚠️ 啥都没有"; }
+        } catch(e) { console.error(e); if(msgBox) msgBox.textContent = "❌ 烂掉了: " + e.message; }
+    },
+
+    async runTool(parentWin, name) {
+        const toolOutput = document.getElementById('tool-output-area'); 
+        if(!toolOutput) return;
+        toolOutput.innerHTML = `<div class="scan-line-s"></div><div style="color:var(--l-cyan);">⚡ 正在运行肮脏的协议 [${name}]...</div>`;
+        
+        const contextMsg = getPageContext(name === "废物体检报告" ? 100 : 25, userState);
+        const contextStr = contextMsg.map(m => `[${m.name}]: ${m.message}`).join('\n');
+        const safeContext = `[TARGET DATA START]\n${contextStr}\n[TARGET DATA END]`;
+        let specificPrompt = ""; 
+        let isInteractive = false; 
+        let sysPersona = getDynamicPersona();
+
+        if (name === "强制福利事件") {
+            sysPersona = WRITER_PERSONA;
+            specificPrompt = `Generate a single, vivid, erotic event happening to the User right now.\n**Constraint:** Write strictly in **First Person (I/Me)** perspective of the User.\n**Constraint:** Do NOT offer choices. Just describe the lucky lewd scenario.\n**Language:** Chinese (Lewd/Novel style).`;
+            isInteractive = true;
+        } 
+        else if (name === "催眠洗脑") {
+            const intention = prompt("【系统后门已打开】\n你想让那个可怜的角色产生什么错觉？\n(例如：认为自己是我的宠物狗)");
+            if (!intention) { toolOutput.innerHTML = "啧，不敢了吗？"; return; }
+            toolOutput.innerHTML = `<div style="color:#bd00ff;">💉 正在注入污秽思想...</div>`;
+            sysPersona = `[System Mode: Coding Machine]\nTask: Convert intent to a strict SillyTavern [System Note]. Output ONLY the note code.`;
+            specificPrompt = `Intent: "${intention}". Return ONLY: [System Note: ...].`;
+        } 
+        else if (name === "替你回复") {
+            sysPersona = WRITER_PERSONA;
+            specificPrompt = `Generate 3 reply options for the User (Perspective: **First Person "I"**):\n1. [上策] (High EQ/Charming/Erotic) - Best outcome.\n2. [中策] (Normal/Safe) - Average outcome.\n3. [下策] (Stupid/Funny/Troll) - Worst outcome.\nFormat:\n1. [上策] Content...\n2. [中策] Content...\n3. [下策] Content...\nReturn in Chinese.`;
+            isInteractive = true;
+        } 
+        else if (name === "恶作剧推演") {
+            sysPersona = WRITER_PERSONA;
+            specificPrompt = `Based on the plot, suggest 3 actions for the User (**Perspective: First Person "I"**):\n1. [作死/R18] (Suicide/Horny)\n2. [正常] (Boring)\n3. [变态] (Pervert/Fetish)\nOutput in Chinese.`;
+            isInteractive = true;
+        }
+        else if (name === "废物体检报告") {
+            const userMsgs = contextMsg.filter(m => m.name !== 'System' && !m.name.includes('Lilith')).map(m => `[${m.name}]: ${m.message}`).join('\n');
+            if (userMsgs.length < 5) { toolOutput.innerHTML = `<div style="color:#f00">⚠️ 样本太少，没法看。</div>`; return; }
+            toolOutput.innerHTML = `<div style="color:var(--l-main);">📋 正在检查你的性癖...</div>`;
+            specificPrompt = `Analyze 'User'. Toxic report.\n[Format]:\n【📋 雄性生物观察报告】\n> 编号: Loser-${Math.floor(Math.random()*999)}\n> 性癖XP: ...\n> 智商水平: (Mock him)\n> 危险等级: ...\n> 莉莉丝评价: (Be extremely toxic)`;
+            sysPersona = `${getDynamicPersona()}\n${userMsgs}`;
+        } 
+        else if (name === "局势嘲讽") { specificPrompt = "Mock the current situation and the user's performance. Be very rude."; }
+        else if (name === "找茬模式") { specificPrompt = "Find logic holes or stupid behavior. Laugh at them."; }
+        else if (name === "性癖羞辱") { specificPrompt = "Analyze the User's fetish exposed in logs. Kink-shame him hard."; }
+
+        let fullPrompt = `${sysPersona}\n${safeContext}\n${JAILBREAK}\n[COMMAND: ${specificPrompt}]`;
+        let reply = await this.callUniversalAPI(parentWin, fullPrompt, { isChat: false });
+        toolOutput.innerHTML = '';
+
+        if (name === "催眠洗脑" && reply) {
+            const cleanNote = reply.replace(/```/g, '').trim(); 
+            this.sendToSillyTavern(parentWin, cleanNote + "\n", false);
+            toolOutput.innerHTML = `<div style="color:#0f0;">✅ 注入完成</div><div style="font-size:10px; color:#888;">${cleanNote}</div>`;
+            AudioSys.speak("哼，脑子坏掉了吧。"); 
+            UIManager.showBubble("催眠指令已填入。");
+        }
+        else if (isInteractive && reply) {
+            toolOutput.innerHTML = `<div class="tool-result-header">💠 ${name}结果</div><div id="branch-container"></div>`;
+            const container = document.getElementById('branch-container');
+            if (name === "强制福利事件") {
+                 const card = document.createElement('div'); card.className = 'branch-card'; card.style.borderColor = '#ff0055'; card.style.background = 'rgba(255,0,85,0.1)';
+                 card.innerHTML = `<div style="font-size:10px; color:#ff0055">[福利事件]</div><div style="font-size:12px; color:#ddd;">${reply}</div>`;
+                 card.onclick = () => { this.sendToSillyTavern(parentWin, reply, false); }; 
+                 container.appendChild(card); 
+                 return;
+            }
+            let lines = reply.split('\n').filter(line => /^\d+\./.test(line) || line.includes('[')); 
+            if (lines.length === 0) lines = [reply];
+            lines.forEach(line => {
+                const match = line.match(/\[(.*?)\]\s*(.*)/); 
+                const tag = match ? match[1] : "选项"; 
+                const content = match ? match[2] : line.replace(/^\d+[\.\:\：]\s*/, '').trim();
+                let colorStyle = "border-color: #444;"; let cost = 0; let tagDisplay = tag;
+                if (name === "替你回复") {
+                    if (tag.includes("上策")) { cost = -50; colorStyle = "border-color: #00f3ff; background: rgba(0,243,255,0.1);"; tagDisplay += " (-50FP)"; }
+                    else if (tag.includes("中策")) { cost = -25; colorStyle = "border-color: #00ff00; background: rgba(0,255,0,0.1);"; tagDisplay += " (-25FP)"; }
+                    else if (tag.includes("下策")) { cost = 10; colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);"; tagDisplay += " (+10FP)"; }
+                } else { 
+                    if (tag.includes("作死") || tag.includes("Risk") || tag.includes("色")) colorStyle = "border-color: #ff0055; background: rgba(255,0,85,0.1);"; 
+                    else if (tag.includes("奇怪")) colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);"; 
+                }
+                const card = document.createElement('div'); 
+                card.className = 'branch-card'; 
+                card.style.cssText = `margin-bottom:8px; padding:10px; border:1px solid; border-left-width:4px; cursor:pointer; transition:0.2s; ${colorStyle}`;
+                card.innerHTML = `<div style="font-size:10px; font-weight:bold; color:#aaa; margin-bottom:4px;">[${tagDisplay}]</div><div style="font-size:12px; color:#ddd; line-height:1.4;">${content}</div>`;
+                card.onclick = () => {
+                    card.style.opacity = '0.5'; card.style.transform = 'scale(0.98)';
+                    if (cost !== 0) { 
+                        userState.fatePoints += cost; saveState(); 
+                        const payload = `${content} | /setvar key=fate_points value=${userState.fatePoints}`; 
+                        this.sendToSillyTavern(parentWin, payload, false); 
+                        UIManager.showBubble(`已填入 (FP变动: ${cost})`); 
+                        UIManager.updateFP(parentWin, userState.fatePoints); 
+                    }
+                    else { 
+                        this.sendToSillyTavern(parentWin, content, false); 
+                        UIManager.showBubble(`已填入：[${tag}] 路线`); 
+                    }
+                };
+                container.appendChild(card);
+            });
+        } else {
+            toolOutput.innerHTML = `<div class="tool-result-header">🔰 莉莉丝的评价</div><div class="tool-result-body" style="white-space: pre-wrap;">${(reply||'无数据').replace(/\*\*(.*?)\*\*/g, '<span class="hl">$1</span>')}</div>`;
+            if(name === "废物体检报告") AudioSys.speak("真是一份恶心的报告。");
+        }
+    }
+};
+
+
