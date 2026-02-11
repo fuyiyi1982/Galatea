@@ -63,7 +63,12 @@ export function validateState() {
 
     // [New v3.0.0] Ensure dynamic content settings exist
     if (settings.global.dynamicContentEnabled === undefined) settings.global.dynamicContentEnabled = true;
-    if (settings.global.dynamicContentInterval === undefined) settings.global.dynamicContentInterval = 20;
+    
+    // 强制修正旧版的 240 默认值到 20
+    if (settings.global.dynamicContentInterval === undefined || settings.global.dynamicContentInterval === 240) {
+        settings.global.dynamicContentInterval = 20;
+    }
+    
     if (settings.global.dynamicContentCount === undefined) settings.global.dynamicContentCount = 6;
 
     // 2. Initialize Persona Data Map
