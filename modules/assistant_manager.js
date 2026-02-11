@@ -93,7 +93,6 @@ export const assistantManager = {
         try {
             const context = SillyTavern.getContext();
             if (autoSend) {
-                // 参考“母上选项”逻辑，使用 /send 指令直接发送，更加稳定
                 // 使用 | /trigger 确保在发送后立即触发 AI 生成
                 const command = `/send ${text} | /trigger`;
                 if (typeof context.executeSlashCommands === 'function') {
@@ -1060,7 +1059,11 @@ ${chatLog}
             if (name === "强制福利事件") {
                  const card = document.createElement('div'); card.className = 'branch-card'; card.style.borderColor = '#ff0055'; card.style.background = 'rgba(255,0,85,0.1)';
                  card.innerHTML = `<div style="font-size:10px; color:#ff0055">[福利事件]</div><div style="font-size:12px; color:#ddd;">${reply}</div>`;
-                 card.onclick = () => { this.sendToSillyTavern(parentWin, reply, false); }; 
+                 card.onclick = () => { 
+                     const isAutoSend = userState.autoSend !== false;
+                     this.sendToSillyTavern(parentWin, reply, isAutoSend); 
+                     UIManager.showBubble(isAutoSend ? '已激发随机事件' : '已填入福利事件');
+                 }; 
                  container.appendChild(card); 
                  return;
             }
@@ -1085,16 +1088,18 @@ ${chatLog}
                 card.innerHTML = `<div style="font-size:10px; font-weight:bold; color:#aaa; margin-bottom:4px;">[${tagDisplay}]</div><div style="font-size:12px; color:#ddd; line-height:1.4;">${content}</div>`;
                 card.onclick = () => {
                     card.style.opacity = '0.5'; card.style.transform = 'scale(0.98)';
+                    const isAutoSend = userState.autoSend !== false;
+                    
                     if (cost !== 0) { 
                         userState.fatePoints += cost; saveState(); 
                         const payload = `${content} | /setvar key=fate_points value=${userState.fatePoints}`; 
-                        this.sendToSillyTavern(parentWin, payload, false); 
-                        UIManager.showBubble(`已填入 (FP变动: ${cost})`); 
+                        this.sendToSillyTavern(parentWin, payload, isAutoSend); 
+                        UIManager.showBubble(isAutoSend ? `已执行 (FP: ${cost>0?'+':''}${cost})` : `已填入 (FP: ${cost>0?'+':''}${cost})`); 
                         UIManager.updateFP(parentWin, userState.fatePoints); 
                     }
                     else { 
-                        this.sendToSillyTavern(parentWin, content, false); 
-                        UIManager.showBubble(`已填入：[${tag}] 路线`); 
+                        this.sendToSillyTavern(parentWin, content, isAutoSend); 
+                        UIManager.showBubble(isAutoSend ? `已发送：[${tag}]` : `已填入：[${tag}]`); 
                     }
                 };
                 container.appendChild(card);
