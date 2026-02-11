@@ -102,44 +102,51 @@ export const UpdateManager = {
         const targetVersion = this.remoteVersion;
 
         try {
-            if (typeof window.executeSlashCommands === 'function') {
-                // Trigger ST's internal extension update command
-                await window.executeSlashCommands('/extension update lilith-assistant');
+            const context = typeof SillyTavern !== 'undefined' ? SillyTavern.getContext() : null;
+            const executeCmd = (context && context.executeSlashCommands) || window.executeSlashCommands;
+
+            if (typeof executeCmd === 'function') {
+                // 尝试多个可能的命令，确保兼容性
+                // /extensions-update 是目前最标准插件更新命令
+                await executeCmd('/extensions-update lilith-assistant');
                 
                 let toastId = null;
                 if (typeof toastr !== 'undefined') {
-                    toastId = toastr.info('正在拉取云端代码（第 0s）...', '莉莉丝助手', { timeOut: 0, extendedTimeOut: 0 });
+                    toastId = toastr.info('正在请求云端同步 (第 0s)...', '莉莉丝助手', { timeOut: 0, extendedTimeOut: 0 });
                 }
                 
                 // 轮询检测本地版本号是否已更新
                 let attempts = 0;
-                const maxAttempts = 60; // 增加到 60 次尝试 (1分钟)
+                const maxAttempts = 60; 
                 const modulePath = import.meta.url;
                 const manifestPath = new URL('../manifest.json', modulePath).href;
 
                 const checkInterval = setInterval(async () => {
                     attempts++;
                     
+                    // 每 15 秒重新尝试发送一次更新指令，防止第一次指令丢失或失败
+                    if (attempts % 15 === 0) {
+                        executeCmd('/extensions-update lilith-assistant');
+                    }
+
                     // 更新通知状态
                     if (toastId && typeof toastr !== 'undefined') {
-                        jQuery(toastId).find('.toast-message').text(`正在拉取云端代码（检测中 ${attempts}s）...`);
+                        jQuery(toastId).find('.toast-message').text(`正在同步云端代码 (检测中 ${attempts}s)...`);
                     }
 
                     try {
-                        // 使用随机数彻底禁用缓存
                         const response = await fetch(`${manifestPath}?t=${Date.now()}_${Math.random()}`);
                         if (response.ok) {
                             const data = await response.json();
                             const currentLocalVersion = data.version;
 
-                            // 核心判定：只有当版本号确实发生改变，或者达到了目标版本，才刷新
-                            if (currentLocalVersion === targetVersion || (originalVersion !== targetVersion && currentLocalVersion !== originalVersion)) {
+                            // 判定逻辑：版本号达到目标，或者版本号发生了变更
+                            if (currentLocalVersion === targetVersion || (originalVersion && currentLocalVersion !== originalVersion)) {
                                 clearInterval(checkInterval);
                                 console.log(`[Lilith] Update confirmed: ${originalVersion} -> ${currentLocalVersion}. Reloading...`);
                                 if (typeof toastr !== 'undefined') {
                                     toastr.success(`更新成功！即将刷新网页 (v${currentLocalVersion})`, '莉莉丝助手');
                                 }
-                                // 额外等待 1.5 秒
                                 setTimeout(() => window.location.reload(), 1500);
                             }
                         }
@@ -151,12 +158,12 @@ export const UpdateManager = {
                         clearInterval(checkInterval);
                         console.error('[Lilith] Update poll timed out.');
                         if (typeof toastr !== 'undefined') {
-                            toastr.warning('更新同步超时，可能网络波动，请尝试手动刷新网页。', '超时提醒');
+                            toastr.warning('同步超时。请检查网络或手动在 Git 仓库运行 git pull，然后刷新页面。', '超时提醒', { timeOut: 10000 });
                         }
-                        // 超时后不强制刷新，由用户决定，防止死循环刷新旧版本
                     }
                 }, 1000);
             } else {
+                console.warn('[Lilith] executeSlashCommands not found, falling back to simple reload.');
                 window.location.reload();
             }
         } catch (err) {
