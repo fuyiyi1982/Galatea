@@ -97,7 +97,17 @@ export const UIManager = {
         wrapper.id = containerId; 
         wrapper.style.left = (userState.posLeft || 100) + 'px'; 
         wrapper.style.top = (userState.posTop || 100) + 'px';
-        wrapper.style.width = (userState.panelWidth || 360) + 'px';
+        // 初始宽度与高度适配
+        let targetWidth = userState.panelWidth || 360;
+        let targetHeight = userState.panelHeight || 520;
+
+        // 手机端自动缩小初始尺寸
+        if (window.innerWidth < 600) {
+            targetWidth = Math.min(targetWidth, window.innerWidth * 0.9);
+            targetHeight = Math.min(targetHeight, window.innerHeight * 0.7);
+        }
+
+        wrapper.style.width = targetWidth + 'px';
         
         const avatar = document.createElement('div'); 
         avatar.id = avatarId;
@@ -108,9 +118,6 @@ export const UIManager = {
         const panel = document.createElement('div'); 
         panel.id = panelId; 
         panel.style.display = 'none';
-        
-        // 动态计算高度：取用户设定值，但不能超过视口高度的 80%
-        const targetHeight = userState.panelHeight || 520;
         panel.style.height = targetHeight + 'px';
         
         ['mousedown', 'touchstart', 'click'].forEach(evt => panel.addEventListener(evt, e => e.stopPropagation()));
@@ -485,8 +492,11 @@ export const UIManager = {
                 let newHeight = startHeight + (ev.clientY - startY);
 
                 // 限制最小/最大尺寸
-                newWidth = Math.max(280, Math.min(800, newWidth));
-                newHeight = Math.max(300, Math.min(window.innerHeight - 100, newHeight));
+                const maxWidth = window.innerWidth * 0.95;
+                const maxHeight = window.innerHeight * 0.85;
+                
+                newWidth = Math.max(280, Math.min(maxWidth, newWidth));
+                newHeight = Math.max(300, Math.min(maxHeight, newHeight));
 
                 wrapper.style.width = newWidth + 'px';
                 panel.style.height = newHeight + 'px';

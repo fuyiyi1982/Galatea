@@ -209,14 +209,12 @@ div.lilith-chat-ui:hover {
         /* 变量已经处理了宽高 */
     }
     #lilith-panel-cn {
-        width: 95vw !important;
-        max-width: 95vw !important;
-        /* 手机端让面板相对于头像居中，解决窄屏幕定位偏移问题 */
-        left: 50% !important;
-        transform: translateX(-50%) translateY(-10px) scale(0.9) !important;
-    }
-    #lilith-panel-cn.active {
-        transform: translateX(-50%) translateY(0) scale(1) !important;
+        /* 移除强制的 95vw 宽度，使其跟随 wrapper 的 width (由 JS 控制) */
+        width: 100%; 
+        max-width: 95vw;
+        
+        /* 移除强制的 left: 50%，否则拖动 X 轴无效 */
+        /* 如果用户没有拖动过，初始位置由 JS 处理 */
     }
 }
 
