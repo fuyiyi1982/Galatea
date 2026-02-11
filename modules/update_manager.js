@@ -56,6 +56,35 @@ export const UpdateManager = {
     },
 
     /**
+     * Perform update and force refresh the webpage
+     */
+    async updateAndReload() {
+        console.log('[Lilith] Starting update and reload...');
+        try {
+            if (typeof window.executeSlashCommands === 'function') {
+                // Trigger ST's internal extension update command
+                await window.executeSlashCommands('/extension update lilith-assistant');
+                
+                if (typeof toastr !== 'undefined') {
+                    toastr.info('更新指令已发出，3秒后自动刷新网页以加载新版本...', '莉莉丝助手');
+                }
+                
+                // Wait for the server-side git pull/update to complete
+                setTimeout(() => {
+                    // Not just refreshing the UI, but a full browser page reload
+                    window.location.href = window.location.href; 
+                }, 3000);
+            } else {
+                // Fallback for unexpected environments
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error('[Lilith] Update/Reload failed:', err);
+            window.location.reload();
+        }
+    },
+
+    /**
      * Inject "New!" badge into the ST settings sidebar
      */
     showUpdateBadge() {
@@ -70,28 +99,14 @@ export const UpdateManager = {
             if ($header.length) {
                 // Avoid duplicate badges
                 if (!$header.find('.lilith-update-badge').length) {
-                    const $badge = jQuery('<span class="lilith-update-badge" style="background:#ff0055; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:5px; vertical-align: middle; box-shadow: 0 0 5px #ff0055; cursor:pointer; font-weight:bold; transition: transform 0.2s;" title="点击更新并自动刷新">New!</span>');
+                    const $badge = jQuery('<span class="lilith-update-badge" style="background:#ff0055; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:5px; vertical-align: middle; box-shadow: 0 0 5px #ff0055; cursor:pointer; font-weight:bold; transition: transform 0.2s;" title="点击即刻更新并强制刷新网页">New!</span>');
                     
                     // Add click handler for auto-refresh update
                     $badge.on('click', async (e) => {
                         e.stopPropagation(); // Prevents folding the drawer
-                        if (confirm('检测到莉莉丝助手有新版本，是否尝试更新并自动刷新网页？')) {
+                        if (confirm('检测到莉莉丝助手有新版本，是否立即更新并自动刷新网页(浏览器F5)？')) {
                             $badge.text('更新中...').css('background', '#555');
-                            
-                            try {
-                                // Attempt to trigger ST update command if available
-                                if (typeof window.executeSlashCommands === 'function') {
-                                    await window.executeSlashCommands('/extension update lilith-assistant');
-                                    console.log('[Lilith] Update command sent. Waiting for 2s before reload...');
-                                    setTimeout(() => window.location.reload(), 2000);
-                                } else {
-                                    // Fallback: Just reload if command system is not reachable
-                                    window.location.reload();
-                                }
-                            } catch (err) {
-                                console.error('[Lilith] Update failed:', err);
-                                window.location.reload(); // Still reload as a fallback
-                            }
+                            await UpdateManager.updateAndReload();
                         }
                     });
 

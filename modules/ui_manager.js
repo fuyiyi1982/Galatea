@@ -1204,20 +1204,9 @@ export const UIManager = {
             });
 
             $manualBtn.on('click', async () => {
-                if (confirm(`准备升级到 v${UpdateManager.remoteVersion}，系统将自动执行更新指令并刷新页面，是否继续？`)) {
+                if (confirm(`检测到 v${UpdateManager.remoteVersion}，准备执行系统更新并强制刷新网页(F5)，是否继续？`)) {
                     $manualBtn.text('正在拉取代码...').prop('disabled', true);
-                    try {
-                        if (typeof window.executeSlashCommands === 'function') {
-                            await window.executeSlashCommands('/extension update lilith-assistant');
-                            toastr.info('更新指令已发出，正在重启环境...');
-                            setTimeout(() => window.location.reload(), 2000);
-                        } else {
-                            window.location.reload();
-                        }
-                    } catch (err) {
-                        console.error('[Lilith] Update failed:', err);
-                        window.location.reload();
-                    }
+                    await UpdateManager.updateAndReload();
                 }
             });
 
