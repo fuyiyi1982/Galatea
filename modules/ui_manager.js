@@ -174,12 +174,14 @@ export const UIManager = {
                     <div id="tool-output-area"></div>
                 </div>
                 <div id="page-memory" class="lilith-page">
-                    <div style="font-size:12px; color:#888; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
-                        这里存放着我们过去的肮脏回忆。<br>
-                        <span style="font-size:10px; color:var(--l-cyan);">*每20条对话自动总结归档，旧对话将被压缩。*</span>
+                    <div style="padding: 15px 15px 0 15px; flex-shrink: 0;">
+                        <div style="font-size:12px; color:#888; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
+                            这里存放着我们过去的肮脏回忆。<br>
+                            <span style="font-size:10px; color:var(--l-cyan); font-style: italic;">*每20条对话自动总结归档，旧对话将被压缩。*</span>
+                        </div>
                     </div>
-                    <div id="memory-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-                    <div class="lilith-chat-footer" style="padding: 10px 0 0 0; margin-top: auto;">
+                    <div id="memory-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding: 0 15px;"></div>
+                    <div class="lilith-chat-footer" style="padding: 10px 15px 15px 15px; margin-top: auto;">
                         <button id="btn-force-memory" class="tool-btn" style="width:100%; border-color:#bd00ff; height: 36px; font-weight: bold;">⚡ 强制现在总结记忆</button>
                     </div>
                 </div>

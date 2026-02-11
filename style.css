@@ -453,6 +453,14 @@ div.lilith-chat-ui:hover {
 .lilith-page.active { display: block; }
 #page-chat.lilith-page.active { display: flex !important; }
 
+/* 记忆页采用 Flex 布局以固定底部“强制总结”按钮 */
+#page-memory.lilith-page.active {
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
 #lilith-chat-history { 
     flex: 1 1 0%;
     width: 100%;
