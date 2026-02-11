@@ -108,7 +108,10 @@ export const UIManager = {
         const panel = document.createElement('div'); 
         panel.id = panelId; 
         panel.style.display = 'none';
-        panel.style.height = (userState.panelHeight || 520) + 'px';
+        
+        // 动态计算高度：取用户设定值，但不能超过视口高度的 80%
+        const targetHeight = userState.panelHeight || 520;
+        panel.style.height = targetHeight + 'px';
         
         ['mousedown', 'touchstart', 'click'].forEach(evt => panel.addEventListener(evt, e => e.stopPropagation()));
         

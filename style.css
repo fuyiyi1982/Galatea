@@ -170,13 +170,28 @@ div.lilith-chat-ui:hover {
 }
 
 /* 悬浮助手样式更新 */
+:root {
+    --l-avatar-size: 90px;
+    --l-panel-offset: 45px;
+    --l-panel-max-height: 90vh;
+}
+
+@media screen and (max-width: 600px) {
+    :root {
+        --l-avatar-size: 70px;
+        --l-panel-offset: 35px;
+        --l-panel-max-height: 75vh;
+    }
+}
+
 #lilith-wrapper-cn { 
     position: fixed; z-index: 99999; display: flex; flex-direction: column; align-items: center; 
     min-width: 90px; max-width: 95vw; font-family: var(--l-font); letter-spacing: 0.5px; pointer-events: none; 
 }
 
 #lilith-avatar-cn { 
-    order: -1; position: relative; z-index: 20; width: 90px; height: 90px; 
+    order: -1; position: relative; z-index: 20; 
+    width: var(--l-avatar-size); height: var(--l-avatar-size); 
     background-size: cover; background-position: center;
     border-radius: 50%; 
     border: 2px solid var(--l-main); 
@@ -191,11 +206,17 @@ div.lilith-chat-ui:hover {
 
 @media screen and (max-width: 600px) {
     #lilith-avatar-cn {
-        width: 70px;
-        height: 70px;
+        /* 变量已经处理了宽高 */
     }
     #lilith-panel-cn {
-        max-height: 80vh;
+        width: 95vw !important;
+        max-width: 95vw !important;
+        /* 手机端让面板相对于头像居中，解决窄屏幕定位偏移问题 */
+        left: 50% !important;
+        transform: translateX(-50%) translateY(-10px) scale(0.9) !important;
+    }
+    #lilith-panel-cn.active {
+        transform: translateX(-50%) translateY(0) scale(1) !important;
     }
 }
 
@@ -291,12 +312,12 @@ div.lilith-chat-ui:hover {
 
 #lilith-panel-cn { 
     position: absolute;
-    top: 45px;
+    top: var(--l-panel-offset);
     left: 0;
     z-index: 5;
     width: 100%; 
     height: 520px; /* 由 JS 动态控制，这里作为兜底 */
-    max-height: 90vh; 
+    max-height: var(--l-panel-max-height); 
     background: var(--l-bg); 
     border: 1px solid #444; 
     border-top: 2px solid var(--l-main); 
@@ -350,7 +371,7 @@ div.lilith-chat-ui:hover {
 
 #lilith-wrapper-cn:has(.pos-top-align) #lilith-panel-cn {
     top: auto;
-    bottom: 45px;
+    bottom: var(--l-panel-offset);
     border-top: 1px solid #444;
     border-bottom: 2px solid var(--l-main);
     clip-path: polygon(0 2%, 5% 0, 95% 0, 100% 2%, 100% 100%, 0 100%);
