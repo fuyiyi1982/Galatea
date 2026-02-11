@@ -90,43 +90,34 @@ export const assistantManager = {
     },
 
     sendToSillyTavern(parentWin, text, autoSend = true) {
-        const input = parentWin.document.getElementById('send_textarea');
-        if (input) {
-            // 1. 设置内容
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-            nativeInputValueSetter.call(input, text);
-            
-            // 2. 依次触发关键事件，确保酒馆系统观察到变化
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-            
-            // 3. 处理自动发送
+        try {
+            const context = SillyTavern.getContext();
             if (autoSend) {
-                setTimeout(() => {
-                    // 尝试通过 jQuery 触发（酒馆常用的事件绑定方式）
-                    const $input = parentWin.jQuery && parentWin.jQuery(input);
-                    if ($input && $input.trigger) {
-                        $input.trigger('input').trigger('change');
-                    }
-
-                    const btn = parentWin.document.getElementById('send_but');
-                    if (btn) {
-                        // 优先尝试 jQuery 触发点击，如果不行再原生点击
-                        const $btn = parentWin.jQuery && parentWin.jQuery(btn);
-                        if ($btn && $btn.length && $btn.trigger) {
-                            $btn.trigger('click');
-                        } else {
-                            btn.click();
-                        }
-                    } else {
-                        // 兜底方案：模拟回车键
-                        const enterKey = new KeyboardEvent('keydown', {
-                            key: 'Enter', code: 'Enter', keyCode: 13, which: 13,
-                            bubbles: true, cancelable: true, ctrlKey: false
-                        });
-                        input.dispatchEvent(enterKey);
-                    }
-                }, 100); // 增加到 100ms 确保 UI 响应
+                // 参考“母上选项”逻辑，使用 /send 指令直接发送，更加稳定
+                // 使用 | /trigger 确保在发送后立即触发 AI 生成
+                const command = `/send ${text} | /trigger`;
+                context.executeSlashCommand(command);
+            } else {
+                // 仅输入模式：使用 /setinput
+                const command = `/setinput ${text}`;
+                context.executeSlashCommand(command);
+            }
+        } catch (e) {
+            console.warn('[Lilith] SillyTavern API execution failed, falling back to DOM manipulation.', e);
+            // 备选方案：手动操作 DOM (以防 API 不可用)
+            const input = parentWin.document.getElementById('send_textarea');
+            if (input) {
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+                nativeInputValueSetter.call(input, text);
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                
+                if (autoSend) {
+                    setTimeout(() => {
+                        const btn = parentWin.document.getElementById('send_but');
+                        if (btn) btn.click();
+                    }, 100);
+                }
             }
         }
     },
