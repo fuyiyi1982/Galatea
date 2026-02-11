@@ -183,6 +183,11 @@ export const DEFAULT_STATE = {
     ttsConfig: { pitch: 1.2, rate: 1.3 },
     extractionEnabled: false,
     extractionRegex: '',
+    dynamicContentEnabled: true,
+    dynamicContentInterval: 20, // 初始预设改为 20 分钟
+    dynamicContentCount: 6,    // 初始预设 6 条
+    dynamicContentTriggerChance: 100, // 初始预设 100% (对应 20 分钟内消耗完)
+    dynamicContent: { lastGenerated: 0, items: [] },
     apiConfig: { apiType: 'native', baseUrl: 'https://generativelanguage.googleapis.com', apiKey: '', model: 'gemini-1.5-flash' },
     apiPresets: [],
     regexPresets: []

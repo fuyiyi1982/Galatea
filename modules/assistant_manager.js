@@ -765,14 +765,216 @@ ${chatLog}
         }
     },
 
+    async generateDynamicContent(parentWin) {
+        console.log('[Lilith] Generating dynamic content...');
+        // 关键修复：确保每次生成都从 userState 中获取最新的好感、理智和条目数
+        const f = Number(userState.favorability) || 20;
+        const s = Number(userState.sanity) || 80;
+        const count = Number(userState.dynamicContentCount) || 6;
+        const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['toxic'];
+
+        // 根据用户要求动态调节 对话:事件 比例
+        let eCount_target = 0;
+        if (count >= 2 && count < 10) {
+            eCount_target = 1;
+        } else if (count >= 10) {
+            eCount_target = Math.floor(count / 5);
+        }
+        const dCount_target = count - eCount_target;
+        
+        const systemPrompt = `[System Task: Dynamic Content Generation]
+You are ${persona.name}. 
+Based on current favorability (${f}), sanity (${s}), and the provided history, generate ${dCount_target} dialogues and ${eCount_target} events (Total ${count} items).
+
+[OUTPUT FORMAT]
+Return ONLY a valid JSON array. Each object MUST follow this schema:
+- For "dialogue": {"type": "dialogue", "content": "text", "face": "expression"}
+- For "event": {"type": "event", "content": "description", "effect": {"face": "expression", "favor": number, "sanity": number}}
+
+[EXPRESSION LIST]
+normal, angry, speechless, mockery, horny, happy, disgust, love
+
+[CONSTRAINTS]
+- Type "dialogue": Short, sharp, personality-driven dialogues Lilith says to the user.
+- Type "event": Vivid descriptions of Lilith's actions. 
+- MANDATORY for Type "event": Every event MUST have an "effect" object with non-zero values for "favor" or "sanity". An event without numeric impact is INVALID.
+- Effect range: favor: -5 to 5, sanity: -10 to 10.
+- Language: Chinese.
+- JSON MUST BE VALID.`;
+
+        const chatLog = getPageContext(15, userState).map(m => `[${m.name}]: ${m.message}`).join('\n');
+        const userPrompt = `[CURRENT STATUS]
+Favorability: ${f}
+Sanity: ${s}
+
+[RECENT HISTORY]
+${chatLog}
+
+[Task]: Generate ${count} items.`;
+
+        try {
+            // 使用原有的 AI 提示词模板注入风格 (SystemPrompt + UserPrompt + Jailbreak)
+            const reply = await this.callUniversalAPI(parentWin, userPrompt, { 
+                isChat: false, 
+                systemPrompt: systemPrompt 
+            });
+
+            if (reply) {
+                // console.log('[Lilith] AI Reply for dynamic content:', reply); // Removed for anti-spoiler
+                // 更健壮的 JSON 匹配提取
+                const jsonMatch = reply.match(/\[\s*\{.*\}\s*\]/s);
+                const jsonStr = jsonMatch ? jsonMatch[0] : reply.replace(/```json|```/g, '').trim();
+                let items = [];
+                try {
+                    items = JSON.parse(jsonStr);
+                } catch (parseErr) {
+                    console.error('[Lilith] JSON Parse Error:', parseErr, 'Raw string:', jsonStr);
+                    UIManager.showBubble("AI 返回的数据格式不正确，无法解析。请重试。", "#ff0055");
+                    return;
+                }
+
+                // [数据清洗/合法性验证] 过滤掉不符合格式规则的条目
+                items = items.filter(item => {
+                    const hasBasic = item && item.type && item.content;
+                    if (!hasBasic) return false;
+                    
+                    if (item.type === 'dialogue') {
+                        return typeof item.content === 'string' && item.content.length > 0;
+                    }
+                    if (item.type === 'event') {
+                        // 强制要求事件必须有 effect 结构，且数值变动不能全为 0
+                        const hasEffect = item.effect && typeof item.effect === 'object';
+                        if (!hasEffect) return false;
+                        const hasValue = (Number(item.effect.favor) !== 0 || Number(item.effect.sanity) !== 0);
+                        return typeof item.content === 'string' && hasValue;
+                    }
+                    return false;
+                });
+
+                if (items.length === 0) {
+                    UIManager.showBubble("AI 生成的内容不符合安全或格式规则，已舍弃。", "#ff0055");
+                    return;
+                }
+
+                userState.dynamicContent = {
+                    lastGenerated: Date.now(),
+                    items: items
+                };
+                saveState();
+                
+                const dCount = items.filter(i => i.type === 'dialogue').length;
+                const eCount = items.filter(i => i.type === 'event').length;
+                UIManager.showBubble(`[构思完成] 已存入 ${dCount} 条对话和 ${eCount} 个事件到大脑皮层。`, "#00ff55");
+                console.log(`[Lilith] Dynamic content generated: ${dCount} dialogues, ${eCount} events. (Content hidden to prevent spoilers)`);
+            }
+        } catch (e) {
+            console.error('[Lilith] Failed to generate dynamic content:', e);
+            UIManager.showBubble("AI 生成请求失败，请检查 API 配置或网络。", "#ff0055");
+        }
+    },
+
+    testDynamicTrigger(parentWin) {
+        if (!userState.dynamicContent?.items?.length) {
+            UIManager.showBubble("我还没想好呢！滚回去看看你的大脑皮层！", "#ff0055");
+            return;
+        }
+        
+        const items = userState.dynamicContent.items;
+        const dCount = items.filter(i => i.type === 'dialogue').length;
+        const eCount = items.filter(i => i.type === 'event').length;
+        
+        // 剧透保护：不再控制台打印具体内容，仅打印摘要
+        console.log(`[Lilith] Dynamic Library Triggered: ${dCount} Dialogues, ${eCount} Events available.`);
+
+        const toolOutput = document.getElementById('tool-output-area');
+        if (toolOutput) {
+            // 切换到功能页
+            const toolsTab = document.querySelector('.lilith-tab[data-target="tools"]');
+            if (toolsTab) toolsTab.click();
+
+            const insult = "凭你也想知道老娘在想什么？算了，让你知道是怎么死的吧！";
+            UIManager.showBubble(insult, "#bd00ff");
+            AudioSys.speak(insult);
+            
+            toolOutput.innerHTML = `
+                <div style="padding:10px; color:#fff; font-family:var(--l-font);">
+                    <div style="color:var(--l-cyan); margin-bottom:10px; font-weight:bold;">[ 莉莉丝的大脑皮层快照 ]</div>
+                    <div style="border-left:2px solid #bd00ff; padding-left:10px; margin-bottom:15px; font-size:13px;">
+                        “...在那肮脏的思维深处，我准备了 <span style="color:#ff0055; font-size:16px; font-weight:bold;">${dCount}</span> 条对话和 <span style="color:#bd00ff; font-size:16px; font-weight:bold;">${eCount}</span> 个事件... 现在满意了吗！”
+                    </div>
+                    <small style="color:#666; font-style:italic;">(具体内容已隐藏，等待概率触发或周期更新)</small>
+                </div>
+            `;
+        }
+    },
+
     triggerRandomEvent(parentWin) {
-        // 降低到 0.5% 的心跳概率 (每2秒检查一次)
-        if (Math.random() > 0.005) return;
+        if (!userState.dynamicContentEnabled) return;
+
+        // 基础间隔频率：每 5 次心跳(10秒)尝试一次
+        if (this.heartbeatCounter % 5 !== 0) return;
+
+        // --- 概率算法优化 ---
+        // 目标：将 100% 概率定义为“在生成间隔内基本触发完所有条目”
+        // 计算公式：实际概率 = (用户概率 / 100) * (生成条数 / (生成间隔 * 60 / 10))
+        const intervalSec = (Number(userState.dynamicContentInterval) || 20) * 60;
+        const totalChecks = intervalSec / 10;
+        const targetCount = Number(userState.dynamicContentCount) || 6;
+        
+        // 基础概率 (即 100% 对应的概率)
+        const baseChance = targetCount / totalChecks; 
+        const userChanceFactor = (Number(userState.dynamicContentTriggerChance) || 100) / 100;
+        
+        const finalChance = baseChance * userChanceFactor;
+
+        if (Math.random() > finalChance) return;
 
         const events = [
             {
+                id: 'dynamic_content',
+                weight: 200, // 大幅增加权重，优先触发由AI生成的内容
+                run: () => {
+                    const items = userState.dynamicContent?.items || [];
+                    if (items.length === 0) return;
+
+                    const item = items[Math.floor(Math.random() * items.length)];
+                    // console.log('[Lilith] Dynamic item triggered:', item); // Removed for anti-spoiler
+                    
+                    if (item.type === 'dialogue') {
+                        UIManager.showBubble(item.content);
+                        AudioSys.speak(item.content);
+                        // 统一从 effect.face 取表情
+                        const face = item.effect?.face || item.face;
+                        if (face) {
+                            UIManager.setAvatar(face);
+                            setTimeout(() => UIManager.setAvatar('idle'), 8000);
+                        }
+                    } else {
+                        // 特殊事件
+                        UIManager.showBubble(`【特殊事件】\n${item.content}`, "#bd00ff", "special-event");
+                        AudioSys.speak("发生了一些有趣的事呢。");
+                        
+                        const e = item.effect || {};
+                        if (e.face) {
+                            UIManager.setAvatar(e.face);
+                            setTimeout(() => UIManager.setAvatar('idle'), 10000);
+                        }
+                        
+                        // 数值变动并同步更新 UI
+                        if (e.favor) {
+                            const val = updateFavor(e.favor, () => UIManager.updateUI());
+                            setTimeout(() => UIManager.showBubble(`好感 ${val > 0 ? '+' : ''}${val}`, "#ff0055"), 1200);
+                        }
+                        if (e.sanity) {
+                            const val = updateSanity(e.sanity, () => UIManager.updateUI());
+                            setTimeout(() => UIManager.showBubble(`理智 ${val > 0 ? '+' : ''}${val}`, "#00e5ff"), 2000);
+                        }
+                    }
+                }
+            },
+            {
                 id: 'trivia_time',
-                weight: 30,
+                weight: 20,
                 run: () => {
                     const answers = ['我爱你', '喜欢', 'yes', '爱'];
                     const reward = 50;
@@ -900,8 +1102,10 @@ ${chatLog}
     heartbeatCounter: 0,
     lastActivityTime: Date.now(),
     isIdleTriggered: false,
+    isGenerating: false, // 防止重复触发
 
     startHeartbeat(parentWin) {
+        console.log('[Lilith] Heartbeat system started.');
         setInterval(() => {
             try {
                 const avatar = document.getElementById(avatarId);
@@ -922,6 +1126,23 @@ ${chatLog}
                 }
 
                 this.heartbeatCounter++;
+                
+                // --- 动态内容维护 ---
+                if (userState.dynamicContentEnabled && !this.isGenerating) {
+                    const now = Date.now();
+                    const intervalMin = Number(userState.dynamicContentInterval) || 240;
+                    const last = Number(userState.dynamicContent?.lastGenerated) || 0;
+                    const intervalMs = intervalMin * 60000;
+                    
+                    if (last === 0 || (now - last > intervalMs)) {
+                        this.isGenerating = true;
+                        console.log(`[Lilith] Triggering scheduled content update. Last: ${last}`);
+                        this.generateDynamicContent(parentWin).finally(() => {
+                            this.isGenerating = false;
+                        });
+                    }
+                }
+
                 this.triggerRandomEvent(parentWin);
 
                 const glitchLayer = document.getElementById('lilith-glitch-layer');

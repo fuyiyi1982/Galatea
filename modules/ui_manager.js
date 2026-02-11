@@ -125,7 +125,7 @@ export const UIManager = {
         const muteIcon = AudioSys.muted ? '🔇' : '🔊';
         panel.innerHTML = `
             <div class="lilith-panel-header">
-                <span class="lilith-title">LILITH ASSISTANT <span style="font-size:10px; color:var(--l-cyan);">v2.5.9 PRO</span></span>
+                <span class="lilith-title">LILITH ASSISTANT <span style="font-size:10px; color:var(--l-cyan);">v3.0.0 PRO</span></span>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:14px;">${muteIcon}</span>
                     <div style="text-align:right; line-height:1;">
@@ -222,6 +222,7 @@ export const UIManager = {
                         <label style="color:#ff0055; font-weight:bold;">💬 吐槽设定 (Interjection)</label>
                         <div style="font-size:10px; color:#888;">吐槽概率: <span id="cfg-freq-val">${userState.commentFrequency || 30}</span>%</div>
                         <input type="range" id="cfg-freq" min="0" max="100" step="5" value="${userState.commentFrequency || 30}" style="accent-color:#ff0055;" oninput="document.getElementById('cfg-freq-val').textContent = this.value">
+                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">控制莉莉丝在聊天时主动插话的频率。100% 为每句必回。</small>
                         
                         <div style="margin-top:8px;">
                             <label style="font-size:12px; color:#ccc;">插入模式:</label>
@@ -245,17 +246,28 @@ export const UIManager = {
                     </div>
 
                     <div class="cfg-group">
-                        <label style="color:var(--l-gold); font-weight:bold;">🧬 API 预设 (Presets)</label>
-                        <div style="display:flex; gap:5px; margin-bottom:5px;">
-                            <select id="cfg-preset-select" class="lilith-select" style="flex:1; background:#111; color:#fff; border:1px solid var(--l-gold);">
-                                <option value="">-- 选择预设 --</option>
-                                ${(userState.apiPresets || []).map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
-                            </select>
-                            <button id="cfg-preset-delete" class="tool-btn" style="width:30px; border-color:#ff0055;" title="删除当前选中的预设">🗑️</button>
+                        <label style="color:#bd00ff; font-weight:bold;">🧠 莉莉丝的大脑皮层</label>
+                        <div style="display:flex; align-items:center;">
+                            <input type="checkbox" id="cfg-dynamic-enable" ${userState.dynamicContentEnabled !== false ? 'checked' : ''} style="width:auto; margin-right:5px;"> 
+                            <span style="font-size:12px; color:#ccc;">启用 AI 动态更新</span>
                         </div>
-                        <div style="display:flex; gap:5px;">
-                            <input type="text" id="cfg-preset-name" placeholder="预设名称..." style="flex:1; font-size:12px; height:24px;">
-                            <button id="cfg-preset-save" class="tool-btn" style="width:60px; border-color:var(--l-gold); font-size:12px;">保存</button>
+                        <div style="font-size:10px; color:#888; margin-top:5px;">生成间隔 (分钟):</div>
+                        <input type="number" id="cfg-dyn-interval" class="lilith-input" min="1" max="4320" step="1" value="${userState.dynamicContentInterval || 240}" style="width: 100%; box-sizing: border-box; background: #111; color: #fff; border: 1px solid #444; padding: 4px; font-size: 12px;">
+                        
+                        <div style="font-size:10px; color:#888; margin-top:5px;">每次生成数:</div>
+                        <input type="number" id="cfg-dyn-count" class="lilith-input" min="1" max="20" step="1" value="${userState.dynamicContentCount || 6}" style="width: 100%; box-sizing: border-box; background: #111; color: #fff; border: 1px solid #444; padding: 4px; font-size: 12px;">
+                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">
+                            (1条:纯对话 | 2-9条:1事件 | 10条+:每5条1事件)<br>
+                            *建议保持在 20 条以内以确保 AI 构思质量。
+                        </small>
+                        
+                        <div style="font-size:10px; color:#888; margin-top:5px;">触发概率: <span id="cfg-dyn-trigger-val">${userState.dynamicContentTriggerChance || 100}</span>%</div>
+                        <input type="range" id="cfg-dyn-trigger" min="1" max="100" step="1" value="${userState.dynamicContentTriggerChance || 100}" style="accent-color:var(--l-cyan); width:100%;" oninput="document.getElementById('cfg-dyn-trigger-val').textContent = this.value">
+                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">调整触发频率。100% 意味着在生成间隔内莉莉丝基本能把构思好的内容全部触发完。</small>
+
+                        <div style="display: flex; gap: 5px; margin-top: 5px;">
+                            <button id="cfg-dyn-force" style="flex: 2; background:#333; color:#fff; border:none; padding:3px; cursor:pointer; font-size:10px;">⚡ 立即重构</button>
+                            <button id="cfg-dyn-test" style="flex: 1; background:#222; color:var(--l-cyan); border:1px solid var(--l-cyan); padding:3px; cursor:pointer; font-size:10px;">🧪 测试</button>
                         </div>
                     </div>
 
@@ -281,6 +293,21 @@ export const UIManager = {
                         <div style="display:flex; gap:5px;">
                             <input type="text" id="cfg-regex-name" placeholder="方案名称..." style="flex:1; font-size:12px; height:24px;">
                             <button id="cfg-regex-save" class="tool-btn" style="width:60px; border-color:var(--l-cyan); font-size:12px;">归档</button>
+                        </div>
+                    </div>
+
+                    <div class="cfg-group">
+                        <label style="color:var(--l-gold); font-weight:bold;">🧬 API 预设 (Presets)</label>
+                        <div style="display:flex; gap:5px; margin-bottom:5px;">
+                            <select id="cfg-preset-select" class="lilith-select" style="flex:1; background:#111; color:#fff; border:1px solid var(--l-gold);">
+                                <option value="">-- 选择预设 --</option>
+                                ${(userState.apiPresets || []).map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
+                            </select>
+                            <button id="cfg-preset-delete" class="tool-btn" style="width:30px; border-color:#ff0055;" title="删除当前选中的预设">🗑️</button>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="cfg-preset-name" placeholder="预设名称..." style="flex:1; font-size:12px; height:24px;">
+                            <button id="cfg-preset-save" class="tool-btn" style="width:60px; border-color:var(--l-gold); font-size:12px;">保存</button>
                         </div>
                     </div>
 
@@ -571,9 +598,17 @@ export const UIManager = {
         } else if (centerY < thresholdY - marginY) {
             panel.classList.remove('pos-top-align');
         }
+
+        // 辅助判断：如果头像在屏幕顶部 150px 内，让气泡向下弹出，防止被顶出屏幕
+        if (rect.top < 150) {
+            wrapper.classList.add('bubble-bottom');
+        } else {
+            wrapper.classList.remove('bubble-bottom');
+        }
     },
 
     bindEvents(assistant) {
+        this.assistant = assistant;
         // Chat Logic
         const sendBtn = document.getElementById('lilith-chat-send');
         const input = document.getElementById('lilith-chat-input');
@@ -949,6 +984,39 @@ export const UIManager = {
              AudioSys.speak("这就是现在的语音效果。");
         });
 
+        // Dynamic Content
+        document.getElementById('cfg-dynamic-enable')?.addEventListener('change', (e) => {
+            userState.dynamicContentEnabled = e.target.checked;
+            saveState();
+            const stCheck = document.getElementById('lilith-dynamic-enabled');
+            if (stCheck) stCheck.checked = e.target.checked;
+        });
+        document.getElementById('cfg-dyn-interval')?.addEventListener('change', (e) => {
+            userState.dynamicContentInterval = parseInt(e.target.value);
+            saveState();
+            const stInput = document.getElementById('lilith-dynamic-interval');
+            if (stInput) stInput.value = e.target.value;
+        });
+        document.getElementById('cfg-dyn-count')?.addEventListener('change', (e) => {
+            userState.dynamicContentCount = parseInt(e.target.value);
+            saveState();
+            const stInput = document.getElementById('lilith-dynamic-count');
+            if (stInput) stInput.value = e.target.value;
+        });
+        document.getElementById('cfg-dyn-trigger')?.addEventListener('change', (e) => {
+            userState.dynamicContentTriggerChance = parseInt(e.target.value);
+            saveState();
+            const stInput = document.getElementById('lilith-dynamic-trigger-chance');
+            if (stInput) stInput.value = e.target.value;
+        });
+        document.getElementById('cfg-dyn-force')?.addEventListener('click', () => {
+            assistant.generateDynamicContent(window);
+            this.showBubble("正在由 AI 重新构思内容...", "var(--l-main)");
+        });
+        document.getElementById('cfg-dyn-test')?.addEventListener('click', () => {
+            assistant.testDynamicTrigger(window);
+        });
+
         // Change Avatar Size
         const cfgSize = document.getElementById('cfg-avatar-size');
         const stSize = document.getElementById('lilith-avatar-size');
@@ -1063,9 +1131,12 @@ export const UIManager = {
     },
 
     // --- UI 交互 ---
-    showBubble(msg, color = null) {
+    showBubble(msg, color = null, className = '') {
         let b = document.getElementById(bubbleId); if (b) b.remove();
-        b = document.createElement('div'); b.id = bubbleId; if (color) b.style.borderColor = color;
+        b = document.createElement('div'); b.id = bubbleId; 
+        if (color) b.style.borderColor = color;
+        if (className) b.className = className;
+        
         b.innerHTML = `<span style="color:var(--l-cyan)">[莉莉丝]</span> ${msg.length > 200 ? msg.substring(0, 198) + "..." : msg}`;
         if (userState.sanity < 30) b.style.borderColor = '#ff0000';
         b.onclick = () => b.remove();
@@ -1205,7 +1276,7 @@ export const UIManager = {
         }
     },
 
-    async initSettingsUI() {
+    async initSettingsUI(assistant) {
         try {
             const htmlPath = `/scripts/extensions/third-party/${extensionName}/settings.html`;
             const settingsHtml = await $.get(htmlPath);
@@ -1225,6 +1296,54 @@ export const UIManager = {
             $hideAvatar.prop('checked', userState.hideAvatar);
             $autoSend.prop('checked', userState.autoSend !== false);
             $avatarSize.val(userState.avatarSize || 150);
+
+            // [新增] 动态内容绑定
+            const $dynEnabled = $('#lilith-dynamic-enabled');
+            const $dynInterval = $('#lilith-dynamic-interval');
+            const $dynCount = $('#lilith-dynamic-count');
+            const $dynTriggerChance = $('#lilith-dynamic-trigger-chance');
+            const $dynForce = $('#lilith-force-generate-dynamic');
+
+            $dynEnabled.prop('checked', userState.dynamicContentEnabled !== false);
+            $dynInterval.val(userState.dynamicContentInterval || 20);
+            $dynCount.val(userState.dynamicContentCount || 6);
+            $dynTriggerChance.val(userState.dynamicContentTriggerChance || 100);
+
+            $dynEnabled.on('change', (e) => {
+                userState.dynamicContentEnabled = $(e.target).prop('checked');
+                saveState();
+                const cfgCheck = document.getElementById('cfg-dynamic-enable');
+                if (cfgCheck) cfgCheck.checked = userState.dynamicContentEnabled;
+            });
+            $dynInterval.on('change', (e) => {
+                userState.dynamicContentInterval = parseInt($(e.target).val());
+                saveState();
+                const cfgInput = document.getElementById('cfg-dyn-interval');
+                if (cfgInput) cfgInput.value = userState.dynamicContentInterval;
+            });
+            $dynCount.on('change', (e) => {
+                userState.dynamicContentCount = parseInt($(e.target).val());
+                saveState();
+                const cfgInput = document.getElementById('cfg-dyn-count');
+                if (cfgInput) cfgInput.value = userState.dynamicContentCount;
+            });
+            $dynTriggerChance.on('change', (e) => {
+                userState.dynamicContentTriggerChance = parseInt($(e.target).val());
+                saveState();
+                const cfgInput = document.getElementById('cfg-dyn-trigger');
+                if (cfgInput) {
+                    cfgInput.value = userState.dynamicContentTriggerChance;
+                    const valDisplay = document.getElementById('cfg-dyn-trigger-val');
+                    if (valDisplay) valDisplay.textContent = userState.dynamicContentTriggerChance;
+                }
+            });
+            $dynForce.on('click', () => {
+                assistant.generateDynamicContent(window);
+                this.showBubble("正在由 AI 重新构思内容...", "var(--l-main)");
+            });
+            $('#lilith-test-dynamic-trigger').on('click', () => {
+                assistant.testDynamicTrigger(window);
+            });
 
             // [新增] 更新逻辑重构
             const $verInfo = $('#lilith-version-info');

@@ -56,6 +56,19 @@
     --l-font: 'Courier New', monospace;
 }
 
+#lilith-bubble-cn.special-event {
+    background: linear-gradient(135deg, rgba(20, 0, 5, 0.95) 0%, rgba(60, 0, 30, 0.95) 100%);
+    border-left-width: 6px;
+    box-shadow: 0 0 20px rgba(189, 0, 255, 0.5);
+    animation: lilith-pulse 2s infinite;
+}
+
+@keyframes lilith-pulse {
+    0% { box-shadow: 0 0 10px rgba(189, 0, 255, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(189, 0, 255, 0.6); }
+    100% { box-shadow: 0 0 10px rgba(189, 0, 255, 0.3); }
+}
+
 /* 消息美化 (彻底重构为行内块，保护正文结构) */
 .lilith-raw-trigger {
     display: none !important;
@@ -182,6 +195,13 @@ div.lilith-chat-ui:hover {
         --l-panel-offset: 80px;
         --l-panel-max-height: 75vh;
     }
+    /* 移动端加大缩放手柄点击区域 */
+    .lilith-resize-handle {
+        width: 24px;
+        height: 24px;
+        bottom: 1px;
+        right: 1px;
+    }
 }
 
 #lilith-wrapper-cn { 
@@ -294,9 +314,10 @@ div.lilith-chat-ui:hover {
 
 #lilith-bubble-cn { 
     position: absolute; 
-    top: 10px; 
-    left: 100px;
-    width: 180px; 
+    /* 核心定位：位于头像侧上方，不遮挡头像但保持亲密度 */
+    top: -10px; 
+    left: calc(50% + (var(--l-avatar-size) / 2) - 15px);
+    width: 190px; 
     background: rgba(0,0,0,0.95); 
     border: 1px solid var(--l-main);
     border-left: 4px solid var(--l-main);
@@ -317,9 +338,15 @@ div.lilith-chat-ui:hover {
 /* 气泡翻转逻辑：当面板在右侧时 (pos-left)，气泡出现在头像左边 */
 #lilith-panel-cn.pos-left ~ #lilith-bubble-cn {
     left: auto;
-    right: 100px;
+    right: calc(50% + (var(--l-avatar-size) / 2) - 15px);
     border-left: 1px solid var(--l-main);
     border-right: 4px solid var(--l-main);
+}
+
+/* 纵向避障：如果头像太高，气泡显示在下方 */
+#lilith-wrapper-cn.bubble-bottom #lilith-bubble-cn {
+    top: auto;
+    bottom: -10px;
 }
 
 #lilith-panel-cn { 

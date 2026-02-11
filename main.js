@@ -11,7 +11,7 @@ import { UpdateManager } from './modules/update_manager.js';
  * Main entrance for the Lilith Assistant Extension.
  */
 async function boot() {
-    console.log('[Lilith] Booting v2.5.9 (Modularized)...');
+    console.log('[Lilith] Booting v3.0.0 (Modularized)...');
     
     // 0. Initial Data Migration (Legacy to ExtensionSettings)
     migrateData();
@@ -29,7 +29,7 @@ async function boot() {
     
     // 3.5. Initialize Settings UI in the ST Extensions sidebar
     await UpdateManager.init();
-    UIManager.initSettingsUI();
+    UIManager.initSettingsUI(assistantManager);
     
     // 4. Bind UI events to Assistant Logic
     UIManager.bindEvents(assistantManager);

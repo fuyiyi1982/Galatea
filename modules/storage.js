@@ -46,6 +46,10 @@ export function validateState() {
             autoSend: (settings.global && settings.global.autoSend !== undefined) ? settings.global.autoSend : true,
             extractionEnabled: DEFAULT_STATE.extractionEnabled || false,
             extractionRegex: DEFAULT_STATE.extractionRegex || '',
+            dynamicContentEnabled: DEFAULT_STATE.dynamicContentEnabled !== false,
+            dynamicContentInterval: DEFAULT_STATE.dynamicContentInterval || 20,
+            dynamicContentCount: DEFAULT_STATE.dynamicContentCount || 6,
+            dynamicContentTriggerChance: DEFAULT_STATE.dynamicContentTriggerChance || 100,
             textReplacementEnabled: false,
             textReplacementRegex: '',
             textReplacementString: '',
@@ -55,8 +59,12 @@ export function validateState() {
     }
 
     if (!settings.global.apiConfig) settings.global.apiConfig = { ...DEFAULT_STATE.apiConfig };
-    if (!settings.global.apiPresets) settings.global.apiPresets = [ ...DEFAULT_STATE.apiPresets ];
     if (!settings.global.apiPresets) settings.global.apiPresets = [];
+
+    // [New v3.0.0] Ensure dynamic content settings exist
+    if (settings.global.dynamicContentEnabled === undefined) settings.global.dynamicContentEnabled = true;
+    if (settings.global.dynamicContentInterval === undefined) settings.global.dynamicContentInterval = 240;
+    if (settings.global.dynamicContentCount === undefined) settings.global.dynamicContentCount = 6;
 
     // 2. Initialize Persona Data Map
     if (!settings.personaData) {
@@ -98,6 +106,7 @@ export function validateState() {
     if (userState.favorability === undefined) userState.favorability = 20;
     if (userState.sanity === undefined) userState.sanity = 80;
     if (userState.fatePoints === undefined) userState.fatePoints = 1000;
+    if (!userState.dynamicContent) userState.dynamicContent = { lastGenerated: 0, items: [] };
 }
 
 export function saveState(updateUICallback) { 
@@ -112,7 +121,7 @@ export function saveState(updateUICallback) {
         'panelWidth', 'panelHeight', 'commentFrequency', 'commentMode',
         'extractionEnabled', 'extractionRegex', 'textReplacementEnabled', 
         'textReplacementRegex', 'textReplacementString', 'apiConfig', 'apiPresets',
-        'regexPresets'
+        'regexPresets', 'dynamicContentEnabled', 'dynamicContentInterval', 'dynamicContentCount'
     ];
     
     // 1. Sync per-persona data (Favor, Sanity, Memory, etc.)
