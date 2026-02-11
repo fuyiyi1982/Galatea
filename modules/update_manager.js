@@ -4,7 +4,7 @@
  */
 
 export const UpdateManager = {
-    // Current version - should match manifest.json
+    // Current version - detected from manifest.json on init
     localVersion: "2.5.9",
     // Remote manifest URL
     remoteUrl: "https://raw.githubusercontent.com/wt7141789/lilith-assistant/main/manifest.json",
@@ -12,11 +12,39 @@ export const UpdateManager = {
     // State
     hasUpdate: false,
     remoteVersion: null,
+    initialized: false,
+
+    /**
+     * Initialize the UpdateManager by fetching the local manifest version.
+     */
+    async init() {
+        if (this.initialized) return;
+        try {
+            // Attempt to get version from local manifest.json
+            // We use relative path from this module (modules/update_manager.js -> ../manifest.json)
+            const modulePath = import.meta.url;
+            const manifestPath = new URL('../manifest.json', modulePath).href;
+            
+            const response = await fetch(manifestPath + '?t=' + Date.now());
+            if (response.ok) {
+                const data = await response.json();
+                if (data.version) {
+                    this.localVersion = data.version;
+                    console.log(`[Lilith] Detected local version: ${this.localVersion}`);
+                }
+            }
+        } catch (e) {
+            console.warn('[Lilith] Failed to auto-detect local version, using fallback:', e);
+        }
+        this.initialized = true;
+    },
 
     /**
      * Check for updates on startup
      */
     async checkUpdate() {
+        if (!this.initialized) await this.init();
+        
         console.log('[Lilith] Checking for updates...');
         try {
             // Add timestamp to prevent cache

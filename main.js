@@ -28,6 +28,7 @@ async function boot() {
     UIManager.initStruct();
     
     // 3.5. Initialize Settings UI in the ST Extensions sidebar
+    await UpdateManager.init();
     UIManager.initSettingsUI();
     
     // 4. Bind UI events to Assistant Logic
