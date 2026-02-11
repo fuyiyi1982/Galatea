@@ -1173,40 +1173,39 @@ export const UIManager = {
             $hideAvatar.prop('checked', userState.hideAvatar);
             $avatarSize.val(userState.avatarSize || 150);
 
-            // [新增] 更新检测逻辑
+            // [新增] 更新逻辑重构
             const $verInfo = $('#lilith-version-info');
-            const $checkBtn = $('#lilith-check-update-btn');
             const $manualBtn = $('#lilith-manual-update-btn');
 
             $verInfo.text(`当前版本: v${UpdateManager.localVersion}`);
 
             const refreshUpdateUI = () => {
                 if (UpdateManager.hasUpdate) {
-                    $manualBtn.show().text(`检测到 v${UpdateManager.remoteVersion}，点击升级`);
-                    $checkBtn.hide();
+                    $manualBtn.text(`发现新版本 v${UpdateManager.remoteVersion}，点击更新`).css('background', '#ff0055');
                 } else {
-                    $manualBtn.hide();
-                    $checkBtn.show().text('检查更新');
+                    $manualBtn.text('更新插件').css('background', '');
                 }
             };
 
             // 初始刷新
             refreshUpdateUI();
 
-            $checkBtn.on('click', async () => {
-                $checkBtn.text('检查中...').prop('disabled', true);
-                await UpdateManager.checkUpdate();
-                $checkBtn.prop('disabled', false);
-                refreshUpdateUI();
-                if (!UpdateManager.hasUpdate) {
-                    toastr.success('莉莉丝助手已是最新版本');
-                }
-            });
-
             $manualBtn.on('click', async () => {
-                if (confirm(`检测到 v${UpdateManager.remoteVersion}，准备执行系统更新并强制刷新网页(F5)，是否继续？`)) {
-                    $manualBtn.text('正在拉取代码...').prop('disabled', true);
-                    await UpdateManager.updateAndReload();
+                $manualBtn.text('同步中...').prop('disabled', true);
+                await UpdateManager.checkUpdate();
+                
+                if (UpdateManager.hasUpdate) {
+                    if (confirm(`发现新版本 v${UpdateManager.remoteVersion}，准备执行系统更新并强制刷新网页(F5)，是否继续？`)) {
+                        $manualBtn.text('正在更新...');
+                        await UpdateManager.updateAndReload();
+                    } else {
+                        $manualBtn.prop('disabled', false);
+                        refreshUpdateUI();
+                    }
+                } else {
+                    toastr.success('已是最新版本');
+                    $manualBtn.prop('disabled', false);
+                    refreshUpdateUI();
                 }
             });
 

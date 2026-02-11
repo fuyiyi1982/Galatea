@@ -30,6 +30,16 @@ export const UpdateManager = {
                 this.hasUpdate = true;
                 console.log(`[Lilith] Update found! Remote: ${this.remoteVersion}, Local: ${this.localVersion}`);
                 this.showUpdateBadge();
+                
+                // [新增] 发现更新时自动推送通知
+                if (typeof toastr !== 'undefined') {
+                    toastr.info(`莉莉丝助手发现新版本 v${this.remoteVersion}，请前往设置或侧边栏点击更新。`, '更新推送', {
+                        onclick: () => {
+                            // Optionally open settings or just update directly if clicked
+                            // For now just a notification is enough to count as "push"
+                        }
+                    });
+                }
             } else {
                 this.hasUpdate = false;
                 console.log('[Lilith] Up to date.');
@@ -99,12 +109,12 @@ export const UpdateManager = {
             if ($header.length) {
                 // Avoid duplicate badges
                 if (!$header.find('.lilith-update-badge').length) {
-                    const $badge = jQuery('<span class="lilith-update-badge" style="background:#ff0055; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:5px; vertical-align: middle; box-shadow: 0 0 5px #ff0055; cursor:pointer; font-weight:bold; transition: transform 0.2s;" title="点击即刻更新并强制刷新网页">New!</span>');
+                    const $badge = jQuery('<span class="lilith-update-badge" style="background:#ff0055; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:5px; vertical-align: middle; box-shadow: 0 0 5px #ff0055; cursor:pointer; font-weight:bold; transition: transform 0.2s;" title="点击执行插件更新">更新!</span>');
                     
                     // Add click handler for auto-refresh update
                     $badge.on('click', async (e) => {
                         e.stopPropagation(); // Prevents folding the drawer
-                        if (confirm('检测到莉莉丝助手有新版本，是否立即更新并自动刷新网页(浏览器F5)？')) {
+                        if (confirm('莉莉丝助手发现新版本，是否立即执行更新？\n(更新完成后会自动刷新网页)')) {
                             $badge.text('更新中...').css('background', '#555');
                             await UpdateManager.updateAndReload();
                         }
