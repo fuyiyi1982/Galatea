@@ -196,39 +196,3 @@ export function updateSanity(n, updateUICallback) {
     saveState(updateUICallback);
     return parseInt(n);
 }
-
-export function migrateData() {
-    const settings = getExtensionSettings();
-    const legacyKey = 'lilith_data_v23_fix';
-    
-    if (Object.keys(settings).length === 0 && localStorage.getItem(legacyKey)) {
-        console.log('[Lilith] Migrating data from LocalStorage to ExtensionSettings...');
-        try {
-            const legacyState = JSON.parse(localStorage.getItem(legacyKey));
-            if (legacyState) settings.userState = legacyState;
-
-            const legacyChat = JSON.parse(localStorage.getItem(legacyKey + '_chat'));
-            if (legacyChat) settings.chatHistory = legacyChat;
-
-            settings.muted = localStorage.getItem('lilith_muted') === 'true';
-
-            settings.apiConfig = {
-                apiType: localStorage.getItem('lilith_api_type'),
-                baseUrl: localStorage.getItem('lilith_api_url'),
-                apiKey: localStorage.getItem('lilith_api_key'),
-                model: localStorage.getItem('lilith_api_model')
-            };
-
-            saveExtensionSettings();
-            console.log('[Lilith] Migration complete.');
-            // Reload userState after migration (maintain references)
-            if (settings.userState) Object.assign(userState, settings.userState);
-            if (settings.chatHistory) {
-                panelChatHistory.length = 0;
-                panelChatHistory.push(...settings.chatHistory);
-            }
-        } catch (e) {
-            console.error('[Lilith] Migration failed:', e);
-        }
-    }
-}

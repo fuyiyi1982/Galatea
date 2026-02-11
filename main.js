@@ -1,6 +1,6 @@
 // index.js - Lilith Assistant Entry Point
 import { extensionName } from './modules/config.js';
-import { userState, validateState, panelChatHistory, migrateData } from './modules/storage.js';
+import { userState, validateState, panelChatHistory } from './modules/storage.js';
 import { UIManager } from './modules/ui_manager.js';
 import { assistantManager } from './modules/assistant_manager.js';
 import { EventManager } from './modules/events.js';
@@ -13,9 +13,6 @@ import { UpdateManager } from './modules/update_manager.js';
 async function boot() {
     console.log('[Lilith] Booting v3.0.0 (Modularized)...');
     
-    // 0. Initial Data Migration (Legacy to ExtensionSettings)
-    migrateData();
-
     // 1. Validate and finalize state
     validateState();
 
