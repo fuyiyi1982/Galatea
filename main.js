@@ -11,7 +11,7 @@ import { UpdateManager } from './modules/update_manager.js';
  * Main entrance for the Lilith Assistant Extension.
  */
 async function boot() {
-    console.log('[Lilith] Booting v3.0.5 (Modularized)...');
+    console.log('[Lilith] Booting v3.0.5-杂鱼专用版-❤ (Modularized)...');
     
     // 0. Expose UIManager to window for global access (e.g., from InnerWorldManager)
     window.UIManager = UIManager;

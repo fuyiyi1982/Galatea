@@ -5,7 +5,7 @@
 
 export const UpdateManager = {
     // Current version - detected from manifest.json on init
-    localVersion: "3.0.5",
+    localVersion: "v3.0.5-杂鱼专用版-❤",
     // Remote manifest URL
     remoteUrl: "https://raw.githubusercontent.com/wt7141789/lilith-assistant/main/manifest.json",
     
