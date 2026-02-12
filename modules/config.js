@@ -196,7 +196,7 @@ export const DEFAULT_STATE = {
     checkConsistency: true, // 新增：总结大纲一致性检测
     extractionEnabled: false,
     extractionRegex: '',
-    dynamicContentEnabled: true,
+    dynamicContentEnabled: false,
     dynamicContentInterval: 20, // 初始预设改为 20 分钟
     dynamicContentCount: 6,    // 初始预设 6 条
     dynamicContentTriggerChance: 100, // 初始预设 100% (对应 20 分钟内消耗完)

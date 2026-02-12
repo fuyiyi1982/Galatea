@@ -54,7 +54,7 @@ export function validateState() {
             checkConsistency: DEFAULT_STATE.checkConsistency !== undefined ? DEFAULT_STATE.checkConsistency : true,
             extractionEnabled: DEFAULT_STATE.extractionEnabled || false,
             extractionRegex: DEFAULT_STATE.extractionRegex || '',
-            dynamicContentEnabled: DEFAULT_STATE.dynamicContentEnabled !== false,
+            dynamicContentEnabled: DEFAULT_STATE.dynamicContentEnabled === true,
             dynamicContentInterval: DEFAULT_STATE.dynamicContentInterval || 20,
             dynamicContentCount: DEFAULT_STATE.dynamicContentCount || 6,
             dynamicContentTriggerChance: DEFAULT_STATE.dynamicContentTriggerChance || 100,
@@ -70,7 +70,7 @@ export function validateState() {
     if (!settings.global.apiPresets) settings.global.apiPresets = [];
 
     // [New v3.0.5] Ensure dynamic content settings exist
-    if (settings.global.dynamicContentEnabled === undefined) settings.global.dynamicContentEnabled = true;
+    if (settings.global.dynamicContentEnabled === undefined) settings.global.dynamicContentEnabled = false;
     
     // 强制修正旧版的 240 默认值到 20
     if (settings.global.dynamicContentInterval === undefined || settings.global.dynamicContentInterval === 240) {
