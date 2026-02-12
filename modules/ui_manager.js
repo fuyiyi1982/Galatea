@@ -4,6 +4,7 @@ import { userState, saveState, saveChat, panelChatHistory, updateFavor, updateSa
 import { AudioSys } from './audio.js';
 import { createSmartRegExp, extractContent } from './utils.js';
 import { UpdateManager } from './update_manager.js';
+import { InnerWorldManager } from './inner_world_manager.js';
 
 export const UIManager = {
     assistant: null, // To be set in index.js to avoid circular dependency
@@ -127,6 +128,7 @@ export const UIManager = {
             <div class="lilith-panel-header">
                 <span class="lilith-title">LILITH ASSISTANT <span style="font-size:10px; color:var(--l-cyan);">v3.0.0 PRO</span></span>
                 <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="lilith-world-toggle" title="切入里世界" style="cursor:pointer; font-size:14px;">${userState.isInnerWorld ? '🌟' : '👁️'}</span>
                     <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:14px;">${muteIcon}</span>
                     <div style="text-align:right; line-height:1;">
                         <div class="stat-row" style="color:#ff0055">好感 <span id="favor-val">${userState.favorability}</span></div>
@@ -135,14 +137,14 @@ export const UIManager = {
                 </div>
             </div>
             <div class="scan-line-bg"></div>
-            <div class="lilith-tabs">
+            <div class="lilith-tabs" style="${userState.isInnerWorld ? 'display:none;' : ''}">
                 <div class="lilith-tab active" data-target="chat">😈 互动</div>
                 <div class="lilith-tab" data-target="tools">🔪 功能</div>
                 <div class="lilith-tab" data-target="memory" style="color:#bd00ff;">🧠 记忆</div>
                 <div class="lilith-tab" data-target="gacha" style="color:var(--l-gold);">🎲 赌狗</div>
                 <div class="lilith-tab" data-target="config">⚙️ 设置</div>
             </div>
-            <div class="lilith-content-area">
+            <div class="lilith-content-area" style="${userState.isInnerWorld ? 'display:none;' : ''}">
                 <div id="page-chat" class="lilith-page active">
                     <div id="lilith-chat-history"></div>
                     <div class="lilith-chat-footer">
@@ -359,6 +361,8 @@ export const UIManager = {
                     <div id="cfg-msg" style="font-size:10px; color:#aaa; margin-top:5px;"></div>
                 </div>
             </div>
+            <div id="lilith-inner-world" class="lilith-page" style="${userState.isInnerWorld ? 'display:flex;' : 'display:none;'} background: rgba(0,0,0,0.8); flex-direction: column; overflow-y: auto; height: 100%; padding: 10px;">
+            </div>
             <div class="lilith-resize-handle"></div>
         `;
         
@@ -396,6 +400,14 @@ export const UIManager = {
             muteBtn.addEventListener('click', () => {
                 AudioSys.muted = !AudioSys.muted;
                 muteBtn.textContent = AudioSys.muted ? '🔇' : '🔊';
+            });
+        }
+
+        // World Toggle
+        const worldToggle = document.getElementById('lilith-world-toggle');
+        if (worldToggle) {
+            worldToggle.addEventListener('click', () => {
+                this.toggleWorld();
             });
         }
     },
@@ -1179,7 +1191,38 @@ export const UIManager = {
         if (elSan) elSan.textContent = userState.sanity + '%';
         this.setAvatar();
         this.updateTheme();
-        this.restoreChatHistory(panelChatHistory); // Fix: Added missing argument
+        this.restoreChatHistory(panelChatHistory);
+        if (userState.isInnerWorld) {
+            const innerWorld = document.getElementById('lilith-inner-world');
+            if (innerWorld) InnerWorldManager.render(innerWorld, this.showBubble.bind(this), this.showStatusChange.bind(this));
+        }
+    },
+
+    toggleWorld() {
+        userState.isInnerWorld = !userState.isInnerWorld;
+        saveState();
+        
+        const worldToggle = document.getElementById('lilith-world-toggle');
+        const tabs = document.querySelector('.lilith-tabs');
+        const contentArea = document.querySelector('.lilith-content-area');
+        const innerWorld = document.getElementById('lilith-inner-world');
+        
+        if (worldToggle) worldToggle.textContent = userState.isInnerWorld ? '🌟' : '👁️';
+        
+        if (userState.isInnerWorld) {
+            if (tabs) tabs.style.display = 'none';
+            if (contentArea) contentArea.style.display = 'none';
+            if (innerWorld) {
+                innerWorld.style.display = 'flex';
+                InnerWorldManager.render(innerWorld, this.showBubble.bind(this), this.showStatusChange.bind(this));
+            }
+            this.showBubble("契约重组中... 里世界同步完成。", "var(--l-main)");
+        } else {
+            if (tabs) tabs.style.display = 'flex';
+            if (contentArea) contentArea.style.display = 'block';
+            if (innerWorld) innerWorld.style.display = 'none';
+            this.showBubble("返回表象空间。欢迎回来，主人。", "var(--l-cyan)");
+        }
     },
 
     updateTheme() {

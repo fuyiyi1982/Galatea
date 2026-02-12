@@ -1095,3 +1095,85 @@ div.lilith-chat-ui:hover {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
+/* --- 里世界 (Inner World) 矩阵审美 --- */
+#lilith-inner-world {
+    scrollbar-width: thin;
+    scrollbar-color: var(--l-main) rgba(0,0,0,0.3);
+}
+
+#lilith-inner-world::-webkit-scrollbar {
+    width: 4px;
+}
+
+#lilith-inner-world::-webkit-scrollbar-thumb {
+    background: var(--l-main);
+    border-radius: 2px;
+}
+
+.inner-world-container {
+    animation: matrix-fade-in 0.5s ease-out;
+}
+
+@keyframes matrix-fade-in {
+    from { opacity: 0; transform: scale(0.98) translateY(5px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.inner-table-wrapper table tr:hover td {
+    background: rgba(255, 0, 85, 0.08) !important;
+    transition: background 0.2s ease;
+}
+
+.inner-header h3 {
+    text-shadow: 0 0 10px var(--l-main);
+}
+
+#lilith-world-toggle:hover {
+    text-shadow: 0 0 12px var(--l-cyan);
+    transform: scale(1.2);
+    transition: all 0.2s;
+}
+
+/* 契约同步时的脉冲动画 */
+#inner-sync-btn:active {
+    box-shadow: 0 0 20px var(--l-main);
+    transform: scale(0.98);
+}
+
+/* 里世界标签切换样式 */
+#lilith-inner-world .inner-tab:hover {
+    border-color: var(--l-cyan) !important;
+    color: var(--l-cyan) !important;
+    background: rgba(0, 229, 255, 0.05) !important;
+}
+
+#lilith-inner-world .inner-tab.active {
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+}
+
+#lilith-inner-world .prompt-log::-webkit-scrollbar {
+    width: 3px;
+}
+
+#lilith-inner-world .inner-scroll-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+#lilith-inner-world .inner-scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 0, 85, 0.3);
+    border-radius: 4px;
+}
+
+#lilith-inner-world table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+@keyframes pulse-glow {
+    0% { opacity: 0.6; box-shadow: 0 0 2px #0f0; }
+    50% { opacity: 1; box-shadow: 0 0 8px #0f0; }
+    100% { opacity: 0.6; box-shadow: 0 0 2px #0f0; }
+}
+

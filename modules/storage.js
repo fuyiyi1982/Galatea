@@ -40,6 +40,7 @@ export function validateState() {
         console.log('[Lilith] Initializing global settings...');
         settings.global = {
             activePersona: DEFAULT_STATE.activePersona || 'toxic',
+            isInnerWorld: DEFAULT_STATE.isInnerWorld || false,
             hideAvatar: DEFAULT_STATE.hideAvatar || false,
             avatarSize: DEFAULT_STATE.avatarSize || 150,
             commentFrequency: DEFAULT_STATE.commentFrequency || 50,
@@ -122,7 +123,7 @@ export function saveState(updateUICallback) {
 
     // Separate Global from Persona data
     const globalKeys = [
-        'activePersona', 'hideAvatar', 'avatarSize', 'posLeft', 'posTop', 
+        'activePersona', 'isInnerWorld', 'hideAvatar', 'avatarSize', 'posLeft', 'posTop', 
         'panelWidth', 'panelHeight', 'commentFrequency', 'commentMode',
         'extractionEnabled', 'extractionRegex', 'textReplacementEnabled', 
         'textReplacementRegex', 'textReplacementString', 'apiConfig', 'apiPresets',

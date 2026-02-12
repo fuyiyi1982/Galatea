@@ -171,6 +171,7 @@ export const DEFAULT_STATE = {
     currentFace: 'normal',
     memoryArchive: [],
     activePersona: 'toxic',
+    isInnerWorld: false,
     hideAvatar: false,
     avatarSize: 150,
     posLeft: 200,

@@ -813,6 +813,7 @@ ${chatLog}
 [Task]: Generate ${count} items.`;
 
         try {
+            UIManager.showBubble("正在由 AI 重新构思大脑皮层...", "var(--l-main)");
             // 使用原有的 AI 提示词模板注入风格 (SystemPrompt + UserPrompt + Jailbreak)
             const reply = await this.callUniversalAPI(parentWin, userPrompt, { 
                 isChat: false, 
