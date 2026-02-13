@@ -1165,7 +1165,7 @@ export const InnerWorldManager = {
                            w.SillyTavern?.getContext?.()?.executeSlashCommandsWithOptions;
 
         if (!executeCmd) {
-            console.warn('[Lilith] SillyTavern executeSlashCommandsWithOptions not found.');
+            console.warn('[Galatea] SillyTavern executeSlashCommandsWithOptions not found.');
             return { count: 0 };
         }
 

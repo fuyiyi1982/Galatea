@@ -1,4 +1,4 @@
-// index.js - Galatea Entry Point
+// main.js - Galatea Assistant Entry Point
 import { extensionName } from './modules/config.js';
 import { userState, validateState, panelChatHistory } from './modules/storage.js';
 import { UIManager } from './modules/ui_manager.js';
@@ -8,10 +8,10 @@ import { AudioSys } from './modules/audio.js';
 import { UpdateManager } from './modules/update_manager.js';
 
 /**
- * Main entrance for the Galatea Extension.
+ * Main entrance for the Galatea Assistant Extension.
  */
 async function boot() {
-     console.log('[Galatea] Booting v3.0.5-Galatea (Modularized)...');
+    console.log('[Galatea] Booting v4.0.0-Galatea...');
     
     // 0. Expose UIManager to window for global access (e.g., from InnerWorldManager)
     window.UIManager = UIManager;

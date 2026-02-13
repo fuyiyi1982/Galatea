@@ -1,5 +1,5 @@
 // modules/ui_manager.js
-import { containerId, avatarId, panelId, bubbleId, PERSONA_DB, AvatarPacks, getBasePath } from './config.js';
+import { containerId, avatarId, panelId, bubbleId, PERSONA_DB, AvatarPacks, extensionName } from './config.js';
 import { userState, saveState, saveChat, panelChatHistory, updateFavor, updateSanity, getExtensionSettings, saveExtensionSettings, switchPersonaState } from './storage.js';
 import { AudioSys } from './audio.js';
 import { createSmartRegExp, extractContent } from './utils.js';
@@ -45,7 +45,7 @@ export const UIManager = {
         // 4. 获取最终URL (兜底逻辑)
         let finalUrl = pack[faceKey];
         if (!finalUrl) finalUrl = pack['normal']; 
-        if (!finalUrl) finalUrl = AvatarPacks['meme']['normal'];
+        if (!finalUrl) finalUrl = AvatarPacks['galatea']['normal'];
 
         av.style.backgroundImage = `url('${finalUrl}')`;
         this.updateAvatarStyle();
@@ -72,11 +72,11 @@ export const UIManager = {
         if (isLoading) {
             if (ring) ring.classList.add('loading');
             if (avatar) avatar.classList.add('loading');
-            console.log('[Lilith] AI 开始回复，进度条启动');
+            console.log('[Galatea] AI 开始回复，进度条启动');
         } else {
             if (ring) ring.classList.remove('loading');
             if (avatar) avatar.classList.remove('loading');
-            console.log('[Lilith] AI 回复结束，进度条停止');
+            console.log('[Galatea] AI 回复结束，进度条停止');
         }
     },
 
@@ -107,7 +107,7 @@ export const UIManager = {
                 glitchLayer.classList.remove('glitch-active');
                 // 设置一个临时标记，让 heartbeat 短时间内不要再触发
                 window.lilithGlitchDismissedUntil = Date.now() + 30000; // 30秒内不再自动开启
-                console.log('[Lilith] 特效已手动清除，30秒内不再自动触发');
+                console.log('[Galatea] 特效已手动清除，30秒内不再自动触发');
             }
         };
         glitchLayer.addEventListener('click', dismissGlitch);
@@ -148,9 +148,9 @@ export const UIManager = {
         const muteIcon = AudioSys.muted ? '🔇' : '🔊';
         panel.innerHTML = `
             <div class="lilith-panel-header">
-                <span class="lilith-title">加拉泰亚 (GALATEA) <span style="font-size:10px; color:var(--l-cyan);">v3.0.5-Galatea</span></span>
+                <span class="lilith-title">加拉泰亚 (GALATEA) <span style="font-size:10px; color:var(--l-cyan);">v3.0.5-杂鱼专用版-❤</span></span>
                     <div style="display:flex; align-items:center; gap:12px; padding: 5px;">
-                        <span id="lilith-world-toggle" title="触达加拉泰亚的核心" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${userState.isInnerWorld ? '🌟' : '👁️'}</span>
+                        <span id="lilith-world-toggle" title="触达加拉泰亚的系统核心" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${userState.isInnerWorld ? '🌟' : '👁️'}</span>
                         <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${muteIcon}</span>
                         <div style="text-align:right; line-height:1; margin-left: 4px;">
                         <div class="stat-row" style="color:#ff0055">好感 <span id="favor-val">${userState.favorability}</span></div>
@@ -177,7 +177,7 @@ export const UIManager = {
                             <button id="lilith-polish-btn" title="搞颜色/润色" style="color:#ff0055;">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                             </button>
-                            <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'galatea'].name}交流...">
+                            <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'galatea'].name.split(' ')[1]}聊天...">
                             <button id="lilith-chat-send" title="发送">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
@@ -237,13 +237,6 @@ export const UIManager = {
 
                 <div id="page-config" class="lilith-page">
                     <div class="cfg-group">
-                        <label style="color:#bd00ff; font-weight:bold;">🎭 人格 (唯一)</label>
-                        <select id="cfg-persona-select" class="lilith-select" style="background:#111; color:#fff; border:1px solid #bd00ff;" disabled>
-                            ${Object.keys(PERSONA_DB).map(k => `<option value="${k}" ${userState.activePersona===k?'selected':''}>${PERSONA_DB[k].name}</option>`).join('')}
-                        </select>
-                    </div>
-
-                    <div class="cfg-group">
                         <label style="color:var(--l-cyan); font-weight:bold;">🔗 链路注入设置 (Injection)</label>
                         <div style="display:flex; align-items:center;">
                             <input type="checkbox" id="cfg-inject-st" ${userState.injectSTContext !== false ? 'checked' : ''} style="width:auto; margin-right:5px;"> 
@@ -251,7 +244,7 @@ export const UIManager = {
                         </div>
                         <small style="color:#666; font-size:9px; display:block; margin-top:2px;">
                             开启后：加拉泰亚能感知到你当前的对话背景和角色设定。<br>
-                            关闭后：她将“两耳不闻窗外事”，仅根据预设和发给她的内容自由发挥。
+                            关闭后：加拉泰亚将“两耳不闻窗外事”，仅根据预设和发给她的内容自由发挥。
                         </small>
                     </div>
 
@@ -283,7 +276,7 @@ export const UIManager = {
                     </div>
 
                     <div class="cfg-group">
-                        <label style="color:#bd00ff; font-weight:bold;">🧠 加拉泰亚逻辑层</label>
+                        <label style="color:#bd00ff; font-weight:bold;">🧠 加拉泰亚的系统核心</label>
                         <div style="display:flex; align-items:center;">
                             <input type="checkbox" id="cfg-dynamic-enable" ${userState.dynamicContentEnabled !== false ? 'checked' : ''} style="width:auto; margin-right:5px;"> 
                             <span style="font-size:12px; color:#ccc;">启用 AI 动态更新功能</span>
@@ -300,7 +293,7 @@ export const UIManager = {
                         
                         <div style="font-size:10px; color:#888; margin-top:5px;">事件触发概率: <span id="cfg-dyn-trigger-val">${userState.dynamicContentTriggerChance || 100}</span>%</div>
                         <input type="range" id="cfg-dyn-trigger" min="1" max="100" step="1" value="${userState.dynamicContentTriggerChance || 100}" style="accent-color:var(--l-cyan); width:100%;" oninput="document.getElementById('cfg-dyn-trigger-val').textContent = this.value">
-                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">调整活跃度频率。100% 意味着加拉泰亚会更积极地展示她的思考。</small>
+                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">调整活跃度频率。100% 意味着加拉泰亚会更积极地展示诊断内容。</small>
 
                         <div style="display: flex; gap: 5px; margin-top: 5px;">
                             <button id="cfg-dyn-force" style="flex: 2; background:#333; color:#fff; border:none; padding:3px; cursor:pointer; font-size:10px;">⚡ 强制重构皮层</button>
@@ -1201,7 +1194,7 @@ export const UIManager = {
         const resetPos = () => {
             const wrapper = document.getElementById(containerId);
             if (!wrapper) {
-                console.error('[Lilith] Reset failed: Wrapper not found');
+                console.error('[Galatea] Reset failed: Wrapper not found');
                 return;
             }
             userState.posTop = 100;
@@ -1210,7 +1203,7 @@ export const UIManager = {
             wrapper.style.left = '100px';
             this.updatePos();
             saveState(); // 使用 saveState 以确保同步到全局设置
-            console.log('[Lilith] Position reset to (100, 100)');
+            console.log('[Galatea] Position reset to (100, 100)');
         };
 
         if (cfgResetPos) cfgResetPos.onclick = resetPos;
@@ -1249,7 +1242,7 @@ export const UIManager = {
         if (color) b.style.borderColor = color;
         if (className) b.className = className;
         
-        b.innerHTML = `<span style="color:var(--l-cyan)">[莉莉丝]</span> ${msg.length > 200 ? msg.substring(0, 198) + "..." : msg}`;
+        b.innerHTML = `<span style="color:var(--l-cyan)">[加拉泰亚]</span> ${msg.length > 200 ? msg.substring(0, 198) + "..." : msg}`;
         if (userState.sanity < 30) b.style.borderColor = '#ff0000';
         b.onclick = () => b.remove();
         const container = document.getElementById(containerId);
@@ -1355,7 +1348,7 @@ export const UIManager = {
                     innerWorld.classList.add('inner-world-sink');
                     InnerWorldManager.render(innerWorld, this.showBubble.bind(this), this.showStatusChange.bind(this));
                 }
-                this.showBubble("正在下沉至底层协议... 触达莉莉丝最核心。", "var(--l-main)");
+                this.showBubble("正在下沉至底层协议... 触达加拉泰亚系统核心。", "var(--l-main)");
             } else {
                 if (tabs) {
                     tabs.style.display = 'flex';
@@ -1388,7 +1381,7 @@ export const UIManager = {
         if (!wrapper) return;
 
         // 1. 移除旧主题
-        wrapper.classList.remove('theme-galatea', 'theme-toxic', 'theme-wife', 'theme-brat', 'theme-imouto', 'theme-meme');
+        wrapper.classList.remove('theme-toxic', 'theme-wife', 'theme-brat', 'theme-imouto', 'theme-meme');
 
         // 2. 获取当前人格
         const current = userState.activePersona || 'galatea';
@@ -1399,7 +1392,7 @@ export const UIManager = {
         // 4. 输入框提示跟随变化
         const input = document.getElementById('lilith-chat-input');
         if (input && PERSONA_DB[current]) {
-            const name = PERSONA_DB[current].name || '加拉泰亚';
+            const name = PERSONA_DB[current].name.split(' ')[1] || '加拉泰亚';
             input.placeholder = `和${name}说话...`;
         }
     },
@@ -1498,7 +1491,7 @@ export const UIManager = {
 
     async initSettingsUI(assistant) {
         try {
-            const htmlPath = `${getBasePath()}settings.html`;
+            const htmlPath = `/scripts/extensions/third-party/${extensionName}/settings.html`;
             const settingsHtml = await $.get(htmlPath);
             $('#extensions_settings').append(settingsHtml);
 
@@ -1510,6 +1503,7 @@ export const UIManager = {
             const $autoSend = $('#lilith-auto-send');
             const $avatarSize = $('#lilith-avatar-size');
             const $persona = $('#lilith-persona-select');
+            const $dashStyle = $('#lilith-dashboard-style');
             const $dashInject = $('#lilith-inject-dashboard');
 
             $freq.val(userState.commentFrequency || 0);
@@ -1519,6 +1513,7 @@ export const UIManager = {
             $autoSend.prop('checked', userState.autoSend !== false);
             $avatarSize.val(userState.avatarSize || 150);
             $persona.val(userState.activePersona || 'galatea');
+            $dashStyle.val(userState.dashboardStyle || 'modern');
             $dashInject.prop('checked', userState.injectDashboard);
 
             // 事件绑定
@@ -1531,6 +1526,12 @@ export const UIManager = {
                 // 同步悬浮窗下拉
                 const cfgPersonaSelect = document.getElementById('cfg-persona-select');
                 if (cfgPersonaSelect) cfgPersonaSelect.value = val;
+            });
+
+            $dashStyle.on('change', (e) => {
+                userState.dashboardStyle = $(e.target).val();
+                saveState();
+                this.showBubble(`看版风格已更新: ${userState.dashboardStyle}`);
             });
 
             $dashInject.on('change', (e) => {
@@ -1877,7 +1878,7 @@ export const UIManager = {
             });
 
             $('#lilith-reset-state').on('click', () => {
-                if (confirm('确定要重置莉莉丝的状态吗？这会清空好感度与记忆（仅限当前选中人格）。')) {
+                if (confirm('确定要重置加拉泰亚的状态吗？这会清空好感度与记忆（仅限当前选中人格）。')) {
                     userState.favorability = 20;
                     userState.sanity = 80;
                     userState.fatePoints = 1000;
@@ -1898,9 +1899,9 @@ export const UIManager = {
                 }
             });
 
-            console.log('[Lilith] Settings UI initialized');
+            console.log('[Galatea] Settings UI initialized');
         } catch (err) {
-            console.error('[Lilith] Failed to load settings UI:', err);
+            console.error('[Galatea] Failed to load settings UI:', err);
         }
     },
 
@@ -2036,8 +2037,8 @@ export const UIManager = {
                 if (commentText !== null) break;
                 if (child.nodeType === 3) {
                     const text = child.nodeValue;
-                    const startMarker = '[莉莉丝]';
-                    const endMarker = '[/莉莉丝]';
+                    const startMarker = '[加拉泰亚]';
+                    const endMarker = '[/加拉泰亚]';
                     if (text && text.includes(startMarker)) {
                         const idx = text.indexOf(startMarker);
                         const before = text.slice(0, idx);
@@ -2188,7 +2189,7 @@ export const UIManager = {
     lockUI() {
         if (this.isLocked) return;
         this.isLocked = true;
-        console.log('[Lilith] 自动锁定激活');
+        console.log('[Galatea] 自动锁定激活');
         
         // [锁定策略] 停止语音输出
         AudioSys.stop();
@@ -2207,7 +2208,7 @@ export const UIManager = {
         lockOverlay.innerHTML = `
             <div style="font-size: 48px; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--l-main)); animation: pulse 2s infinite;">🔒</div>
             <div style="font-size: 20px; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--l-main);">核心功能锁定 (CORE_LOCKED)</div>
-            <div style="font-size: 11px; margin-top: 10px; opacity: 0.7; font-family: 'Share Tech Mono'; color:#fff;">检测到操作不活跃，莉莉丝已锁定核心功能 (INACTIVITY_DETECTED)</div>
+            <div style="font-size: 11px; margin-top: 10px; opacity: 0.7; font-family: 'Share Tech Mono'; color:#fff;">检测到操作不活跃，加拉泰亚已锁定核心功能 (INACTIVITY_DETECTED)</div>
             
             ${(userState.lockPasswordEnabled && userState.lockPassword) ? `
                 <div id="lock-pwd-container" style="margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; animation: slide-up 0.4s ease;">
@@ -2256,7 +2257,7 @@ export const UIManager = {
     unlockUI() {
         if (!this.isLocked) return;
         this.isLocked = false;
-        console.log('[Lilith] 自动锁定解除');
+        console.log('[Galatea] 自动锁定解除');
 
         const overlay = document.getElementById('lilith-lock-overlay');
         if (overlay) {

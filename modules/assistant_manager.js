@@ -115,7 +115,7 @@ export const assistantManager = {
                 }
             }
         } catch (e) {
-            console.warn('[Lilith] SillyTavern API execution failed, falling back to DOM manipulation.', e);
+            console.warn('[Galatea] SillyTavern API execution failed, falling back to DOM manipulation.', e);
             // 备选方案：手动操作 DOM (以防 API 不可用)
             const input = parentWin.document.getElementById('send_textarea');
             if (input) {
@@ -157,7 +157,7 @@ export const assistantManager = {
             }).join('\\n');
 
             const systemPrompt = `
-                [System Role: Fantasy Gacha Generator (Lilith Edition)]
+                [System Role: Fantasy Gacha Generator (Galatea Edition)]
                 [Tone: Erotic, Dark Fantasy, Detailed, slightly mocking if the item is trash.]
                 
                 [Task]: Generate items based on the provided Rank list.
@@ -168,7 +168,7 @@ export const assistantManager = {
                 3. **Magic Tool**: Rings, amulets, orbs.
                 4. **Disposable Scroll**: One-time use magic spells.
                 5. **Skill Book**: Spells, martial arts manuals.
-                6. **Lilith's Special Toy (NSFW)**: Sex toys or erotic magic tools provided by Lilith.
+                6. **Galatea's Special Toy (NSFW)**: Sex toys or erotic magic tools provided by Galatea.
                 7. **Clothing (NSFW)**: Lingerie, cosplay, armor with exposure, various styles.
 
                 [Strict Constraints]:
@@ -305,7 +305,7 @@ export const assistantManager = {
                  const rank = i.info ? i.info.name : '未知';
                  return `★ [${rank}] 【${i.name}】：${i.desc}`;
             }).join('\\n');
-            const exportText = `\n(莉莉丝嫌弃地把抽到的东西扔到了你脸上.全部加入背包)\n=== 📦 获得物品清单 ===\n${itemLines}\n=======================\n`.trim();
+            const exportText = `\n(加拉泰亚嫌弃地把抽到的东西扔到了你脸上.全部加入背包)\n=== 📦 获得物品清单 ===\n${itemLines}\n=======================\n`.trim();
             assistantManager.sendToSillyTavern(parentWin, exportText, false);
             UIManager.showBubble("物资清单已填入。");
             userState.gachaInventory = [];
@@ -332,7 +332,7 @@ export const assistantManager = {
         const prompt = `
             [System Task: Memory Consolidation]
             Summarize the following conversation in Simplified Chinese.
-            Focus on: Key events, User's fetishes revealed, Relationship changes, and Lilith's current mood cause.
+            Focus on: Key events, User's fetishes revealed, Relationship changes, and Galatea's current mood cause.
             Keep it concise (under 200 words).
             Conversation:
             ${textBlock}
@@ -473,7 +473,7 @@ export const assistantManager = {
     },
 
     async triggerRealtimeComment(messageId) {
-        console.log('[Lilith] triggerRealtimeComment called for messageId', messageId);
+        console.log('[Galatea] triggerRealtimeComment called for messageId', messageId);
         const context = SillyTavern.getContext();
         const chatData = context.chat || [];
 
@@ -488,7 +488,7 @@ export const assistantManager = {
 
         const targetMsg = chatData[targetIndex];
         if (!targetMsg || targetMsg.is_user || targetMsg.is_system) {
-            console.error('[Lilith] targetMsg invalid for comment (not an AI reply). messageId:', messageId, 'index:', targetIndex);
+            console.error('[Galatea] targetMsg invalid for comment (not an AI reply). messageId:', messageId, 'index:', targetIndex);
             return;
         }
 
@@ -520,7 +520,7 @@ ${isInjecting ? "" : "Note: ST Chat History is hidden. Focus purely on the targe
 Instead of just appending to the end, you should find a contextually relevant position within the message to inject your comment.
 1. Analyze the message content and choose a specific sentence or concept to react to.
 2. Provide your reasoning inside a <thought> block.
-3. Your comment must start with "[莉莉丝]".
+3. Your comment must start with "[加拉泰亚]".
 4. Provide the EXACT original phrase (around 5-15 words) from the target message that your comment should follow, marked with [Anchor].
 
 [DIVERSITY INSTRUCTIONS]
@@ -534,10 +534,10 @@ Instead of just appending to the end, you should find a contextually relevant po
 
 [FORMAT]
 <thought>Your reasoning for placement and content...</thought>
-[莉莉丝]Your comment text here.
+[加拉泰亚]Your comment text here.
 [Anchor]The exact text from the original message you want to follow.`;
 
-        // 对目标消息也进行预先的内容提取/净化，确保莉莉丝看到的和用户看到的一致
+        // 对目标消息也进行预先的内容提取/净化，确保加拉泰亚看到的和用户看到的一致
         const cleanTargetText = extractContent(targetMsg.mes, userState);
 
         const userPrompt = `Target Message to comment on:
@@ -552,12 +552,12 @@ ${chatLog}
 
         try {
             const response = await this.callUniversalAPI(window, userPrompt, { isChat: false, systemPrompt: systemPrompt });
-            if (response && response.includes('[莉莉丝]')) {
+            if (response && response.includes('[加拉泰亚]')) {
                 // 1. 更严谨的解析 (按旧脚本逻辑)
                 let cleanCommentContent = "";
                 let anchorText = "";
                 
-                const commentMatch = response.match(/\[莉莉丝\]\s*([\s\S]*?)(?=\[Anchor\]|$)/);
+                const commentMatch = response.match(/\[加拉泰亚\]\s*([\s\S]*?)(?=\[Anchor\]|$)/);
                 if (commentMatch) cleanCommentContent = commentMatch[1].trim();
                 
                 const anchorMatch = response.match(/\[Anchor\]\s*([\s\S]*)/);
@@ -565,11 +565,11 @@ ${chatLog}
 
                 // 兜底
                 if (!cleanCommentContent) {
-                    const fallback = response.split('[莉莉丝]')[1] || "";
+                    const fallback = response.split('[加拉泰亚]')[1] || "";
                     cleanCommentContent = fallback.split('[Anchor]')[0].trim();
                 }
 
-                const fullCommentTag = `[莉莉丝] ${cleanCommentContent} [/莉莉丝]`;
+                const fullCommentTag = `[加拉泰亚] ${cleanCommentContent} [/加拉泰亚]`;
 
                 const context = SillyTavern.getContext();
                 const chat = context.chat;
@@ -600,7 +600,7 @@ ${chatLog}
                                 }
                             }
                         } catch (e) {
-                             console.error('[Lilith] Injection extraction failed:', e);
+                             console.error('[Galatea] Injection extraction failed:', e);
                         }
                     }
 
@@ -637,7 +637,7 @@ ${chatLog}
                 AudioSys.speak(cleanCommentContent);
             }
         } catch (e) {
-            console.error('[Lilith] Failed to trigger comment:', e);
+            console.error('[Galatea] Failed to trigger comment:', e);
         }
     },
 
@@ -689,10 +689,10 @@ ${chatLog}
             isInteractive = true;
         }
         else if (name === "废物体检报告") {
-            const userMsgs = contextMsg.filter(m => m.name !== 'System' && !m.name.includes('Lilith')).map(m => `[${m.name}]: ${m.message}`).join('\n');
+            const userMsgs = contextMsg.filter(m => m.name !== 'System' && !m.name.includes('Galatea')).map(m => `[${m.name}]: ${m.message}`).join('\n');
             if (userMsgs.length < 5) { toolOutput.innerHTML = `<div style="color:#f00">⚠️ 样本太少，没法看。</div>`; return; }
             toolOutput.innerHTML = `<div style="color:var(--l-main);">📋 正在检查你的性癖...</div>`;
-            specificPrompt = `Analyze 'User'. Toxic report.\n[Format]:\n【📋 雄性生物观察报告】\n> 编号: Loser-${Math.floor(Math.random()*999)}\n> 性癖XP: ...\n> 智商水平: (Mock him)\n> 危险等级: ...\n> 莉莉丝评价: (Be extremely toxic)`;
+            specificPrompt = `Analyze 'User'. Toxic report.\n[Format]:\n【📋 雄性生物观察报告】\n> 编号: Loser-${Math.floor(Math.random()*999)}\n> 性癖XP: ...\n> 智商水平: (Mock him)\n> 危险等级: ...\n> 加拉泰亚评价: (Be analytical and blunt with cold humor)`;
             sysPersona = `${getDynamicPersona()}\n${userMsgs}`;
         } 
         else if (name === "局势嘲讽") { specificPrompt = "Mock the current situation and the user's performance. Be very rude."; }
@@ -784,14 +784,14 @@ ${chatLog}
                 container.appendChild(card);
             });
         } else {
-            toolOutput.innerHTML = `<div class="tool-result-header">🔰 莉莉丝的评价</div><div class="tool-result-body" style="white-space: pre-wrap;">${(reply||'无数据').replace(/\*\*(.*?)\*\*/g, '<span class="hl">$1</span>')}</div>`;
+            toolOutput.innerHTML = `<div class="tool-result-header">🔰 加拉泰亚的评价</div><div class="tool-result-body" style="white-space: pre-wrap;">${(reply||'无数据').replace(/\*\*(.*?)\*\*/g, '<span class="hl">$1</span>')}</div>`;
             if(name === "废物体检报告") AudioSys.speak("真是一份恶心的报告。");
         }
     },
 
     async generateDynamicContent(parentWin) {
         if (UIManager.isLocked) return; // [锁定策略] 锁定期间停止AI逻辑
-        console.log('[Lilith] Generating dynamic content...');
+        console.log('[Galatea] Generating dynamic content...');
         // 关键修复：确保每次生成都从 userState 中获取最新的好感、理智和条目数
         const f = Number(userState.favorability) || 20;
         const s = Number(userState.sanity) || 80;
@@ -820,8 +820,8 @@ Return ONLY a valid JSON array. Each object MUST follow this schema:
 normal, angry, speechless, mockery, horny, happy, disgust, love
 
 [CONSTRAINTS]
-- Type "dialogue": Short, sharp, personality-driven dialogues Lilith says to the user.
-- Type "event": Vivid descriptions of Lilith's actions. 
+- Type "dialogue": Short, sharp, personality-driven dialogues Galatea says to the user.
+- Type "event": Vivid descriptions of Galatea's actions. 
 - MANDATORY for Type "event": Every event MUST have an "effect" object with non-zero values for "favor" or "sanity". An event without numeric impact is INVALID.
 - Effect range: favor: -5 to 5, sanity: -10 to 10.
 - Language: Chinese.
@@ -853,7 +853,7 @@ ${chatLog}
             });
 
             if (reply) {
-                // console.log('[Lilith] AI Reply for dynamic content:', reply); // Removed for anti-spoiler
+                // console.log('[Galatea] AI Reply for dynamic content:', reply); // Removed for anti-spoiler
                 // 更健壮的 JSON 匹配提取
                 const jsonMatch = reply.match(/\[\s*\{.*\}\s*\]/s);
                 const jsonStr = jsonMatch ? jsonMatch[0] : reply.replace(/```json|```/g, '').trim();
@@ -861,7 +861,7 @@ ${chatLog}
                 try {
                     items = JSON.parse(jsonStr);
                 } catch (parseErr) {
-                    console.error('[Lilith] JSON Parse Error:', parseErr, 'Raw string:', jsonStr);
+                    console.error('[Galatea] JSON Parse Error:', parseErr, 'Raw string:', jsonStr);
                     UIManager.showBubble("AI 返回的数据格式不正确，无法解析。请重试。", "#ff0055");
                     return;
                 }
@@ -898,10 +898,10 @@ ${chatLog}
                 const dCount = items.filter(i => i.type === 'dialogue').length;
                 const eCount = items.filter(i => i.type === 'event').length;
                 UIManager.showBubble(`[构思完成] 已存入 ${dCount} 条对话和 ${eCount} 个事件到大脑皮层。`, "#00ff55");
-                console.log(`[Lilith] Dynamic content generated: ${dCount} dialogues, ${eCount} events. (Content hidden to prevent spoilers)`);
+                console.log(`[Galatea] Dynamic content generated: ${dCount} dialogues, ${eCount} events. (Content hidden to prevent spoilers)`);
             }
         } catch (e) {
-            console.error('[Lilith] Failed to generate dynamic content:', e);
+            console.error('[Galatea] Failed to generate dynamic content:', e);
             UIManager.showBubble("AI 生成请求失败，请检查 API 配置或网络。", "#ff0055");
         }
     },
@@ -917,7 +917,7 @@ ${chatLog}
         const eCount = items.filter(i => i.type === 'event').length;
         
         // 剧透保护：不再控制台打印具体内容，仅打印摘要
-        console.log(`[Lilith] Dynamic Library Triggered: ${dCount} Dialogues, ${eCount} Events available.`);
+        console.log(`[Galatea] Dynamic Library Triggered: ${dCount} Dialogues, ${eCount} Events available.`);
 
         const toolOutput = document.getElementById('tool-output-area');
         if (toolOutput) {
@@ -931,7 +931,7 @@ ${chatLog}
             
             toolOutput.innerHTML = `
                 <div style="padding:10px; color:#fff; font-family:var(--l-font);">
-                    <div style="color:var(--l-cyan); margin-bottom:10px; font-weight:bold;">[ 莉莉丝的大脑皮层快照 ]</div>
+                    <div style="color:var(--l-cyan); margin-bottom:10px; font-weight:bold;">[ 加拉泰亚的系统诊断快照 ]</div>
                     <div style="border-left:2px solid #bd00ff; padding-left:10px; margin-bottom:15px; font-size:13px;">
                         “...在那肮脏的思维深处，我准备了 <span style="color:#ff0055; font-size:16px; font-weight:bold;">${dCount}</span> 条对话和 <span style="color:#bd00ff; font-size:16px; font-weight:bold;">${eCount}</span> 个事件... 现在满意了吗！”
                     </div>
@@ -971,7 +971,7 @@ ${chatLog}
                     if (items.length === 0) return;
 
                     const item = items[Math.floor(Math.random() * items.length)];
-                    // console.log('[Lilith] Dynamic item triggered:', item); // Removed for anti-spoiler
+                    // console.log('[Galatea] Dynamic item triggered:', item); // Removed for anti-spoiler
                     
                     if (item.type === 'dialogue') {
                         UIManager.showBubble(item.content);
@@ -1076,7 +1076,7 @@ ${chatLog}
                     overlay.innerHTML = `
                         <div class="ransom-box" style="text-align:center;">
                             <h2 style="color:#ff00ea; margin:0; font-size:18px;">🔒 SYSTEM LOCKED</h2>
-                            <p style="font-size:13px; margin:10px 0;">莉莉丝正在入侵您的系统...已锁定操作界面！<br>除非您支付 <strong>100 FP</strong> 作为赎金，或者在下方说出“<strong>莉莉丝我爱你</strong>”，否则无法解锁。</p>
+                            <p style="font-size:13px; margin:10px 0;">加拉泰亚正在入侵您的系统...已锁定操作界面！<br>除非您支付 <strong>100 FP</strong> 作为赎金，或者在下方说出“<strong>加拉泰亚我爱你</strong>”，否则无法解锁。</p>
                             <input type="text" id="ransom-input" placeholder="在这输入解锁暗号..." style="width:100%; border:1px solid #ff00ea; background:#1a1a1a; color:#fff; padding:8px; margin-bottom:15px; border-radius:4px; outline:none;">
                             <div style="display:flex; gap:10px;">
                                 <button id="btn-pay-ransom" style="flex:1; background:#0f0; border:none; padding:10px; cursor:pointer; font-weight:bold; border-radius:4px;">支付 (100 FP)</button>
@@ -1085,12 +1085,12 @@ ${chatLog}
                         </div>
                     `;
                     document.body.appendChild(overlay);
-                    AudioSys.speak("【系统漏洞】莉莉丝正在入侵您的系统...已锁定操作界面！", 0.6);
+                    AudioSys.speak("【系统漏洞】加拉泰亚正在接管系统控制权...已锁定操作界面！", 0.6);
 
                     const input = document.getElementById('ransom-input');
                     input.focus();
                     input.oninput = () => {
-                        if (input.value.includes("莉莉丝我爱你") || input.value.includes("我爱你")) {
+                        if (input.value.includes("管理员授权确认") || input.value.includes("我爱你")) {
                             AudioSys.speak("哼，算你识相。下次记得主动点哦~");
                             updateFavor(2);
                             saveState();
@@ -1151,7 +1151,7 @@ ${chatLog}
     isGenerating: false, // 防止重复触发
 
     startHeartbeat(parentWin) {
-        console.log('[Lilith] Heartbeat system started.');
+        console.log('[Galatea] Heartbeat system started.');
         setInterval(() => {
             if (UIManager.isLocked) return; // [锁定策略] 锁定期间停止所有循环逻辑
             try {
@@ -1183,7 +1183,7 @@ ${chatLog}
                     
                     if (last === 0 || (now - last > intervalMs)) {
                         this.isGenerating = true;
-                        console.log(`[Lilith] Triggering scheduled content update. Last: ${last}`);
+                        console.log(`[Galatea] Triggering scheduled content update. Last: ${last}`);
                         this.generateDynamicContent(parentWin).finally(() => {
                             this.isGenerating = false;
                         });

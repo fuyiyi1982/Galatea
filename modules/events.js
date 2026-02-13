@@ -9,17 +9,17 @@ import { AudioSys } from './audio.js';
  */
 export const EventManager = {
     init() {
-        console.log('[Lilith] Initializing Event Manager...');
+        console.log('[Galatea] Initializing Event Manager...');
         try {
             const context = SillyTavern.getContext();
             const { eventSource, event_types } = context;
             
             if (!eventSource || !event_types) {
-                console.error('[Lilith] SillyTavern Event API not found!');
+                console.error('[Galatea] SillyTavern Event API not found!');
                 return;
             }
 
-            // 1. Message Rendering Hooks (Lilith Message Formatting)
+            // 1. Message Rendering Hooks (Galatea Message Formatting)
             const renderEvents = [
                 event_types.CHARACTER_MESSAGE_RENDERED,
                 event_types.USER_MESSAGE_RENDERED,
@@ -52,7 +52,7 @@ export const EventManager = {
             // Initial full scan for existing messages
             setTimeout(() => {
                 if (UIManager.isLocked) return;
-                console.log('[Lilith] Scanning initial messages...');
+                console.log('[Galatea] Scanning initial messages...');
                 document.querySelectorAll('.mes').forEach(el => UIManager.applyLilithFormatting(el));
                 UIManager.injectEmbeddedDashboard();
             }, 1000);
@@ -73,7 +73,7 @@ export const EventManager = {
                 const lastMsg = currentChat[currentChat.length - 1];
                 if (!lastMsg) return;
 
-                // Update Lilith's expression based on the AI's response (Optimized via Regex if enabled)
+                // Update Galatea's expression based on the AI's response (Optimized via Regex if enabled)
                 if (!lastMsg.is_user && !lastMsg.is_system && lastMsg.mes) {
                     const optimizedContent = extractContent(lastMsg.mes, userState);
                     UIManager.updateAvatarExpression(optimizedContent);
@@ -82,22 +82,22 @@ export const EventManager = {
                 const messageId = lastMsg.message_id || lastMsg.mesid || (currentChat.length - 1);
 
                 // Conditions for interjection
-                if (!lastMsg.is_user && !lastMsg.is_system && lastMsg.mes && !lastMsg.mes.includes('[莉莉丝]')) {
+                if (!lastMsg.is_user && !lastMsg.is_system && lastMsg.mes && !lastMsg.mes.includes('[加拉泰亚]')) {
                     const freq = userState.commentFrequency || 50;
                     if (Math.random() * 100 < freq) {
-                        console.log('[Lilith] Random interjection triggered.');
+                        console.log('[Galatea] Random interjection triggered.');
                         setTimeout(() => assistantManager.triggerRealtimeComment(messageId), 1500);
                     }
                 }
             });
 
-            // 3. Before Combine Prompts (Cleanup Lilith content from AI prompt)
+            // 3. Before Combine Prompts (Cleanup Galatea content from AI prompt)
             eventSource.on(event_types.GENERATE_BEFORE_COMBINE_PROMPTS, (data) => {
                 if (data && data.chat) {
                     data.chat.forEach(msg => {
-                        if (msg.mes && msg.mes.includes('[莉莉丝]')) {
-                            // Strip [Lilith] comments so AI doesn't see its own previous interjections as part of the character's core response
-                            msg.mes = msg.mes.replace(/\[莉莉丝\][\s\S]*?(?=\n\n|$)/g, '').trim();
+                        if (msg.mes && msg.mes.includes('[加拉泰亚]')) {
+                            // Strip [Galatea] comments so AI doesn't see its own previous interjections as part of the character's core response
+                            msg.mes = msg.mes.replace(/\[加拉泰亚\][\s\S]*?(?=\n\n|$)/g, '').trim();
                         }
                     });
                 }
@@ -106,7 +106,7 @@ export const EventManager = {
             // 5. Database Update Listener (ACU Sync)
             window.addEventListener('acu:data_updated', () => {
                 if (UIManager.isLocked) return; // [锁定策略] 锁定期间停止UI刷新
-                console.log('[Lilith] Global Database Update Detected -> Refreshing UI');
+                console.log('[Galatea] Global Database Update Detected -> Refreshing UI');
                 
                 // 刷新主控制窗 (如果开启)
                 const innerContainer = document.querySelector('.inner-world-container');
@@ -169,7 +169,7 @@ export const EventManager = {
             });
 
         } catch (e) {
-            console.error('[Lilith] Event registration failed:', e);
+            console.error('[Galatea] Event registration failed:', e);
         }
     }
 };

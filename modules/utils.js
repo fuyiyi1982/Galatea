@@ -35,7 +35,7 @@ export function extractContent(text, userState) {
                 result = match[1] !== undefined ? match[1] : match[0];
             }
         } catch (e) {
-            console.error('[Lilith] Regex Extraction Error:', e);
+            console.error('[Galatea] Regex Extraction Error:', e);
         }
     }
 
@@ -45,7 +45,7 @@ export function extractContent(text, userState) {
             const replacement = userState.textReplacementString || '';
             result = result.replace(regex, replacement);
         } catch (e) {
-             console.error('[Lilith] Regex Replacement Error:', e);
+             console.error('[Galatea] Regex Replacement Error:', e);
         }
     }
 

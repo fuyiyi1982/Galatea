@@ -5,7 +5,7 @@ function getSTContext() {
     try {
         return SillyTavern.getContext();
     } catch (e) {
-        console.error('[Lilith] SillyTavern context not available!', e);
+        console.error('[Galatea] SillyTavern context not available!', e);
         return null;
     }
 }
@@ -33,11 +33,11 @@ export const panelChatHistory = [];
  */
 export function validateState() {
     const settings = getExtensionSettings();
-    console.log('[Lilith] Validating state...', settings);
+    console.log('[Galatea] Validating state...', settings);
     
     // 1. Initialize Global/Management settings
     if (!settings.global) {
-        console.log('[Lilith] Initializing global settings...');
+        console.log('[Galatea] Initializing global settings...');
         settings.global = {
             activePersona: DEFAULT_STATE.activePersona || 'galatea',
             isInnerWorld: DEFAULT_STATE.isInnerWorld || false,
@@ -81,7 +81,7 @@ export function validateState() {
 
     // 2. Initialize Persona Data Map
     if (!settings.personaData) {
-        console.log('[Lilith] Initializing persona data map...');
+        console.log('[Galatea] Initializing persona data map...');
         settings.personaData = {};
         // Migration: if old userState exists, move it to the current active persona
         if (settings.userState) {
@@ -93,9 +93,9 @@ export function validateState() {
 
     // 3. Load Current Persona Data
     const currentP = settings.global.activePersona;
-    console.log(`[Lilith] Loading persona data for: ${currentP}`);
+    console.log(`[Galatea] Loading persona data for: ${currentP}`);
     if (!settings.personaData[currentP]) {
-        console.log(`[Lilith] Creating default data for persona: ${currentP}`);
+        console.log(`[Galatea] Creating default data for persona: ${currentP}`);
         settings.personaData[currentP] = JSON.parse(JSON.stringify(DEFAULT_STATE));
     }
 
@@ -106,13 +106,13 @@ export function validateState() {
     
     // Overlay Global Settings (Global takes precedence for UI settings)
     Object.assign(userState, settings.global);
-    console.log('[Lilith] Current UserState:', userState);
+    console.log('[Galatea] Current UserState:', userState);
 
     // 5. Load Chat History
     panelChatHistory.length = 0;
     if (settings.personaData[currentP].chatHistory) {
         panelChatHistory.push(...settings.personaData[currentP].chatHistory);
-        console.log(`[Lilith] Restored ${panelChatHistory.length} messages for ${currentP}`);
+        console.log(`[Galatea] Restored ${panelChatHistory.length} messages for ${currentP}`);
     }
 
     // Ensure basic numeric fields exist
@@ -126,7 +126,7 @@ export function saveState(updateUICallback) {
     const settings = getExtensionSettings();
     const currentP = settings.global?.activePersona || 'galatea';
 
-    console.log(`[Lilith] Saving state for persona: ${currentP}`);
+    console.log(`[Galatea] Saving state for persona: ${currentP}`);
 
     // Separate Global from Persona data
     const globalKeys = [
@@ -177,7 +177,7 @@ export function saveChat() {
  * Switches to a different persona and reloads its specific state.
  */
 export function switchPersonaState(newPersonaName) {
-    console.log(`[Lilith] Switching persona to: ${newPersonaName}`);
+    console.log(`[Galatea] Switching persona to: ${newPersonaName}`);
     const settings = getExtensionSettings();
     
     // 1. Save current state first

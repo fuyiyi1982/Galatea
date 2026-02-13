@@ -1,5 +1,5 @@
 /**
- * Update Manager for Lilith Assistant
+ * Update Manager for Galatea Assistant
  * Checks for updates from GitHub and notifies the user in the ST sidebar.
  */
 
@@ -7,7 +7,7 @@ export const UpdateManager = {
     // Current version - detected from manifest.json on init
     localVersion: "v3.0.5-杂鱼专用版-❤",
     // Remote manifest URL
-    remoteUrl: "https://raw.githubusercontent.com/wt7141789/lilith-assistant/main/manifest.json",
+    remoteUrl: "https://raw.githubusercontent.com/fuyiyi1982/Galatea/main/manifest.json",
     
     // State
     hasUpdate: false,
@@ -30,11 +30,11 @@ export const UpdateManager = {
                 const data = await response.json();
                 if (data.version) {
                     this.localVersion = data.version;
-                    console.log(`[Lilith] Detected local version: ${this.localVersion}`);
+                    console.log(`[Galatea] Detected local version: ${this.localVersion}`);
                 }
             }
         } catch (e) {
-            console.warn('[Lilith] Failed to auto-detect local version, using fallback:', e);
+            console.warn('[Galatea] Failed to auto-detect local version, using fallback:', e);
         }
         this.initialized = true;
     },
@@ -45,7 +45,7 @@ export const UpdateManager = {
     async checkUpdate() {
         if (!this.initialized) await this.init();
         
-        console.log('[Lilith] Checking for updates...');
+        console.log('[Galatea] Checking for updates...');
         try {
             // Add timestamp to prevent cache
             const response = await fetch(`${this.remoteUrl}?t=${Date.now()}`);
@@ -56,7 +56,7 @@ export const UpdateManager = {
 
             if (this.isNewer(this.remoteVersion, this.localVersion)) {
                 this.hasUpdate = true;
-                console.log(`[Lilith] Update found! Remote: ${this.remoteVersion}, Local: ${this.localVersion}`);
+                console.log(`[Galatea] Update found! Remote: ${this.remoteVersion}, Local: ${this.localVersion}`);
                 this.showUpdateBadge();
                 
                 // [新增] 发现更新时自动推送通知
@@ -70,10 +70,10 @@ export const UpdateManager = {
                 }
             } else {
                 this.hasUpdate = false;
-                console.log('[Lilith] Up to date.');
+                console.log('[Galatea] Up to date.');
             }
         } catch (e) {
-            console.warn('[Lilith] Update check failed (likely offline or GitHub rate limit):', e.message);
+            console.warn('[Galatea] Update check failed (likely offline or GitHub rate limit):', e.message);
         }
     },
 
@@ -97,11 +97,11 @@ export const UpdateManager = {
      * Perform update and force refresh the webpage
      */
     async updateAndReload() {
-        console.log('[Lilith] Starting update and reload...');
+        console.log('[Galatea] Starting update and reload...');
         const originalVersion = this.localVersion;
         const targetVersion = this.remoteVersion;
         
-        console.log(`[Lilith] Current Local: ${originalVersion}, Target Remote: ${targetVersion}`);
+        console.log(`[Galatea] Current Local: ${originalVersion}, Target Remote: ${targetVersion}`);
 
         try {
             const context = typeof SillyTavern !== 'undefined' ? SillyTavern.getContext() : null;
@@ -109,8 +109,8 @@ export const UpdateManager = {
 
             if (typeof executeCmd === 'function') {
                 // 1. 发送同步指令
-                await executeCmd('/extensions-update lilith-assistant');
-                console.log('[Lilith] Update command sent to SillyTavern.');
+                await executeCmd('/extensions-update Galatea');
+                console.log('[Galatea] Update command sent to SillyTavern.');
                 
                 let toastId = null;
                 if (typeof toastr !== 'undefined') {
@@ -128,8 +128,8 @@ export const UpdateManager = {
                     
                     // 每 15 秒重新尝试发送一次更新指令，防止指令丢失
                     if (attempts % 15 === 0) {
-                        console.log('[Lilith] Retrying update command...');
-                        executeCmd('/extensions-update lilith-assistant');
+                        console.log('[Galatea] Retrying update command...');
+                        executeCmd('/extensions-update Galatea');
                     }
 
                     if (toastId && typeof toastr !== 'undefined') {
@@ -143,7 +143,7 @@ export const UpdateManager = {
                             const data = await response.json();
                             const currentLocalVersion = data.version;
                             
-                            console.log(`[Lilith] Polling... Local on disk: ${currentLocalVersion}`);
+                            console.log(`[Galatea] Polling... Local on disk: ${currentLocalVersion}`);
 
                             // 重要：只要版本号达到目标，或者发生了变更，就强制刷新
                             // 如果 targetVersion 是 3.0.4 且 currentLocalVersion 变成了 3.0.4，则成功
@@ -152,7 +152,7 @@ export const UpdateManager = {
 
                             if (hasReachedTarget || hasChangedSinceStart) {
                                 clearInterval(checkInterval);
-                                console.log(`[Lilith] Update DETECTED: ${originalVersion} -> ${currentLocalVersion}.`);
+                                console.log(`[Galatea] Update DETECTED: ${originalVersion} -> ${currentLocalVersion}.`);
                                 
                                 if (typeof toastr !== 'undefined') {
                                     toastr.success(`检测到代码已同步！版本: v${currentLocalVersion}。即将重启网页...`, '加拉泰亚');
@@ -163,12 +163,12 @@ export const UpdateManager = {
                             }
                         }
                     } catch (e) {
-                        console.warn('[Lilith] Local fetch failed during polling:', e);
+                        console.warn('[Galatea] Local fetch failed during polling:', e);
                     }
 
                     if (attempts >= maxAttempts) {
                         clearInterval(checkInterval);
-                        console.error('[Lilith] Update poll timed out.');
+                        console.error('[Galatea] Update poll timed out.');
                         if (typeof toastr !== 'undefined') {
                             toastr.warning('同步检测超时，但代码可能已在后台下载完毕，请点击酒馆上方的“Reload”或手动刷新网页。', '加拉泰亚 - 超时提醒', { timeOut: 15000 });
                         }
@@ -178,7 +178,7 @@ export const UpdateManager = {
                 window.location.reload();
             }
         } catch (err) {
-            console.error('[Lilith] Critical Update Error:', err);
+            console.error('[Galatea] Critical Update Error:', err);
             window.location.reload();
         }
     },
@@ -218,7 +218,7 @@ export const UpdateManager = {
             
             if (attempts >= maxAttempts) {
                 clearInterval(poll);
-                console.log('[Lilith] Update UI injection timed out (Sidebar might not be open).');
+                console.log('[Galatea] Update UI injection timed out (Sidebar might not be open).');
             }
         }, 1000);
     }

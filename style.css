@@ -135,7 +135,7 @@
     100% { transform: scale(1); opacity: 0.8; }
 }
 
-/* Lilith UI 主容器 - 恢复经典酒馆正则美化风格，防止重复定义导致的渲染闪烁 */
+/* Galatea UI 主容器 - 恢复经典酒馆正则美化风格，防止重复定义导致的渲染闪烁 */
 div.lilith-chat-ui {
     display: flex !important;
     flex-direction: column !important; 
@@ -1523,7 +1523,7 @@ div.lilith-chat-ui:hover {
 
 /* === 全域链路汇总样式集 (Dashboard Styles) === */
 
-/* 1. 现代莉莉丝粉 (Modern Lilith - Default) */
+/* 1. 现代加拉泰亚 (Modern Galatea - Default) */
 .dash-style-modern {
     background: rgba(30, 5, 15, 0.7) !important;
     backdrop-filter: blur(12px) !important;
