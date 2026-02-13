@@ -1,5 +1,5 @@
 // modules/ui_manager.js
-import { containerId, avatarId, panelId, bubbleId, PERSONA_DB, AvatarPacks, extensionName } from './config.js';
+import { containerId, avatarId, panelId, bubbleId, PERSONA_DB, AvatarPacks, getBasePath } from './config.js';
 import { userState, saveState, saveChat, panelChatHistory, updateFavor, updateSanity, getExtensionSettings, saveExtensionSettings, switchPersonaState } from './storage.js';
 import { AudioSys } from './audio.js';
 import { createSmartRegExp, extractContent } from './utils.js';
@@ -1498,7 +1498,7 @@ export const UIManager = {
 
     async initSettingsUI(assistant) {
         try {
-            const htmlPath = `/scripts/extensions/third-party/${extensionName}/settings.html`;
+            const htmlPath = `${getBasePath()}settings.html`;
             const settingsHtml = await $.get(htmlPath);
             $('#extensions_settings').append(settingsHtml);
 

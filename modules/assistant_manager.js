@@ -1,5 +1,5 @@
 // modules/assistant_manager.js
-import { extensionName, avatarId, bubbleId, MAX_HISTORY_TRIGGER, HISTORY_KEEP, PERSONA_DB, GachaConfig, WRITER_PERSONA, JAILBREAK, getBasePath } from './config.js';
+import { avatarId, bubbleId, MAX_HISTORY_TRIGGER, HISTORY_KEEP, PERSONA_DB, GachaConfig, WRITER_PERSONA, JAILBREAK, getBasePath } from './config.js';
 import { userState, saveState, saveChat, panelChatHistory, updateFavor, updateSanity } from './storage.js';
 import { AudioSys } from './audio.js';
 import { getDynamicPersona } from './persona.js';

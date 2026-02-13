@@ -1,13 +1,18 @@
 // modules/config.js
 
-export const extensionName = 'lilith-assistant'; // ID 用，不强绑物理目录名
+export const extensionName = 'lilith-assistant'; // 逻辑 ID，用于旧配置键，不强绑物理目录名
+export const defaultFolderName = 'Galatea';
 
 // 动态解析资源基础路径，优先使用 index.js 注入的实际脚本路径
 export const getBasePath = () => {
-    if (typeof window !== 'undefined' && window.__galateaBasePath) {
-        return window.__galateaBasePath.endsWith('/') ? window.__galateaBasePath : `${window.__galateaBasePath}`;
+    if (typeof window !== 'undefined') {
+        if (window.__galateaBasePath) {
+            return window.__galateaBasePath.endsWith('/') ? window.__galateaBasePath : `${window.__galateaBasePath}`;
+        }
+        const folder = window.__galateaExtensionFolder || defaultFolderName;
+        return `/scripts/extensions/third-party/${folder}/`;
     }
-    return `/scripts/extensions/third-party/${extensionName}/`;
+    return `/scripts/extensions/third-party/${defaultFolderName}/`;
 };
 export const containerId = 'lilith-wrapper-cn';
 export const avatarId = 'lilith-avatar-cn';
