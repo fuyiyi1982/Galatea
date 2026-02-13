@@ -371,8 +371,19 @@ export const assistantManager = {
         }
     },
 
+    errorCount: 0, // [新增] API 错误计数器
+
     async callUniversalAPI(parentWin, text, options = {}) {
         UIManager.setLoadingState(true);
+
+        // 如果错误次数超过 3 次，且没有被手动重置，则停止触发请求
+        if (this.errorCount >= 3) {
+            console.warn('[Lilith] API 已连续出错 3 次，自动停止请求。请检查 API 配置或网络后再试。');
+            UIManager.showBubble("API 好像坏掉了... 已经连续报错 3 次了，我先闭嘴了哦。请检查配置或者网络。", "#ff0055");
+            UIManager.setLoadingState(false);
+            return null;
+        }
+
         try {
             const { isChat = false, mode = "normal", systemPrompt = null } = options; 
             const isInternal = mode === 'memory_internal';
@@ -436,15 +447,26 @@ export const assistantManager = {
                 });
             }
             const response = await fetch(fetchUrl, { method: 'POST', headers: fetchHeaders, body: fetchBody });
+            
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(`HTTP Error ${response.status}: ${JSON.stringify(errData)}`);
+            }
+
             const data = await response.json();
             let reply = apiType === 'openai' ? data.choices?.[0]?.message?.content : data.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            // 成功请求，重置错误统计
+            this.errorCount = 0;
+
             reply = reply?.trim();
             if (isChat && reply && !isInternal) { 
                 this.checkAndSummarize(parentWin);
             }
             return reply;
         } catch(e) { 
-            console.error("API Error:", e); 
+            this.errorCount++; // 累加错误计数
+            console.error(`API Error (Count: ${this.errorCount}):`, e); 
             return null; 
         } finally {
             UIManager.setLoadingState(false);
