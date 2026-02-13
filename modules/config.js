@@ -9,6 +9,10 @@ export const MAX_HISTORY_TRIGGER = 20;
 export const HISTORY_KEEP = 5; 
 export const SETTINGS_KEY = 'galatea_assistant';
 
+export function getBasePath() {
+    return `/scripts/extensions/third-party/${extensionName}/`;
+}
+
 export const GachaConfig = {
     cost: 50,
     tiers: {
