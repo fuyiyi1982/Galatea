@@ -1541,9 +1541,6 @@ export const UIManager = {
         return { inner, status, action, speech };
     },
 
-        return { inner, status, action, speech };
-    },
-
     addChatMsg(role, text, save = true) {
         const div = document.getElementById('lilith-chat-history');
         if (!div) return;
