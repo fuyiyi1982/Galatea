@@ -803,6 +803,10 @@ export const UIManager = {
                     saveState(); // Ensure the new persona's default state is saved immediately
                     this.updateUI();
                     
+                    // 同步侧边栏下拉
+                    const stPersona = document.getElementById('lilith-persona-select');
+                    if (stPersona) stPersona.value = newPersona;
+
                     // Show switch confirmation
                     this.showBubble(`已同步 ${PERSONA_DB[userState.activePersona].name} 的独立数据空间。`);
                 });
@@ -1077,52 +1081,59 @@ export const UIManager = {
 
         // Change Frequency
         const cfgFreq = document.getElementById('cfg-freq');
-        const stFreq = document.getElementById('lilith-comment-frequency');
         
         const syncFreq = (val) => {
-            userState.commentFrequency = parseInt(val);
-            if (cfgFreq) cfgFreq.value = val;
-            if (stFreq) stFreq.value = val;
-            const valDisplay = document.getElementById('cfg-freq-val');
-            const stDisplay = document.querySelector('.lilith-comment-frequency-val');
-            if(valDisplay) valDisplay.textContent = val;
-            if(stDisplay) stDisplay.textContent = val;
+            const numVal = parseInt(val);
+            userState.commentFrequency = numVal;
+            
+            // 同步悬浮窗
+            if (cfgFreq) cfgFreq.value = numVal;
+            const cfgValDisplay = document.getElementById('cfg-freq-val');
+            if(cfgValDisplay) cfgValDisplay.textContent = numVal;
+
+            // 同步侧边栏
+            const stFreq = document.getElementById('lilith-comment-frequency');
+            const stFreqVal = document.getElementById('lilith-freq-value');
+            if (stFreq) stFreq.value = numVal;
+            if (stFreqVal) stFreqVal.textContent = `${numVal}%`;
+            
             saveState();
         };
 
         if (cfgFreq) cfgFreq.addEventListener('input', () => syncFreq(cfgFreq.value));
-        if (stFreq) stFreq.addEventListener('input', () => syncFreq(stFreq.value));
+        // 侧边栏事件监听移到 initSettingsUI 中，因为那里有 jQuery 绑定
 
         // Comment Mode
         const cfgMode = document.getElementById('cfg-comment-mode');
-        const stMode = document.getElementById('lilith-comment-mode');
 
         const syncMode = (val) => {
             userState.commentMode = val;
             if (cfgMode) cfgMode.value = val;
+            const stMode = document.getElementById('lilith-comment-mode');
             if (stMode) stMode.value = val;
             saveState();
         };
 
         if (cfgMode) cfgMode.addEventListener('change', () => syncMode(cfgMode.value));
-        if (stMode) stMode.addEventListener('change', () => syncMode(stMode.value));
 
         // --- TTS Settings ---
         const ttsPitch = document.getElementById('tts-pitch');
         if (ttsPitch) {
             ttsPitch.addEventListener('input', () => {
+                const val = parseFloat(ttsPitch.value);
                 if (!userState.ttsConfig) userState.ttsConfig = { pitch: 1.0, rate: 1.0 };
-                userState.ttsConfig.pitch = parseFloat(ttsPitch.value);
-                document.getElementById('tts-pitch-val').textContent = userState.ttsConfig.pitch;
+                userState.ttsConfig.pitch = val;
+                document.getElementById('tts-pitch-val').textContent = val;
                 saveState();
             });
         }
         const ttsRate = document.getElementById('tts-rate');
         if (ttsRate) {
             ttsRate.addEventListener('input', () => {
+                const val = parseFloat(ttsRate.value);
                 if (!userState.ttsConfig) userState.ttsConfig = { pitch: 1.0, rate: 1.0 };
-                userState.ttsConfig.rate = parseFloat(ttsRate.value);
-                document.getElementById('tts-rate-val').textContent = userState.ttsConfig.rate;
+                userState.ttsConfig.rate = val;
+                document.getElementById('tts-rate-val').textContent = val;
                 saveState();
             });
         }
@@ -1137,28 +1148,37 @@ export const UIManager = {
         });
 
         document.getElementById('cfg-dynamic-enable')?.addEventListener('change', (e) => {
-            userState.dynamicContentEnabled = e.target.checked;
-            saveState();
+            const checked = e.target.checked;
+            userState.dynamicContentEnabled = checked;
             const stCheck = document.getElementById('lilith-dynamic-enabled');
-            if (stCheck) stCheck.checked = e.target.checked;
+            if (stCheck) stCheck.checked = checked;
+            saveState();
         });
         document.getElementById('cfg-dyn-interval')?.addEventListener('change', (e) => {
-            userState.dynamicContentInterval = parseInt(e.target.value);
-            saveState();
+            const val = parseInt(e.target.value);
+            userState.dynamicContentInterval = val;
             const stInput = document.getElementById('lilith-dynamic-interval');
-            if (stInput) stInput.value = e.target.value;
+            if (stInput) stInput.value = val;
+            saveState();
         });
         document.getElementById('cfg-dyn-count')?.addEventListener('change', (e) => {
-            userState.dynamicContentCount = parseInt(e.target.value);
-            saveState();
+            const val = parseInt(e.target.value);
+            userState.dynamicContentCount = val;
             const stInput = document.getElementById('lilith-dynamic-count');
-            if (stInput) stInput.value = e.target.value;
-        });
-        document.getElementById('cfg-dyn-trigger')?.addEventListener('change', (e) => {
-            userState.dynamicContentTriggerChance = parseInt(e.target.value);
+            if (stInput) stInput.value = val;
             saveState();
+        });
+        document.getElementById('cfg-dyn-trigger')?.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            userState.dynamicContentTriggerChance = val;
             const stInput = document.getElementById('lilith-dynamic-trigger-chance');
-            if (stInput) stInput.value = e.target.value;
+            const stValDisplay = document.getElementById('lilith-dyn-trigger-val');
+            if (stInput) stInput.value = val;
+            if (stValDisplay) stValDisplay.textContent = `${val}%`;
+            // 同时更新本面板的数值显示
+            const cfgValDisplay = document.getElementById('cfg-dyn-trigger-val');
+            if (cfgValDisplay) cfgValDisplay.textContent = val;
+            saveState();
         });
         document.getElementById('cfg-dyn-force')?.addEventListener('click', () => {
             assistant.generateDynamicContent(window);
@@ -1170,128 +1190,103 @@ export const UIManager = {
 
         // Change Avatar Size
         const cfgSize = document.getElementById('cfg-avatar-size');
-        const stSize = document.getElementById('lilith-avatar-size');
 
         const syncSize = (val) => {
-            userState.avatarSize = parseInt(val);
-            if (cfgSize) cfgSize.value = val;
-            if (stSize) stSize.value = val;
-            const valDisplay = document.getElementById('cfg-size-val');
-            const stDisplay = document.querySelector('.lilith-avatar-size-val');
-            if(valDisplay) valDisplay.textContent = val;
-            if(stDisplay) stDisplay.textContent = val;
+            const numVal = parseInt(val);
+            userState.avatarSize = numVal;
+            if (cfgSize) cfgSize.value = numVal;
+            const cfgValDisplay = document.getElementById('cfg-size-val');
+            if(cfgValDisplay) cfgValDisplay.textContent = numVal;
+
+            const stSize = document.getElementById('lilith-avatar-size');
+            if (stSize) stSize.value = numVal;
+            
             this.updateAvatarStyle();
             saveState();
         };
 
         if (cfgSize) cfgSize.addEventListener('input', () => syncSize(cfgSize.value));
-        if (stSize) stSize.addEventListener('input', () => syncSize(stSize.value));
 
         // Toggle Hide Avatar
         const cfgHide = document.getElementById('cfg-hide-avatar');
-        const stHide = document.getElementById('lilith-hide-avatar');
 
         const syncHide = (checked) => {
             userState.hideAvatar = checked;
             if (cfgHide) cfgHide.checked = checked;
+            const stHide = document.getElementById('lilith-hide-avatar');
             if (stHide) stHide.checked = checked;
             this.updateAvatarStyle();
             saveState();
         };
 
         if (cfgHide) cfgHide.addEventListener('change', () => syncHide(cfgHide.checked));
-        if (stHide) stHide.addEventListener('change', () => syncHide(stHide.checked));
 
         // Sync Auto Send
         const cfgAutoSend = document.getElementById('cfg-auto-send');
-        const stAutoSend = document.getElementById('lilith-auto-send');
         const syncAutoSend = (checked) => {
             userState.autoSend = checked;
             if (cfgAutoSend) cfgAutoSend.checked = checked;
-            const $stAutoSend = $('#lilith-auto-send');
-            if ($stAutoSend.length) $stAutoSend.prop('checked', checked);
-            else if (stAutoSend) stAutoSend.checked = checked;
+            const stAutoSend = document.getElementById('lilith-auto-send');
+            if (stAutoSend) stAutoSend.checked = checked;
             saveState();
         };
         if (cfgAutoSend) cfgAutoSend.addEventListener('change', () => syncAutoSend(cfgAutoSend.checked));
-        if (stAutoSend) stAutoSend.addEventListener('change', () => syncAutoSend(stAutoSend.checked));
 
         // Sync Extraction & Replacement toggles
         const cfgExtract = document.getElementById('cfg-extract-enable');
-        const stExtract = document.getElementById('lilith-extraction-enabled');
         const cfgRepl = document.getElementById('cfg-repl-enable');
-        const stRepl = document.getElementById('lilith-text-replacement-enabled');
 
         const syncExtract = (checked) => {
             userState.extractionEnabled = checked;
             if (cfgExtract) cfgExtract.checked = checked;
-            // 如果是jQuery对象（侧边栏常用），则使用 .prop
-            const $stExtract = $('#lilith-extraction-enabled');
-            if ($stExtract.length) $stExtract.prop('checked', checked);
-            else if (stExtract) stExtract.checked = checked;
+            const stExtract = document.getElementById('lilith-extraction-enabled');
+            if (stExtract) stExtract.checked = checked;
             saveState();
         };
 
         const syncRepl = (checked) => {
             userState.textReplacementEnabled = checked;
             if (cfgRepl) cfgRepl.checked = checked;
-            const $stRepl = $('#lilith-text-replacement-enabled');
-            if ($stRepl.length) $stRepl.prop('checked', checked);
-            else if (stRepl) stRepl.checked = checked;
+            const stRepl = document.getElementById('lilith-text-replacement-enabled');
+            if (stRepl) stRepl.checked = checked;
             saveState();
         };
 
         if (cfgExtract) cfgExtract.addEventListener('change', () => syncExtract(cfgExtract.checked));
-        if (stExtract) stExtract.addEventListener('change', () => syncExtract(stExtract.checked));
         if (cfgRepl) cfgRepl.addEventListener('change', () => syncRepl(cfgRepl.checked));
-        if (stRepl) stRepl.addEventListener('change', () => syncRepl(stRepl.checked));
 
         // Reset Position
         const cfgResetPos = document.getElementById('cfg-reset-pos');
-        const stResetPos = document.getElementById('lilith-reset-pos');
 
         const resetPos = () => {
             const wrapper = document.getElementById(containerId);
-            if (!wrapper) {
-                console.error('[Lilith] Reset failed: Wrapper not found');
-                return;
-            }
+            if (!wrapper) return;
             userState.posTop = 100;
             userState.posLeft = 100;
             wrapper.style.top = '100px';
             wrapper.style.left = '100px';
             this.updatePos();
-            saveState(); // 使用 saveState 以确保同步到全局设置
-            console.log('[Lilith] Position reset to (100, 100)');
+            saveState();
         };
 
         if (cfgResetPos) cfgResetPos.onclick = resetPos;
-        if (stResetPos) stResetPos.onclick = resetPos;
 
         // Sync Auto Lock
         const cfgAutoLock = document.getElementById('cfg-auto-lock');
-        const stAutoLock = document.getElementById('lilith-auto-lock');
         const syncAutoLock = (val) => {
             const timeout = parseInt(val) || 0;
             userState.autoLockTimeout = timeout;
             if (cfgAutoLock) cfgAutoLock.value = timeout;
+            const stAutoLock = document.getElementById('lilith-auto-lock');
             if (stAutoLock) stAutoLock.value = timeout;
             saveState();
         };
         if (cfgAutoLock) cfgAutoLock.addEventListener('change', (e) => syncAutoLock(e.target.value));
-        if (stAutoLock) stAutoLock.addEventListener('change', (e) => syncAutoLock(e.target.value));
         
         // Buttons
-        // (Removed duplicate bindings here as they are now handled in bindSharedConfigEvents called above)
+        // (Shared events handled in bindSharedConfigEvents)
         
-        // Legacy listener for sidebar settings (keep this if settings.html is loaded elsewhere)
-        const personaSelectSidebar = document.getElementById('lilith-persona-select');
-        if (personaSelectSidebar) {
-            personaSelectSidebar.addEventListener('change', () => {
-                switchPersonaState(personaSelectSidebar.value);
-                this.updateUI();
-            });
-        }
+        // Legacy listener for sidebar settings handled in initSettingsUI
     },
 
     // --- UI 交互 ---
@@ -1665,6 +1660,34 @@ export const UIManager = {
                 // 同步悬浮窗下拉
                 const cfgPersonaSelect = document.getElementById('cfg-persona-select');
                 if (cfgPersonaSelect) cfgPersonaSelect.value = val;
+                saveState();
+                this.updateUI();
+            });
+
+            $hideAvatar.on('change', (e) => {
+                userState.hideAvatar = $(e.target).prop('checked');
+                this.setAvatar();
+                saveState();
+                const cfgHide = document.getElementById('cfg-hide-avatar');
+                if (cfgHide) cfgHide.checked = userState.hideAvatar;
+            });
+
+            $autoSend.on('change', (e) => {
+                userState.autoSend = $(e.target).prop('checked');
+                saveState();
+                const cfgAuto = document.getElementById('cfg-auto-send');
+                if (cfgAuto) cfgAuto.checked = userState.autoSend;
+            });
+
+            $avatarSize.on('input', (e) => {
+                const val = parseInt($(e.target).val());
+                userState.avatarSize = val;
+                this.setAvatar();
+                saveState();
+                const cfgSize = document.getElementById('cfg-avatar-size');
+                const cfgSizeVal = document.getElementById('cfg-size-val');
+                if (cfgSize) cfgSize.value = val;
+                if (cfgSizeVal) cfgSizeVal.textContent = val;
             });
 
             $dashStyle.on('change', (e) => {
@@ -1714,20 +1737,22 @@ export const UIManager = {
                 if (cfgInput) cfgInput.value = userState.dynamicContentInterval;
             });
             $dynCount.on('change', (e) => {
-                userState.dynamicContentCount = parseInt($(e.target).val());
+                const val = parseInt($(e.target).val());
+                userState.dynamicContentCount = val;
                 saveState();
                 const cfgInput = document.getElementById('cfg-dyn-count');
-                if (cfgInput) cfgInput.value = userState.dynamicContentCount;
+                if (cfgInput) cfgInput.value = val;
             });
-            $dynTriggerChance.on('change', (e) => {
-                userState.dynamicContentTriggerChance = parseInt($(e.target).val());
+            $dynTriggerChance.on('input', (e) => {
+                const val = parseInt($(e.target).val());
+                userState.dynamicContentTriggerChance = val;
                 saveState();
                 const cfgInput = document.getElementById('cfg-dyn-trigger');
-                if (cfgInput) {
-                    cfgInput.value = userState.dynamicContentTriggerChance;
-                    const valDisplay = document.getElementById('cfg-dyn-trigger-val');
-                    if (valDisplay) valDisplay.textContent = userState.dynamicContentTriggerChance;
-                }
+                const cfgValDisplay = document.getElementById('cfg-dyn-trigger-val');
+                if (cfgInput) cfgInput.value = val;
+                if (cfgValDisplay) cfgValDisplay.textContent = val;
+                const stValDisplay = document.getElementById('lilith-dyn-trigger-val');
+                if (stValDisplay) stValDisplay.textContent = `${val}%`;
             });
             $dynForce.on('click', () => {
                 assistant.generateDynamicContent(window);
