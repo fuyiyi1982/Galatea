@@ -14,7 +14,7 @@ export const InnerWorldManager = {
         protagonist: ['主角', '玩家', 'Player', 'Protagonist', '主控', '自我介绍', '人物卡', 'PC属性', '基础属性'],
         global: ['系统', '全局', 'System', 'Global', '世界设定', '世界观', '背景', '基础设置', '参数', '记录仪', '全局变量', '通用', '世界参量', '世界参数', 'World'],
         skills: ['技能', '能力', 'Skills', 'Abilities', '法术', '招式', '专长', '武学', '魔法', '战技', '武魂', '天赋'],
-        characters: ['人物', '角色', 'Characters', 'NPC', '关系', '好感度', '势力', '伙伴', '攻略对象', '羁绊'],
+        characters: ['重要人物', '重要实体', '人物', '角色', 'Characters', 'NPC', '关系', '好感度', '势力', '伙伴', '攻略对象', '羁绊'],
         tasks: ['任务', '进度', 'Tasks', 'Quests', '剧本', '里程碑', '目标', '历程', '剧情推进', '当前目标', '成就'],
         inventory: ['背包', '物品', '资源', '物资', '装备', '仓库', '道具', 'Inventory', 'Items', 'Equipment', '财物', '商店'],
         log: ['日志', '历史', '记录', 'Log', 'History', '传记', '经脉', '状态'],
@@ -429,7 +429,7 @@ export const InnerWorldManager = {
                 color: '#94a3b8',
                 priority: ['当前主要地区', '当前次要地区', '当前详细地点', '上轮场景时间', '经过的时间', '当前时间']
             },
-            { id: 'entities', title: '重要实体', icon: 'fa-solid fa-users-viewfinder', kw: this.tableMapping.characters, rule: 'capsule', color: '#a335ee' },
+            { id: 'characters', title: '重要人物', icon: 'fa-solid fa-user-tag', kw: this.tableMapping.characters, rule: 'capsule', color: '#a335ee' },
             { id: 'skills', title: '战技库', icon: 'fa-solid fa-bolt-lightning', kw: this.tableMapping.skills, rule: 'capsule', color: 'var(--l-main)' },
             { id: 'items', title: '存储清单', icon: 'fa-solid fa-boxes-stacked', kw: this.tableMapping.inventory, rule: 'capsule', color: '#ffcc00' },
             { id: 'tasks', title: '目标链路', icon: 'fa-solid fa-scroll', kw: this.tableMapping.tasks, rule: 'capsule', color: '#10b981' },
@@ -1293,7 +1293,7 @@ export const InnerWorldManager = {
                     if (slot.rule === 'kv') {
                         summary += info.map(i => `- ${i.key}: ${i.value}`).join('\n') + "\n";
                     } else {
-                        summary += `- [Key Entities]: ${info.map(i => i.value).join(', ')}\n`;
+                        summary += `- [Content]: ${info.map(i => i.value).join(', ')}\n`;
                     }
                 }
             }
