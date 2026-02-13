@@ -96,8 +96,18 @@ export const UpdateManager = {
     /**
      * Perform update and force refresh the webpage
      */
-    async updateAndReload() {
-        console.log('[Lilith] Starting update and reload...');
+    async updateAndReload(force = false) {
+        if (!force && this.hasUpdate) {
+            const confirmMsg = `发现新版本: ${this.remoteVersion}\n当前版本: ${this.localVersion}\n\n是否立即开始自动更新代码并重启页面？`;
+            if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().on_event) {
+                // 如果在酒馆环境下，尽量使用原生确认框（这里简单起见用 confirm，或者后续改进）
+                if (!confirm(confirmMsg)) return;
+            } else {
+                if (!confirm(confirmMsg)) return;
+            }
+        }
+        
+        console.log('[Lilith] Starting update process...');
         const originalVersion = this.localVersion;
         const targetVersion = this.remoteVersion;
         
@@ -108,78 +118,81 @@ export const UpdateManager = {
             const executeCmd = (context && context.executeSlashCommands) || window.executeSlashCommands;
 
             if (typeof executeCmd === 'function') {
-                // 1. 发送同步指令
+                // 1. 发送更新指令 (注意：/extensions-update 会触发酒馆后台的 git pull 或下载)
                 await executeCmd('/extensions-update lilith-assistant');
-                console.log('[Lilith] Update command sent to SillyTavern.');
+                console.log('[Lilith] Update command sent to SillyTavern system.');
                 
                 let toastId = null;
                 if (typeof toastr !== 'undefined') {
-                    toastId = toastr.info('正在拉取云端代码（第 0s）...', '莉莉丝助手', { timeOut: 0, extendedTimeOut: 0 });
+                    toastId = toastr.info('正在请求云端同步，请勿刷新页面...', '莉莉丝：更新中', { 
+                        timeOut: 0, 
+                        extendedTimeOut: 0,
+                        progressBar: true
+                    });
                 }
                 
-                // 2. 轮询检测本地文件系统的 manifest.json
+                // 2. 轮询检测本地文件系统的 manifest.json 是否变化
                 let attempts = 0;
-                const maxAttempts = 60; 
+                const maxAttempts = 120; // 延长到 120 秒防止网速慢
                 const modulePath = import.meta.url;
                 const manifestPath = new URL('../manifest.json', modulePath).href;
 
                 const checkInterval = setInterval(async () => {
                     attempts++;
                     
-                    // 每 15 秒重新尝试发送一次更新指令，防止指令丢失
-                    if (attempts % 15 === 0) {
-                        console.log('[Lilith] Retrying update command...');
-                        executeCmd('/extensions-update lilith-assistant');
-                    }
-
                     if (toastId && typeof toastr !== 'undefined') {
-                        jQuery(toastId).find('.toast-message').text(`正在拉取云端代码（检测中 ${attempts}s）...`);
+                        jQuery(toastId).find('.toast-message').text(`正在拉取云端代码并校验（${attempts}s）...`);
                     }
 
                     try {
-                        // 使用更加极端的抗缓存策略
+                        // 极端抗缓存策略：manifest.json 经常会被浏览器缓存
                         const response = await fetch(`${manifestPath}?t=${Date.now()}_${Math.random()}`);
                         if (response.ok) {
                             const data = await response.json();
                             const currentLocalVersion = data.version;
                             
-                            console.log(`[Lilith] Polling... Local on disk: ${currentLocalVersion}`);
+                            console.log(`[Lilith] Update Polling... On-disk version is: ${currentLocalVersion}`);
 
-                            // 重要：只要版本号达到目标，或者发生了变更，就强制刷新
-                            // 如果 targetVersion 是 3.0.4 且 currentLocalVersion 变成了 3.0.4，则成功
-                            const hasReachedTarget = (currentLocalVersion === targetVersion);
-                            const hasChangedSinceStart = (originalVersion && currentLocalVersion !== originalVersion);
+                            // 检测逻辑：
+                            // 如果 targetVersion 已知，且当前 manifest 版本等于 targetVersion -> 成功
+                            // 或者 manifest 版本已经不同于 originalVersion -> 说明代码变了，也视作成功
+                            const hasReachedTarget = (targetVersion && currentLocalVersion === targetVersion);
+                            const hasChangedFromOriginal = (originalVersion && currentLocalVersion !== originalVersion);
 
-                            if (hasReachedTarget || hasChangedSinceStart) {
+                            if (hasReachedTarget || hasChangedFromOriginal) {
                                 clearInterval(checkInterval);
-                                console.log(`[Lilith] Update DETECTED: ${originalVersion} -> ${currentLocalVersion}.`);
+                                console.log(`[Lilith] Update Successful: ${originalVersion} -> ${currentLocalVersion}.`);
                                 
                                 if (typeof toastr !== 'undefined') {
-                                    toastr.success(`检测到代码已同步！版本: v${currentLocalVersion}。即将重启网页...`, '莉莉丝助手');
+                                    toastr.success(`代码同步完成！版本已更新至: v${currentLocalVersion}。即将为您刷新页面以生效。`, '更新成功', { timeOut: 5000 });
                                 }
                                 
-                                // 给磁盘 I/O 留一点点最后的写入缓冲时间
-                                setTimeout(() => window.location.reload(), 1500);
+                                // 重要：给予 2 秒缓冲区，确保文件系统完全刷入并释放
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                                return;
                             }
                         }
                     } catch (e) {
-                        console.warn('[Lilith] Local fetch failed during polling:', e);
+                        console.warn('[Lilith] Update poll: failed to fetch manifest', e);
                     }
 
                     if (attempts >= maxAttempts) {
                         clearInterval(checkInterval);
                         console.error('[Lilith] Update poll timed out.');
                         if (typeof toastr !== 'undefined') {
-                            toastr.warning('同步检测超时，但代码可能已在后台下载完毕，请点击酒馆上方的“Reload”或手动刷新网页。', '超时提醒', { timeOut: 15000 });
+                            toastr.error('更新响应超时。酒馆后台可能还在下载，请稍后手动刷新网页。', '更新超时', { timeOut: 10000 });
                         }
                     }
                 }, 1000);
             } else {
+                console.warn('[Lilith] Slash commands not available, fallback to manual reload.');
                 window.location.reload();
             }
         } catch (err) {
             console.error('[Lilith] Critical Update Error:', err);
-            window.location.reload();
+            if (typeof toastr !== 'undefined') toastr.error('执行更新时发生程序错误，请查看控制台。');
         }
     },
 
