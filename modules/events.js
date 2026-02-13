@@ -134,9 +134,28 @@ export const EventManager = {
 
             // 4. MutationObserver for dynamic message loading & Dashboard Persistence
             const chatObserver = new MutationObserver((mutations) => {
-                if (UIManager.isLocked) return; // [锁定策略] 锁定期间停止DOM扫描
                 let shouldInject = false;
+                
+                // [优化拦截] 识别我们的 UI 变动函数
+                const isOurUI = (node) => {
+                    if (!node || node.nodeType !== 1) return false;
+                    return node.classList.contains('lilith-embedded-dashboard-container') || 
+                           node.classList.contains('lilith-embedded-dash') ||
+                           node.closest?.('.lilith-embedded-dashboard-container');
+                };
+
                 mutations.forEach(mutation => {
+                    // 1. 如果变动目标本身属于我们的面板，直接忽略
+                    const targetNode = mutation.target.nodeType === 3 ? mutation.target.parentElement : mutation.target;
+                    if (isOurUI(targetNode)) return;
+
+                    // 2. 如果是 childList 变动，检查新增或删除的节点是否全是我们自己的东西
+                    if (mutation.type === 'childList') {
+                        const hasOthers = (nodes) => Array.from(nodes).some(n => !isOurUI(n));
+                        if (mutation.addedNodes.length > 0 && !hasOthers(mutation.addedNodes)) return;
+                        if (mutation.removedNodes.length > 0 && !hasOthers(mutation.removedNodes)) return;
+                    }
+
                     mutation.addedNodes.forEach(node => {
                         if (node.nodeType === 1) {
                             if (node.classList.contains('mes')) {
@@ -154,25 +173,6 @@ export const EventManager = {
 
                     // 如果消息内容变化（例如在流式传输或被其他脚本修改），确保链路概览还在
                     if (mutation.type === 'characterData' || mutation.type === 'childList') {
-                        // 性能优化：检查变动是否来自汇总看板容器，防止无限渲染循环
-                        const targetNode = mutation.target.nodeType === 3 ? mutation.target.parentElement : mutation.target;
-                        if (targetNode && (targetNode.classList?.contains('lilith-embedded-dashboard-container') || targetNode.closest?.('.lilith-embedded-dashboard-container'))) {
-                            return;
-                        }
-                        
-                        // 检查新增节点中是否包含看板
-                        if (mutation.addedNodes) {
-                            let isOnlyDash = true;
-                            for (let i = 0; i < mutation.addedNodes.length; i++) {
-                                const node = mutation.addedNodes[i];
-                                if (node.nodeType === 1 && !node.classList.contains('lilith-embedded-dashboard-container')) {
-                                    isOnlyDash = false;
-                                    break;
-                                }
-                            }
-                            if (mutation.addedNodes.length > 0 && isOnlyDash) return;
-                        }
-
                         const target = targetNode?.closest ? targetNode.closest('.mes') : null;
                         if (target && target === document.querySelector('.mes:last-child')) {
                             shouldInject = true;

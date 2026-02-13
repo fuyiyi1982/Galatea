@@ -2102,6 +2102,9 @@ export const UIManager = {
      * 将全域链路概览（汇总看板）注入到聊天正文最后一条 AI 消息下方
      */
     injectEmbeddedDashboard() {
+        if (this._isInjecting) return;
+        this._isInjecting = true;
+        
         try {
             if (!userState.injectDashboard) {
                 $('.lilith-embedded-dashboard-container').remove();
@@ -2124,13 +2127,15 @@ export const UIManager = {
             const targetMes = findLastAiMes();
             if (!targetMes) return;
 
-            const mesBlock = targetMes.querySelector('.mes_block') || targetMes;
+            // 重要：将面板挂载在 .mes 容器最底端，而不是 .mes_block 内部。
+            // 这样可以避免 SillyTavern 在流式渲染消息内容时，由于不断刷新 mes_block 而导致面板被销毁/重建。
+            const containerParent = targetMes;
             
             // 检查是否已经存在
             let existing = document.querySelector('.lilith-embedded-dashboard-container');
             
-            // 如果位置不对，移除旧的（确保它始终在最后一条消息）
-            if (existing && existing.parentElement !== mesBlock) {
+            // 如果位置不对（不再是当前最后一条 AI 消息的子元素），则移除并准备重建
+            if (existing && existing.parentElement !== containerParent) {
                 existing.remove();
                 existing = null;
             }
@@ -2138,14 +2143,17 @@ export const UIManager = {
             if (!existing) {
                 existing = document.createElement('div');
                 existing.className = 'lilith-embedded-dashboard-container';
-                existing.style = 'margin-top: 15px; border-top: 1px dashed rgba(255,0,85,0.2); padding-top: 10px; width: 100%; clear: both; box-sizing: border-box;';
-                mesBlock.appendChild(existing);
+                // 增加底部边距确保不遮挡
+                existing.style = 'margin-top: 15px; border-top: 1px dashed rgba(255,0,85,0.2); padding-top: 10px; padding-bottom: 20px; width: 100%; clear: both; box-sizing: border-box;';
+                containerParent.appendChild(existing);
             }
 
             // 渲染看板内容 (全域链路概览)
             InnerWorldManager.renderDashboardOnly(existing, this.showBubble.bind(this), this.showStatusChange.bind(this));
         } catch (e) {
             console.error('[Lilith] Failed to inject dashboard:', e);
+        } finally {
+            this._isInjecting = false;
         }
     },
 
