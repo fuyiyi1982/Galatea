@@ -118,9 +118,25 @@ export const UpdateManager = {
             const executeCmd = (context && context.executeSlashCommands) || window.executeSlashCommands;
 
             if (typeof executeCmd === 'function') {
-                // 1. 发送更新指令 (注意：/extensions-update 会触发酒馆后台的 git pull 或下载)
-                await executeCmd('/extensions-update lilith-assistant');
-                console.log('[Lilith] Update command sent to SillyTavern system.');
+                // 1. 发送更新指令 
+                // [兼容性修复]：有些旧版本酒馆使用 /extension-update (单数)，新版本使用 /extensions-update (复数)
+                // 还有些版本可能完全不支持此指令。我们尝试多个可能的指令。
+                console.log('[Lilith] Sending update command...');
+                
+                // 尝试执行，不再使用 try-catch 因为 executeCmd 内部可能不会抛出 catchable 错误
+                // 而是通过返回值的 isError 来判断 (如果支持的话)
+                const res = await executeCmd('/extensions-update lilith-assistant');
+                
+                // 如果返回了错误对象且提示找不到命令，尝试单数版本
+                if (res && res.isError && (res.errorMessage || '').includes('Unknown command')) {
+                    console.log('[Lilith] Plural command failed, trying singular...');
+                    await executeCmd('/extension-update lilith-assistant');
+                } else if (!res) {
+                    // 如果没有返回值 (旧版)，我们保守起见间隔一秒再发一个单数指令作为冗余
+                    setTimeout(() => executeCmd('/extension-update lilith-assistant'), 500);
+                }
+                
+                console.log('[Lilith] Update commands dispatched.');
                 
                 let toastId = null;
                 if (typeof toastr !== 'undefined') {
