@@ -1305,9 +1305,12 @@ export const UIManager = {
         if (color) b.style.borderColor = color;
 
         // [NEW] 支持气泡内的 Markdown 格式化
-        const formattedMsg = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().messageFormatting)
+        let formattedMsg = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().messageFormatting)
             ? SillyTavern.getContext().messageFormatting(msg, 'lilith', false, false)
             : msg;
+        
+        // [修复] 增加保底逻辑，防止格式化返回空字符串
+        if (!formattedMsg && msg) formattedMsg = msg;
         
         // --- 核心：漫画对白式动态避障算法 ---
         const rect = avatar.getBoundingClientRect();
@@ -1585,9 +1588,13 @@ export const UIManager = {
             const { inner, status, action, speech } = this.parseLilithMsg(optimizedText);
             
             // 内部二次格式化解析后的正文
-            const formattedSpeech = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().messageFormatting)
+            let formattedSpeech = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().messageFormatting)
                 ? SillyTavern.getContext().messageFormatting(speech || optimizedText, 'lilith', false, false)
                 : (speech || optimizedText);
+            
+            if (!formattedSpeech && (speech || optimizedText)) {
+                formattedSpeech = speech || optimizedText;
+            }
 
             let html = `<img class="lilith-chat-avatar" src="${avatarUrl}" alt="">`;
             html += `<div class="lilith-chat-content">`;
@@ -2252,9 +2259,13 @@ export const UIManager = {
             const { inner, status, action, speech } = this.parseLilithMsg(commentText);
 
             // [NEW] 调用酒馆原生的消息格式化逻辑，支持 Markdown、表情、变量等
-            const formattedSpeech = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().messageFormatting) 
+            let formattedSpeech = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext().messageFormatting) 
                 ? SillyTavern.getContext().messageFormatting(speech || commentText, 'lilith', false, false)
                 : (speech || commentText);
+
+            if (!formattedSpeech && (speech || commentText)) {
+                formattedSpeech = speech || commentText;
+            }
 
             // 构建新版 UI
             const currentPersona = userState.activePersona || 'toxic';
