@@ -353,18 +353,19 @@ export const InnerWorldManager = {
     renderSlot(title, icon, info, rule = 'kv', color = 'var(--l-cyan)', slotId = '', hasWarning = false, warningDetail = '') {
         if (!info || info.length === 0) return '';
         
-        const isWorldParam = slotId === 'world';
+        // 核心状态(core)与世界参数(world)设为只读
+        const isReadOnly = slotId === 'world' || slotId === 'core';
         let contentHtml = '';
         if (rule === 'kv') {
             const html = info.map(it => `
-                <div class="${isWorldParam ? '' : 'dashboard-pop-trigger'} inner-data-item" 
+                <div class="${isReadOnly ? '' : 'dashboard-pop-trigger'} inner-data-item" 
                      data-slot="${slotId}"
                      data-table-id="${it.tableId}"
                      data-row-index="${it.rowIndex}"
                      data-col-index="${it.colIndex}"
                      data-title="${it.key}" 
                      data-val="${it.value}" 
-                     style="padding-bottom:2px; overflow:hidden; ${isWorldParam ? 'cursor:default;' : 'cursor:pointer;'}">
+                     style="padding-bottom:2px; overflow:hidden; ${isReadOnly ? 'cursor:default;' : 'cursor:pointer;'}">
                     <span style="color:inherit; opacity:0.6; font-size:10px; white-space:nowrap;">${it.key}</span><br>
                     <span style="color:${color}; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; font-weight:bold;">${it.value}</span>
                 </div>`).join('');
