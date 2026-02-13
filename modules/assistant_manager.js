@@ -1212,21 +1212,24 @@ ${chatLog}
                     const s = userState.sanity;
 
                     if (s < 30 && now > dismissedUntil) {
-                        glitchLayer.style.opacity = '1';
-                        glitchLayer.classList.add('glitch-active');
-                        if (!glitchLayer.classList.contains('sanity-critical')) {
-                            glitchLayer.classList.add('sanity-critical');
-                            if (Math.random() < 0.1) AudioSys.speak("坏掉了...要坏掉了...哈啊...");
+                        if (userState.enableGlitchEffect !== false) {
+                            glitchLayer.style.opacity = '1';
+                            glitchLayer.classList.add('glitch-active');
+                            if (!glitchLayer.classList.contains('sanity-critical')) {
+                                glitchLayer.classList.add('sanity-critical');
+                                if (Math.random() < 0.1) AudioSys.speak("坏掉了...要坏掉了...哈啊...");
+                            }
                         }
                     } else if (s < 60 && now > dismissedUntil) {
-                        // 60以下偶尔闪烁一下 (保持原版逻辑)
-                        if (Math.random() < 0.05) {
+                        // 60以下偶尔闪烁一下 (理智崩坏特效)
+                        if (userState.enableGlitchEffect !== false && Math.random() < 0.02) {
                             glitchLayer.style.opacity = '0.3';
-                            glitchLayer.style.background = 'rgba(255,0,0,0.1)';
+                            glitchLayer.style.background = 'rgba(255,0,0,0.15)';
                             glitchLayer.classList.add('glitch-active');
                             setTimeout(() => { 
                                 if (Date.now() > (window.lilithGlitchDismissedUntil || 0)) {
                                     glitchLayer.style.opacity = '0';
+                                    glitchLayer.style.background = 'transparent';
                                     glitchLayer.classList.remove('glitch-active');
                                 }
                             }, 300);

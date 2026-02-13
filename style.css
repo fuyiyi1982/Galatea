@@ -1274,7 +1274,9 @@ div.lilith-chat-ui:hover {
 }
 
 /* --- 屏幕故障特效 --- */
-.screen-glitch-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99998; background: transparent; opacity: 0; transition: opacity 0.5s; mix-blend-mode: hard-light; }
+.screen-glitch-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99998; background: transparent; opacity: 0; transition: opacity 0.5s; mix-blend-mode: color-dodge; }
+.screen-glitch-layer.glitch-active { backdrop-filter: contrast(150%) brightness(80%); }
+.screen-glitch-layer.sanity-critical { backdrop-filter: invert(100%) contrast(200%); }
 .sanity-critical { animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; background: rgba(255, 0, 0, 0.05); }
 .sanity-critical::before, .sanity-critical::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .sanity-critical::before { background: rgba(255,0,0,0.2); animation: glitch-anim-1 2s infinite linear alternate-reverse; }

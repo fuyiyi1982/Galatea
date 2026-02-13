@@ -51,6 +51,7 @@ export function validateState() {
             autoLockTimeout: DEFAULT_STATE.autoLockTimeout !== undefined ? DEFAULT_STATE.autoLockTimeout : 0,
             lockPasswordEnabled: DEFAULT_STATE.lockPasswordEnabled || false,
             lockPassword: DEFAULT_STATE.lockPassword || '',
+            enableGlitchEffect: true, // [新增] 是否允许低理智时的崩坏特效
             checkConsistency: DEFAULT_STATE.checkConsistency !== undefined ? DEFAULT_STATE.checkConsistency : true,
             extractionEnabled: DEFAULT_STATE.extractionEnabled || false,
             extractionRegex: DEFAULT_STATE.extractionRegex || '',

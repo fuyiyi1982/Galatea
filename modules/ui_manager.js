@@ -1724,6 +1724,14 @@ export const UIManager = {
                 if (cfgInput) cfgInput.value = val;
             });
 
+            // [新增] 理智特效开关
+            const $enableGlitch = $('#lilith-enable-glitch');
+            $enableGlitch.prop('checked', userState.enableGlitchEffect !== false);
+            $enableGlitch.on('change', (e) => {
+                userState.enableGlitchEffect = $(e.target).prop('checked');
+                saveState();
+            });
+
             $dynEnabled.on('change', (e) => {
                 userState.dynamicContentEnabled = $(e.target).prop('checked');
                 saveState();
