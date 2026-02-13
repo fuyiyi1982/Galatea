@@ -196,6 +196,9 @@ export const DEFAULT_STATE = {
     checkConsistency: true, // 新增：总结大纲一致性检测
     extractionEnabled: false,
     extractionRegex: '',
+    textReplacementEnabled: false,
+    textReplacementRegex: '',
+    textReplacementString: '',
     dynamicContentEnabled: false,
     dynamicContentInterval: 20, // 初始预设改为 20 分钟
     dynamicContentCount: 6,    // 初始预设 6 条

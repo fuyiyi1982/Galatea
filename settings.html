@@ -105,6 +105,10 @@
                     <input type="checkbox" id="lilith-extraction-enabled">
                     <label for="lilith-extraction-enabled">启用正文提取 (切除前后缀)</label>
                 </div>
+                <div style="font-size: 0.85em; opacity: 0.6; margin: 2px 0 5px 22px;">
+                    当 AI 回复包含大量思考过程或格式字符时，可提取特定区间的内容。
+                    支持 <code>开始文本|结束文本</code> 简易模式。例如输入 <code>&lt;正文&gt;|&lt;/正文&gt;</code> 将只保留该标签内的内容。
+                </div>
                 <input type="text" id="lilith-extraction-regex" class="text_pole" placeholder="例如: <正文>|</正文>">
             </div>
 
@@ -112,6 +116,10 @@
                 <div class="flex-container alignItemCenter">
                     <input type="checkbox" id="lilith-text-replacement-enabled">
                     <label for="lilith-text-replacement-enabled">启用文字正则替换</label>
+                </div>
+                <div style="font-size: 0.85em; opacity: 0.6; margin: 2px 0 5px 22px;">
+                    将 AI 回复中的特定文字强制替换或删除。
+                    支持 <code>A|B</code> 块匹配格式。例如输入 <code>&lt;--|--&gt;</code> 可匹配并替换掉包裹在中间的内容（右侧留空则为整个删除）。
                 </div>
                 <div style="display: flex; gap: 5px;">
                     <input type="text" id="lilith-text-replacement-regex" class="text_pole" placeholder="需替换的正则" style="flex: 2;">

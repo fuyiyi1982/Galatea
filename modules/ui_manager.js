@@ -314,28 +314,32 @@ export const UIManager = {
                     </div>
 
                     <div class="cfg-group" style="border-top: 1px dashed #444; margin-top: 5px; padding-top: 5px;">
-                        <label style="color:var(--l-cyan); font-weight:bold;">🛡️ 正则清理方案 (RegEx)</label>
+                        <label style="color:var(--l-cyan); font-weight:bold;">🛡️ 内容提取与正则 (RegEx)</label>
+                        <div style="font-size:9px; color:#666; margin-bottom:5px;">
+                            用于净化 AI 回复内容。通过提取特定范围内的文字或强制替换字符串，确保莉莉丝和看板获取到的是最纯净的正文数据。
+                        </div>
                         <div style="display:flex; gap:5px; margin-bottom:5px;">
                             <select id="cfg-regex-preset-select" class="lilith-select" style="flex:1; background:#111; color:#fff; border:1px solid var(--l-cyan);">
-                                <option value="">-- 选择方案 --</option>
+                                <option value="">-- 已存方案 --</option>
                                 ${(userState.regexPresets || []).map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
                             </select>
                             <button id="cfg-regex-delete" class="tool-btn" style="width:30px; border-color:#ff0055;" title="删除当前选中的方案">🗑️</button>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px; font-size:11px; color:#ccc;">
-                            <div style="display:flex; align-items:center;">
+                            <div style="display:flex; align-items:center;" title="从消息中提取指定标记内的内容。示例：输入 <正文>| </正文> 将只保留该标签内的内容。">
                                 <input type="checkbox" id="cfg-extract-enable" ${userState.extractionEnabled ? 'checked' : ''} style="width:auto; margin-right:4px;"> 
-                                <span>提取</span>
+                                <span>启用提取</span>
                             </div>
-                            <div style="display:flex; align-items:center;">
+                            <div style="display:flex; align-items:center;" title="全局强制替换。示例：输入 <--|--> 可匹配并替换掉该符号及其包裹的内容（右侧留空则删除）。">
                                 <input type="checkbox" id="cfg-repl-enable" ${userState.textReplacementEnabled ? 'checked' : ''} style="width:auto; margin-right:4px;"> 
-                                <span>替换</span>
+                                <span>启用替换</span>
                             </div>
                         </div>
                         <div style="display:flex; gap:5px;">
                             <input type="text" id="cfg-regex-name" placeholder="方案名称..." style="flex:1; font-size:12px; height:24px;">
                             <button id="cfg-regex-save" class="tool-btn" style="width:60px; border-color:var(--l-cyan); font-size:12px;">归档</button>
                         </div>
+                        <small style="color:#444; font-size:8px; display:block; margin-top:2px;">* 详细正则规则请前往酒馆扩展设置面板配置。</small>
                     </div>
 
                     <div class="cfg-group">
