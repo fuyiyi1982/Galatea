@@ -19,8 +19,8 @@ export const UIManager = {
         const currentEmotionState = userState.currentFace || 'normal';
         
         // 2. 获取当前人格的图包 (默认回退到 meme)
-        const currentPersona = userState.activePersona || 'meme';
-        const pack = AvatarPacks[currentPersona] || AvatarPacks['meme'];
+        const currentPersona = userState.activePersona || 'galatea';
+        const pack = AvatarPacks[currentPersona] || AvatarPacks['galatea'];
 
         // 3. 确定表情 Key
         let faceKey = 'normal';
@@ -148,9 +148,9 @@ export const UIManager = {
         const muteIcon = AudioSys.muted ? '🔇' : '🔊';
         panel.innerHTML = `
             <div class="lilith-panel-header">
-                <span class="lilith-title">莉莉丝助手 (LILITH ASSISTANT) <span style="font-size:10px; color:var(--l-cyan);">v3.0.5-杂鱼专用版-❤</span></span>
+                <span class="lilith-title">加拉泰亚 (GALATEA) <span style="font-size:10px; color:var(--l-cyan);">v3.0.5-Galatea</span></span>
                     <div style="display:flex; align-items:center; gap:12px; padding: 5px;">
-                        <span id="lilith-world-toggle" title="触达莉莉丝的最核心" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${userState.isInnerWorld ? '🌟' : '👁️'}</span>
+                        <span id="lilith-world-toggle" title="触达加拉泰亚的核心" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${userState.isInnerWorld ? '🌟' : '👁️'}</span>
                         <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${muteIcon}</span>
                         <div style="text-align:right; line-height:1; margin-left: 4px;">
                         <div class="stat-row" style="color:#ff0055">好感 <span id="favor-val">${userState.favorability}</span></div>
@@ -177,7 +177,7 @@ export const UIManager = {
                             <button id="lilith-polish-btn" title="搞颜色/润色" style="color:#ff0055;">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                             </button>
-                            <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'toxic'].name.split(' ')[1]}聊天...">
+                            <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'galatea'].name}交流...">
                             <button id="lilith-chat-send" title="发送">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
@@ -237,8 +237,8 @@ export const UIManager = {
 
                 <div id="page-config" class="lilith-page">
                     <div class="cfg-group">
-                        <label style="color:#bd00ff; font-weight:bold;">🎭 人格覆写 (Persona)</label>
-                        <select id="cfg-persona-select" class="lilith-select" style="background:#111; color:#fff; border:1px solid #bd00ff;">
+                        <label style="color:#bd00ff; font-weight:bold;">🎭 人格 (唯一)</label>
+                        <select id="cfg-persona-select" class="lilith-select" style="background:#111; color:#fff; border:1px solid #bd00ff;" disabled>
                             ${Object.keys(PERSONA_DB).map(k => `<option value="${k}" ${userState.activePersona===k?'selected':''}>${PERSONA_DB[k].name}</option>`).join('')}
                         </select>
                     </div>
@@ -250,8 +250,8 @@ export const UIManager = {
                             <span style="font-size:12px; color:#ccc;">注入酒馆原始聊天记录 (Context)</span>
                         </div>
                         <small style="color:#666; font-size:9px; display:block; margin-top:2px;">
-                            开启后：莉莉丝能感知到你当前的对话背景和角色设定。<br>
-                            关闭后：莉莉丝将“两耳不闻窗外事”，仅根据预设和发给她的内容自由发挥。
+                            开启后：加拉泰亚能感知到你当前的对话背景和角色设定。<br>
+                            关闭后：她将“两耳不闻窗外事”，仅根据预设和发给她的内容自由发挥。
                         </small>
                     </div>
 
@@ -259,7 +259,7 @@ export const UIManager = {
                         <label style="color:#ff0055; font-weight:bold;">💬 吐槽设定 (Interjection)</label>
                         <div style="font-size:10px; color:#888;">吐槽概率: <span id="cfg-freq-val">${userState.commentFrequency || 30}</span>%</div>
                         <input type="range" id="cfg-freq" min="0" max="100" step="5" value="${userState.commentFrequency || 30}" style="accent-color:#ff0055;" oninput="document.getElementById('cfg-freq-val').textContent = this.value">
-                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">控制莉莉丝在聊天时主动插话的频率。100% 为每句必回。</small>
+                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">控制加拉泰亚在聊天时主动插话的频率。100% 为每句必回。</small>
                         
                         <div style="margin-top:8px;">
                             <label style="font-size:12px; color:#ccc;">插入模式:</label>
@@ -283,7 +283,7 @@ export const UIManager = {
                     </div>
 
                     <div class="cfg-group">
-                        <label style="color:#bd00ff; font-weight:bold;">🧠 莉莉丝的大脑皮层</label>
+                        <label style="color:#bd00ff; font-weight:bold;">🧠 加拉泰亚逻辑层</label>
                         <div style="display:flex; align-items:center;">
                             <input type="checkbox" id="cfg-dynamic-enable" ${userState.dynamicContentEnabled !== false ? 'checked' : ''} style="width:auto; margin-right:5px;"> 
                             <span style="font-size:12px; color:#ccc;">启用 AI 动态更新功能</span>
@@ -300,7 +300,7 @@ export const UIManager = {
                         
                         <div style="font-size:10px; color:#888; margin-top:5px;">事件触发概率: <span id="cfg-dyn-trigger-val">${userState.dynamicContentTriggerChance || 100}</span>%</div>
                         <input type="range" id="cfg-dyn-trigger" min="1" max="100" step="1" value="${userState.dynamicContentTriggerChance || 100}" style="accent-color:var(--l-cyan); width:100%;" oninput="document.getElementById('cfg-dyn-trigger-val').textContent = this.value">
-                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">调整活跃度频率。100% 意味着莉莉丝会更积极地展示她脑海中的内容。</small>
+                        <small style="color:#666; font-size:9px; display:block; margin-top:2px;">调整活跃度频率。100% 意味着加拉泰亚会更积极地展示她的思考。</small>
 
                         <div style="display: flex; gap: 5px; margin-top: 5px;">
                             <button id="cfg-dyn-force" style="flex: 2; background:#333; color:#fff; border:none; padding:3px; cursor:pointer; font-size:10px;">⚡ 强制重构皮层</button>
@@ -1388,10 +1388,10 @@ export const UIManager = {
         if (!wrapper) return;
 
         // 1. 移除旧主题
-        wrapper.classList.remove('theme-toxic', 'theme-wife', 'theme-brat', 'theme-imouto', 'theme-meme');
+        wrapper.classList.remove('theme-galatea', 'theme-toxic', 'theme-wife', 'theme-brat', 'theme-imouto', 'theme-meme');
 
         // 2. 获取当前人格
-        const current = userState.activePersona || 'toxic';
+        const current = userState.activePersona || 'galatea';
 
         // 3. 添加新主题
         wrapper.classList.add(`theme-${current}`);
@@ -1399,7 +1399,7 @@ export const UIManager = {
         // 4. 输入框提示跟随变化
         const input = document.getElementById('lilith-chat-input');
         if (input && PERSONA_DB[current]) {
-            const name = PERSONA_DB[current].name.split(' ')[1] || '莉莉丝';
+            const name = PERSONA_DB[current].name || '加拉泰亚';
             input.placeholder = `和${name}说话...`;
         }
     },
@@ -1460,10 +1460,10 @@ export const UIManager = {
         msgNode.className = `msg ${role}`;
         
         if (role === 'lilith') {
-            const currentPersona = userState.activePersona || 'toxic';
-            const pack = AvatarPacks[currentPersona] || AvatarPacks['meme'];
+            const currentPersona = userState.activePersona || 'galatea';
+            const pack = AvatarPacks[currentPersona] || AvatarPacks['galatea'];
             const face = userState.currentFace || 'normal';
-            const avatarUrl = pack[face] || pack['normal'] || pack['happy'] || AvatarPacks['meme']['normal'];
+            const avatarUrl = pack[face] || pack['normal'] || pack['happy'] || AvatarPacks['galatea']['normal'];
 
             const { inner, status, action, speech } = this.parseLilithMsg(optimizedText);
             
@@ -1510,7 +1510,6 @@ export const UIManager = {
             const $autoSend = $('#lilith-auto-send');
             const $avatarSize = $('#lilith-avatar-size');
             const $persona = $('#lilith-persona-select');
-            const $dashStyle = $('#lilith-dashboard-style');
             const $dashInject = $('#lilith-inject-dashboard');
 
             $freq.val(userState.commentFrequency || 0);
@@ -1519,8 +1518,7 @@ export const UIManager = {
             $hideAvatar.prop('checked', userState.hideAvatar);
             $autoSend.prop('checked', userState.autoSend !== false);
             $avatarSize.val(userState.avatarSize || 150);
-            $persona.val(userState.activePersona || 'toxic');
-            $dashStyle.val(userState.dashboardStyle || 'modern');
+            $persona.val(userState.activePersona || 'galatea');
             $dashInject.prop('checked', userState.injectDashboard);
 
             // 事件绑定
@@ -1533,12 +1531,6 @@ export const UIManager = {
                 // 同步悬浮窗下拉
                 const cfgPersonaSelect = document.getElementById('cfg-persona-select');
                 if (cfgPersonaSelect) cfgPersonaSelect.value = val;
-            });
-
-            $dashStyle.on('change', (e) => {
-                userState.dashboardStyle = $(e.target).val();
-                saveState();
-                this.showBubble(`看版风格已更新: ${userState.dashboardStyle}`);
             });
 
             $dashInject.on('change', (e) => {
@@ -2117,8 +2109,8 @@ export const UIManager = {
             const { inner, status, action, speech } = this.parseLilithMsg(commentText);
 
             // 构建新版 UI
-            const currentPersona = userState.activePersona || 'toxic';
-            const pack = AvatarPacks[currentPersona] || AvatarPacks['meme'];
+            const currentPersona = userState.activePersona || 'galatea';
+            const pack = AvatarPacks[currentPersona] || AvatarPacks['galatea'];
             
             // 简单的表情选择逻辑 (基于 speech)
             let faceKey = 'normal';

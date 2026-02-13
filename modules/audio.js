@@ -35,7 +35,7 @@ export const AudioSys = {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(cleanText);
         
-        let currentPersonaKey = userState.activePersona || 'toxic';
+        let currentPersonaKey = userState.activePersona || 'galatea';
         const dbConfig = (PERSONA_DB[currentPersonaKey]) ? PERSONA_DB[currentPersonaKey].voice : { pitch: 1.0, rate: 1.0, base: 'Xiaoyi' };
         const ttsConfig = userState.ttsConfig || { pitch: 1.2, rate: 1.3 };
         

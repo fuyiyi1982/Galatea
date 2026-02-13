@@ -133,7 +133,7 @@ export const InnerWorldManager = {
     renderDashboardOnly(container, showBubbleMethod, showStatusMethod) {
         if (!container) return false;
         const externalData = this.getExternalDB();
-        const currentPersona = PERSONA_DB[userState.activePersona || 'toxic'];
+        const currentPersona = PERSONA_DB[userState.activePersona || 'galatea'];
         
         // 我们在注入的卡片中不显示内容区的 Switcher，因为头部已经有了一个更简洁的
         const dashHtml = this.renderDashboard(externalData, currentPersona, { showSwitcher: false });
@@ -145,7 +145,7 @@ export const InnerWorldManager = {
 
         container.style.display = 'block';
         const isCollapsed = this.isDashCollapsed;
-        const styleMode = userState.dashboardStyle || 'modern';
+        const styleMode = 'modern';
         
         // 获取酒馆头像
         let avatarUrl = '';
@@ -169,17 +169,8 @@ export const InnerWorldManager = {
                                 <i class="fa-solid ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}" style="font-size:10px; opacity:0.5; margin-left:4px;"></i>
                             </div>
                             <div style="font-size:9px; opacity:0.6; font-family:monospace; display: ${isCollapsed ? 'block' : 'none'};">MATRIX_STATUS: SYNCHRONIZED</div>
-                            <div style="font-size:9px; opacity:0.6; font-family:monospace; display: ${isCollapsed ? 'none' : 'block'};">LILITH_CORE: STYLE_${styleMode.toUpperCase()}</div>
+                            <div style="font-size:9px; opacity:0.6; font-family:monospace; display: ${isCollapsed ? 'none' : 'block'};">GALATEA_CORE: STYLE_${styleMode.toUpperCase()}</div>
                         </div>
-                    </div>
-                    
-                    <!-- 样式快捷切换 (仅点点) -->
-                    <div class="dash-style-switcher">
-                        <div class="style-dot ${styleMode === 'modern' ? 'active' : ''}" data-style="modern" title="莉莉丝粉" style="background:var(--l-main);"></div>
-                        <div class="style-dot ${styleMode === 'parchment' ? 'active' : ''}" data-style="parchment" title="羊皮卷轴" style="background:#8b4513;"></div>
-                        <div class="style-dot ${styleMode === 'ink' ? 'active' : ''}" data-style="ink" title="水墨风" style="background:#000;"></div>
-                        <div class="style-dot ${styleMode === 'terminal' ? 'active' : ''}" data-style="terminal" title="赛博终端" style="background:#00ff41;"></div>
-                        <div class="style-dot ${styleMode === 'industrial' ? 'active' : ''}" data-style="industrial" title="工业极简" style="background:#bd00ff;"></div>
                     </div>
                 </div>
                 
@@ -201,14 +192,14 @@ export const InnerWorldManager = {
         if (!container) return;
 
         const externalData = this.getExternalDB();
-        const currentPersona = PERSONA_DB[userState.activePersona || 'toxic'];
+        const currentPersona = PERSONA_DB[userState.activePersona || 'galatea'];
 
         let html = `
             <div class="inner-world-container" style="display:flex; flex-direction:column; flex:1; box-sizing:border-box; font-family:var(--l-font); overflow:hidden; padding:10px; min-height:0;">
                 <!-- 头部: 固定操作区 -->
                 <div class="inner-header" style="flex-shrink:0; margin-bottom:12px; border-left:4px solid var(--l-main); padding-left:10px; display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <h3 style="margin:0; color:var(--l-main); font-size:16px; text-transform:uppercase; letter-spacing:1px;">LILITH · 虚空最核心 (THE_CORE)</h3>
+                        <h3 style="margin:0; color:var(--l-main); font-size:16px; text-transform:uppercase; letter-spacing:1px;">GALATEA · 逻辑内核 (THE_CORE)</h3>
                         <div class="toggle-container" style="display:flex; align-items:center; gap:12px; margin-top:4px;">
                             <small style="color:var(--l-cyan); opacity:0.8; font-family: 'Share Tech Mono', monospace;">链路状态: ${externalData ? '同步稳定' : '离线状态'}</small>
                             <div class="toggle-item" style="display:flex; align-items:center; border:1px solid rgba(255,0,85,0.2); border-radius:3px; padding:1px 6px; background:rgba(255,0,85,0.05); cursor:pointer;" onclick="const cb = document.getElementById('cfg-inner-inject-dash'); if(cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }">
@@ -393,7 +384,7 @@ export const InnerWorldManager = {
         // 关键逻辑：如果数据未变且容器已存在，可跳过重渲染以提高性能 (可选)
         // 但为了“实时”响应，我们在这里总是获取最新 DB
         const db = externalData || this.getExternalDB();
-        const styleMode = userState.dashboardStyle || 'modern';
+        const styleMode = 'modern';
         
         if (!db) {
             return `
@@ -453,18 +444,7 @@ export const InnerWorldManager = {
             `;
         }
 
-        const switcherHtml = options.showSwitcher ? `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
-                <span style="font-size:10px; color:#666; font-family:'Share Tech Mono';">VIEW_THEME: ${styleMode.toUpperCase()}</span>
-                <div class="dash-style-switcher">
-                    <div class="style-dot ${styleMode === 'modern' ? 'active' : ''}" data-style="modern" title="莉莉丝粉" style="background:var(--l-main);"></div>
-                    <div class="style-dot ${styleMode === 'parchment' ? 'active' : ''}" data-style="parchment" title="羊皮卷轴" style="background:#8b4513;"></div>
-                    <div class="style-dot ${styleMode === 'ink' ? 'active' : ''}" data-style="ink" title="水墨风" style="background:#000;"></div>
-                    <div class="style-dot ${styleMode === 'terminal' ? 'active' : ''}" data-style="terminal" title="赛博终端" style="background:#00ff41;"></div>
-                    <div class="style-dot ${styleMode === 'industrial' ? 'active' : ''}" data-style="industrial" title="工业极简" style="background:#bd00ff;"></div>
-                </div>
-            </div>
-        ` : '';
+        const switcherHtml = '';
 
         return `
             <div class="dash-style-${styleMode}" style="padding:10px; border-radius:8px;">

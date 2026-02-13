@@ -61,7 +61,7 @@ export const UpdateManager = {
                 
                 // [新增] 发现更新时自动推送通知
                 if (typeof toastr !== 'undefined') {
-                    toastr.info(`莉莉丝助手发现新版本 v${this.remoteVersion}，请前往设置或侧边栏点击更新。`, '更新推送', {
+                    toastr.info(`加拉泰亚发现新版本 v${this.remoteVersion}，请前往设置或侧边栏点击更新。`, '更新推送', {
                         onclick: () => {
                             // Optionally open settings or just update directly if clicked
                             // For now just a notification is enough to count as "push"
@@ -114,7 +114,7 @@ export const UpdateManager = {
                 
                 let toastId = null;
                 if (typeof toastr !== 'undefined') {
-                    toastId = toastr.info('正在拉取云端代码（第 0s）...', '莉莉丝助手', { timeOut: 0, extendedTimeOut: 0 });
+                    toastId = toastr.info('正在拉取云端代码（第 0s）...', '加拉泰亚', { timeOut: 0, extendedTimeOut: 0 });
                 }
                 
                 // 2. 轮询检测本地文件系统的 manifest.json
@@ -155,7 +155,7 @@ export const UpdateManager = {
                                 console.log(`[Lilith] Update DETECTED: ${originalVersion} -> ${currentLocalVersion}.`);
                                 
                                 if (typeof toastr !== 'undefined') {
-                                    toastr.success(`检测到代码已同步！版本: v${currentLocalVersion}。即将重启网页...`, '莉莉丝助手');
+                                    toastr.success(`检测到代码已同步！版本: v${currentLocalVersion}。即将重启网页...`, '加拉泰亚');
                                 }
                                 
                                 // 给磁盘 I/O 留一点点最后的写入缓冲时间
@@ -170,7 +170,7 @@ export const UpdateManager = {
                         clearInterval(checkInterval);
                         console.error('[Lilith] Update poll timed out.');
                         if (typeof toastr !== 'undefined') {
-                            toastr.warning('同步检测超时，但代码可能已在后台下载完毕，请点击酒馆上方的“Reload”或手动刷新网页。', '超时提醒', { timeOut: 15000 });
+                            toastr.warning('同步检测超时，但代码可能已在后台下载完毕，请点击酒馆上方的“Reload”或手动刷新网页。', '加拉泰亚 - 超时提醒', { timeOut: 15000 });
                         }
                     }
                 }, 1000);

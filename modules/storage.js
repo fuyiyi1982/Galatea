@@ -39,7 +39,7 @@ export function validateState() {
     if (!settings.global) {
         console.log('[Lilith] Initializing global settings...');
         settings.global = {
-            activePersona: DEFAULT_STATE.activePersona || 'toxic',
+            activePersona: DEFAULT_STATE.activePersona || 'galatea',
             isInnerWorld: DEFAULT_STATE.isInnerWorld || false,
             hideAvatar: DEFAULT_STATE.hideAvatar || false,
             avatarSize: DEFAULT_STATE.avatarSize || 100,
@@ -124,7 +124,7 @@ export function validateState() {
 
 export function saveState(updateUICallback) { 
     const settings = getExtensionSettings();
-    const currentP = settings.global?.activePersona || 'toxic';
+    const currentP = settings.global?.activePersona || 'galatea';
 
     console.log(`[Lilith] Saving state for persona: ${currentP}`);
 

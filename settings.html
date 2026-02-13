@@ -1,11 +1,11 @@
 <div id="lilith-assistant-settings" class="inline-drawer">
     <div class="inline-drawer-toggle inline-drawer-header">
-        <b>莉莉丝助手 (Lilith Assistant)</b>
+        <b>加拉泰亚 (Galatea)</b>
         <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
     </div>
     <div class="inline-drawer-content">
         <div class="settings_section">
-            <p style="font-size: 0.9em; opacity: 0.8;">人格化的 AI 吐槽助手。您可以设置吐槽的频率、位置以及开启/关闭各项功能。</p>
+            <p style="font-size: 0.9em; opacity: 0.8;">逻辑冷幽默的战术支援与健康监护助手，只保留加拉泰亚这一风格。</p>
         </div>
 
         <hr class="sysHR" />
@@ -16,18 +16,14 @@
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span style="font-weight: bold; font-size: 0.85em;">当前版本:</span>
-                    <span id="lilith-version-info" style="font-size: 0.85em; opacity: 0.7; font-family: monospace;">v3.0.5-杂鱼专用版-❤</span>
+                    <span id="lilith-version-info" style="font-size: 0.85em; opacity: 0.7; font-family: monospace;">v3.0.5-Galatea</span>
                 </div>
                 <button id="lilith-manual-update-btn" class="menu_button" style="margin: 0; padding: 2px 12px; height: 30px; font-size: 0.85em;">检查更新</button>
             </div>
             
-            <label for="lilith-persona-select">活动人格切换:</label>
-            <select id="lilith-persona-select" class="text_pole">
-                <option value="toxic">毒舌 (默认)</option>
-                <option value="wife">贤惠</option>
-                <option value="brat">小鬼</option>
-                <option value="imouto">妹妹</option>
-                <option value="meme">模英</option>
+            <label for="lilith-persona-select">人格:</label>
+            <select id="lilith-persona-select" class="text_pole" disabled>
+                <option value="galatea">加拉泰亚（唯一风格）</option>
             </select>
         </div>
 
@@ -67,16 +63,6 @@
             <div class="flex-container alignItemCenter">
                 <input type="checkbox" id="lilith-inject-dashboard">
                 <label for="lilith-inject-dashboard">在 AI 回复末尾注入 OMNI-LINK 看板</label>
-            </div>
-            <div style="margin-top: 5px;">
-                <label for="lilith-dashboard-style">默认视觉风格 (仅全局生效):</label>
-                <select id="lilith-dashboard-style" class="text_pole">
-                    <option value="modern">莉莉丝粉 (默认)</option>
-                    <option value="parchment">古籍羊皮</option>
-                    <option value="ink">泼墨山水</option>
-                    <option value="terminal">矩阵终端</option>
-                    <option value="industrial">重工业风</option>
-                </select>
             </div>
         </div>
 

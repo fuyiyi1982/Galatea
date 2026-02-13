@@ -1,11 +1,11 @@
 {
-    "display_name": "莉莉丝助手 (Lilith Assistant)",
+    "display_name": "加拉泰亚 (Galatea)",
     "loading_order": 20,
     "js": "index.js",
     "css": "style.css",
     "author": "User",
-    "version": "v3.0.5-杂鱼专用版-❤",
-    "description": "人格化的莉莉丝助手 [v3.0.5-杂鱼专用版-❤]，具备好感度系统、AI 动态内容生成、非侵入式浮动通知、全自动同步更新、构思状态实时反馈。",
+    "version": "v3.0.5-Galatea",
+    "description": "AI 助手 加拉泰亚（Galatea）：逻辑冷幽默、资产保护驱动的战术与健康监护陪伴系统。",
     "auto_update": true,
     "homePage": ""
 }

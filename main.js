@@ -1,4 +1,4 @@
-// index.js - Lilith Assistant Entry Point
+// index.js - Galatea Entry Point
 import { extensionName } from './modules/config.js';
 import { userState, validateState, panelChatHistory } from './modules/storage.js';
 import { UIManager } from './modules/ui_manager.js';
@@ -8,10 +8,10 @@ import { AudioSys } from './modules/audio.js';
 import { UpdateManager } from './modules/update_manager.js';
 
 /**
- * Main entrance for the Lilith Assistant Extension.
+ * Main entrance for the Galatea Extension.
  */
 async function boot() {
-    console.log('[Lilith] Booting v3.0.5-杂鱼专用版-❤ (Modularized)...');
+     console.log('[Galatea] Booting v3.0.5-Galatea (Modularized)...');
     
     // 0. Expose UIManager to window for global access (e.g., from InnerWorldManager)
     window.UIManager = UIManager;
@@ -50,16 +50,16 @@ async function boot() {
     // 7. Check for updates
     UpdateManager.checkUpdate();
     
-    console.log('[Lilith] Extension system is ready.');
+    console.log('[Galatea] Extension system is ready.');
 }
 
 // SillyTavern Module Loader Compatibility
 jQuery(document).ready(() => {
     const tryInit = () => {
-        if (window._lilithInitialized) return;
-        window._lilithInitialized = true;
+        if (window._galateaInitialized) return;
+        window._galateaInitialized = true;
         
-        boot().catch(err => console.error('[Lilith] Boot failed:', err));
+        boot().catch(err => console.error('[Galatea] Boot failed:', err));
     };
 
     // Standard ST loading pattern

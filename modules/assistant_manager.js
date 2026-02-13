@@ -376,7 +376,7 @@ export const assistantManager = {
             let url = baseUrl.replace(/\/$/, ''); 
             
             // [PRIORITY RULE]: Always enforce the core persona prompt as the foundation
-            const basePersona = PERSONA_DB[userState.activePersona || 'toxic'].prompt;
+            const basePersona = PERSONA_DB[userState.activePersona || 'galatea'].prompt;
             let finalSystemPrompt = "";
 
             if (systemPrompt) {
@@ -508,7 +508,7 @@ export const assistantManager = {
 
         const isInjecting = userState.injectSTContext !== false;
         const chatLog = isInjecting ? getPageContext(5, userState).map(m => `${m.name}: ${m.message}`).join('\n') : "(Context injection disabled by user)";
-        const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['toxic'];
+        const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['galatea'];
         
         const systemPrompt = `[System Task: Chat Interjection]
 You are ${persona.name}. ${isInjecting ? "You are observing the user's conversation with another character." : "You are currently interacting based on your standalone persona."}
@@ -796,7 +796,7 @@ ${chatLog}
         const f = Number(userState.favorability) || 20;
         const s = Number(userState.sanity) || 80;
         const count = Number(userState.dynamicContentCount) || 6;
-        const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['toxic'];
+        const persona = PERSONA_DB[userState.activePersona] || PERSONA_DB['galatea'];
 
         // 根据用户要求动态调节 对话:事件 比例
         let eCount_target = 0;
@@ -1232,7 +1232,7 @@ ${chatLog}
                 if (idleTime > 180000 && !this.isIdleTriggered) {
                     this.isIdleTriggered = true;
                     // --- 优化：根据当前人格获取闲聊文本 ---
-                    const personaData = PERSONA_DB[userState.activePersona || 'toxic'];
+                    const personaData = PERSONA_DB[userState.activePersona || 'galatea'];
                     const idleMsgs = personaData.idleDialogues || ["你是死在电脑前了吗？恶心。", "喂，放置play也要有个限度吧？"];
                     const randomMsg = idleMsgs[Math.floor(Math.random() * idleMsgs.length)];
                     UIManager.showBubble(randomMsg); 
