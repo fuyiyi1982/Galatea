@@ -1626,31 +1626,25 @@ export const UIManager = {
             html += `</div>`;
             msgNode.innerHTML = html;
         } else {
-            // --- 用户消息增强：添加头像与气泡 ---
+            // --- 用户消息增强：修复头像与气泡样式 ---
             const ctx = (typeof SillyTavern !== 'undefined') ? SillyTavern.getContext() : null;
             let userAvatarUrl = '/img/two-faced.png'; 
-            let userName = '用户';
             if (ctx) {
-                // 优先从 context 读取玩家头像和名字
-                const userAvatar = ctx.user_avatar || (ctx.settings && ctx.settings.user_avatar);
-                if (userAvatar && userAvatar !== 'default_user.png') {
-                    userAvatarUrl = `/thumbnail?type=user_avatar&file=${encodeURIComponent(userAvatar)}`;
-                } else if (ctx.user_profile && ctx.user_profile.avatar) {
-                    userAvatarUrl = `/thumbnail?type=user_avatar&file=${encodeURIComponent(ctx.user_profile.avatar)}`;
-                }
-                userName = ctx.user || userName;
+                // 修复头像路径：兼容更多酒馆版本
+                const userAvatar = ctx.user_avatar || (ctx.settings && ctx.settings.user_avatar) || 'default_user.png';
+                // 尝试缩略图接口，如果失败回退到原始路径
+                userAvatarUrl = `/thumbnail?type=user_avatar&file=${encodeURIComponent(userAvatar)}`;
             }
 
             msgNode.className += ' user-msg-with-avatar';
             
-            // 构造新的对话框 HTML：显示玩家名字与消息正文
-            let html = `<div class="user-chat-content">`;
-            html += `<div style="font-size:10px; opacity:0.5; margin-bottom:2px;">${userName}</div>`;
-            html += `<div class="user-msg-body" style="font-size:12px; line-height:1.4;">${formattedText}</div>`;
+            // 构造精简的 HTML：移除名字，增强气泡
+            let html = `<div class="user-chat-content bubble-style">`;
+            html += `<div class="user-msg-body">${formattedText}</div>`;
             html += `</div>`;
             
             // 头像跟莉莉丝一致使用相同类名以获得外观联动
-            html += `<img class="lilith-chat-avatar user-avatar" src="${userAvatarUrl}" alt="${userName}">`;
+            html += `<img class="lilith-chat-avatar user-avatar" src="${userAvatarUrl}" onerror="this.src='/User%20Avatars/default_user.png'" alt="User">`;
             
             msgNode.innerHTML = html;
         }
