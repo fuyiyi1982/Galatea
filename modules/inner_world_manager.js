@@ -157,7 +157,7 @@ export const InnerWorldManager = {
         } catch(e) {}
 
         const html = `
-            <div class="lilith-embedded-dash dash-style-${styleMode}" style="border-radius: 8px; padding: 12px; font-family: var(--l-font); min-height: 0; transition: all 0.3s ease; position: relative; overflow: hidden;">
+            <div class="lilith-embedded-dash dash-style-${styleMode}" style="border-radius: 8px; padding: 12px; font-family: var(--l-font); min-height: 20px; transition: opacity 0.3s ease; position: relative; overflow: hidden;">
                 <!-- 头部作为折叠触发器 -->
                 <div class="dash-collapse-trigger" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; padding:2px 0; gap:12px;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
@@ -184,7 +184,7 @@ export const InnerWorldManager = {
                 </div>
                 
                 <!-- 内容区 -->
-                <div class="dash-content-wrapper" style="display: ${isCollapsed ? 'none' : 'block'}; margin-top:15px; animation: matrix-fade-in 0.3s ease;">
+                <div class="dash-content-wrapper" style="display: ${isCollapsed ? 'none' : 'block'}; margin-top:15px;">
                     ${dashHtml}
                 </div>
             </div>

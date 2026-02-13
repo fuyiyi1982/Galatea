@@ -181,8 +181,10 @@ export const EventManager = {
                 });
 
                 if (shouldInject) {
+                    // 稳定性优化：增加防抖时间。在流式传输期间，频繁的 DOM 变动不需要实时跟随。
+                    // 500ms 的延迟足以让大多数渲染平滑进行。
                     if (this._dashTimeout) clearTimeout(this._dashTimeout);
-                    this._dashTimeout = setTimeout(() => UIManager.injectEmbeddedDashboard(), 200);
+                    this._dashTimeout = setTimeout(() => UIManager.injectEmbeddedDashboard(), 500);
                 }
             });
             const chatContainer = document.getElementById('chat');

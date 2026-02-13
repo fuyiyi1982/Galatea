@@ -2111,41 +2111,25 @@ export const UIManager = {
                 return;
             }
 
-            const findLastAiMes = () => {
-                const allMes = document.querySelectorAll('#chat .mes');
-                if (!allMes.length) return null;
-                
-                for (let i = allMes.length - 1; i >= 0; i--) {
-                    const el = allMes[i];
-                    if (el.getAttribute('is_user') === 'true' || el.getAttribute('is_system') === 'true' || el.classList.contains('sys_mes')) continue;
-                    if (getComputedStyle(el).display === 'none') continue;
-                    return el;
-                }
-                return null;
-            };
+            // 稳定性优化：将面板挂载在聊天容器 (#chat) 的末尾，而不是具体的某条消息内部。
+            // 这样可以彻底避免酒馆在渲染消息时（尤其是流式输出）销毁并重建面板导致的闪烁。
+            const chatBody = document.getElementById('chat');
+            if (!chatBody) return;
 
-            const targetMes = findLastAiMes();
-            if (!targetMes) return;
-
-            // 重要：将面板挂载在 .mes 容器最底端，而不是 .mes_block 内部。
-            // 这样可以避免 SillyTavern 在流式渲染消息内容时，由于不断刷新 mes_block 而导致面板被销毁/重建。
-            const containerParent = targetMes;
-            
             // 检查是否已经存在
             let existing = document.querySelector('.lilith-embedded-dashboard-container');
             
-            // 如果位置不对（不再是当前最后一条 AI 消息的子元素），则移除并准备重建
-            if (existing && existing.parentElement !== containerParent) {
-                existing.remove();
-                existing = null;
-            }
-
+            // 如果不存在，则创建并追加到 #chat 末尾
             if (!existing) {
                 existing = document.createElement('div');
                 existing.className = 'lilith-embedded-dashboard-container';
-                // 增加底部边距确保不遮挡
-                existing.style = 'margin-top: 15px; border-top: 1px dashed rgba(255,0,85,0.2); padding-top: 10px; padding-bottom: 20px; width: 100%; clear: both; box-sizing: border-box;';
-                containerParent.appendChild(existing);
+                // 使用 margin-bottom 确保面板下方有足够空间，且不会影响消息布局
+                // 添加 background 确保渲染稳定性
+                existing.style = 'margin: 20px auto; max-width: 900px; border-top: 1px dashed rgba(255,0,85,0.2); padding-top: 10px; padding-bottom: 50px; width: 95%; clear: both; box-sizing: border-box; position: relative; z-index: 10; background: transparent;';
+                chatBody.appendChild(existing);
+            } else if (existing.nextSibling) {
+                // 稳定性优化：确保它始终在 #chat 的最底部（没有任何兄弟节点在它后面）
+                chatBody.appendChild(existing);
             }
 
             // 渲染看板内容 (全域链路概览)
