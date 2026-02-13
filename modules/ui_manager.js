@@ -1597,6 +1597,10 @@ export const UIManager = {
         msgNode.className = `msg ${role} ${personaClass}`;
         
         if (role === 'lilith') {
+            const pack = AvatarPacks[currentPersona] || AvatarPacks['meme'];
+            const face = userState.currentFace || 'normal';
+            const avatarUrl = pack[face] || pack['normal'] || pack['happy'] || AvatarPacks['meme']['normal'];
+
             const { inner, status, action, speech } = this.parseLilithMsg(optimizedText);
             
             // 内部二次格式化解析后的正文
@@ -1608,8 +1612,11 @@ export const UIManager = {
                 formattedSpeech = speech || optimizedText;
             }
 
-            // --- 结构修改：彻底移除头像，改为纯气泡模式 ---
-            let html = `<div class="lilith-chat-content">`;
+            let html = `<div class="lilith-avatar-wrapper">
+                            <img class="lilith-chat-avatar" src="${avatarUrl}" alt="">
+                            <div class="lilith-tts-replay-btn" title="重新朗读">📢</div>
+                        </div>`;
+            html += `<div class="lilith-chat-content">`;
 
             if (inner || status || (action && action.length > 0)) {
                 msgNode.className += ' complex-msg';
@@ -1623,25 +1630,25 @@ export const UIManager = {
                 html += `<div style="position:relative;">${formattedSpeech}</div>`;
             }
             
-            // 简单的小喇叭按钮
-            html += `<div class="lilith-tts-replay-btn-simple" title="重新朗读">📢</div>`;
             html += `</div>`;
             msgNode.innerHTML = html;
 
             // 绑定小喇叭事件
-            const replayBtn = msgNode.querySelector('.lilith-tts-replay-btn-simple');
+            const replayBtn = msgNode.querySelector('.lilith-tts-replay-btn');
             if (replayBtn) {
                 replayBtn.onclick = (e) => {
                     e.stopPropagation();
                     const { speech: replayText } = this.parseLilithMsg(optimizedText.replace(/\[[SF]:[+\-]?\d+\]/gi, ''));
                     AudioSys.speak(replayText || optimizedText.replace(/\[[SF]:[+\-]?\d+\]/gi, ''));
+                    
+                    // 播放一个简单的缩放反馈
                     replayBtn.style.transform = 'scale(1.3)';
                     setTimeout(() => replayBtn.style.transform = 'scale(1)', 200);
                 };
             }
         } else {
-            // --- 用户消息：彻底移除头像部分 ---
-            msgNode.className += ' user-msg-style-no-avatar'; 
+            // --- 用户消息：移除头像，回归简洁风格 ---
+            msgNode.className += ' user-msg-no-avatar'; 
             
             let html = `<div class="lilith-chat-content">`;
             html += `<div class="l-speech-text">${formattedText || text}</div>`;

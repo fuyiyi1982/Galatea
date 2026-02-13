@@ -798,51 +798,48 @@ div.lilith-chat-ui:hover {
 .msg.lilith.p-imouto { background: linear-gradient(90deg, rgba(120, 60, 80, 0.3) 0%, rgba(60, 20, 30, 0.1) 100%); border-color: #ffb7c5; }
 .msg.lilith.p-meme  { background: linear-gradient(90deg, rgba(0, 40, 10, 0.3) 0%, rgba(0, 10, 0, 0.1) 100%); border-color: #00FF41; }
 
-/* 用户交互消息：纯气泡模式（由于头像路径问题已移除头像） */
-.msg.user.user-msg-style-no-avatar {
+/* 用户消息：无头像纯净版 */
+.msg.user.user-msg-no-avatar {
     background: linear-gradient(90deg, rgba(30, 30, 45, 0.4) 0%, rgba(50, 50, 70, 0.2) 100%) !important;
     border-right: 3px solid #667eea !important; 
     border-left: none !important;
-    padding: 12px 18px !important;
+    display: flex !important;
+    margin-left: auto !important;
+    max-width: 85% !important;
+    padding: 10px 15px !important;
     border-radius: 8px !important;
     box-shadow: inset 0 0 15px rgba(0,0,0,0.2) !important;
-    max-width: 85% !important;
-    margin-left: auto !important;
-    margin-bottom: 8px !important;
-    display: block !important;
-    text-align: right;
-    color: #ddd;
 }
 
-.msg.user.user-msg-style-no-avatar .lilith-chat-content {
-    display: inline-block;
+.msg.user.user-msg-no-avatar .lilith-chat-content {
+    text-align: right;
+    color: #ddd;
     width: 100%;
 }
 
-/* 简化版小喇叭按钮（移除头像后） */
-.lilith-tts-replay-btn-simple {
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    font-size: 14px;
-    cursor: pointer;
-    opacity: 0.4;
-    transition: all 0.2s;
-    user-select: none;
-    z-index: 5;
-    background: rgba(0,0,0,0.3);
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
+/* 莉莉丝头像与语音按钮包装器 */
+.lilith-avatar-wrapper {
+    position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
-.lilith-tts-replay-btn-simple:hover {
+.lilith-tts-replay-btn {
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s;
+    user-select: none;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+
+.lilith-tts-replay-btn:hover {
     opacity: 1;
     transform: scale(1.2);
-    box-shadow: 0 0 10px var(--l-main);
+    text-shadow: 0 0 8px var(--l-main);
 }
 
 .user-chat-bubble:hover {
