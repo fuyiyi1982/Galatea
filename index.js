@@ -29,6 +29,8 @@
         }
         
         const baseFolder = scriptUrl.substring(0, scriptUrl.lastIndexOf('/') + 1);
+        // 记录实际加载路径，供模块内动态引用资源（避免目录名不一致导致找不到资源）
+        window.__galateaBasePath = baseFolder;
         const mainPath = baseFolder + 'main.js';
         
         console.log(`[Galatea] Loading main module from: ${mainPath}`);

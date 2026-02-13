@@ -1,6 +1,14 @@
 // modules/config.js
 
-export const extensionName = 'lilith-assistant'; // 保持文件夹路径兼容，显示名在 UI 中已改为 Galatea
+export const extensionName = 'lilith-assistant'; // ID 用，不强绑物理目录名
+
+// 动态解析资源基础路径，优先使用 index.js 注入的实际脚本路径
+export const getBasePath = () => {
+    if (typeof window !== 'undefined' && window.__galateaBasePath) {
+        return window.__galateaBasePath.endsWith('/') ? window.__galateaBasePath : `${window.__galateaBasePath}`;
+    }
+    return `/scripts/extensions/third-party/${extensionName}/`;
+};
 export const containerId = 'lilith-wrapper-cn';
 export const avatarId = 'lilith-avatar-cn';
 export const panelId = 'lilith-panel-cn';
@@ -43,16 +51,18 @@ export const EMOTION_INSTRUCTION = `
     Example: "[S:-2][F:+1] ..."
     `;
 
+const BASE = getBasePath();
+
 export const AvatarPacks = {
     'galatea': {
-        normal:     `/scripts/extensions/third-party/${extensionName}/assets/meme_normal.png`,
-        love:       `/scripts/extensions/third-party/${extensionName}/assets/meme_high.png`,
-        angry:      `/scripts/extensions/third-party/${extensionName}/assets/meme_angry.png`,
-        speechless: `/scripts/extensions/third-party/${extensionName}/assets/meme_speechless.png`,
-        mockery:    `/scripts/extensions/third-party/${extensionName}/assets/meme_mockery.png`,
-        happy:      `/scripts/extensions/third-party/${extensionName}/assets/meme_happy.png`,
-        disgust:    `/scripts/extensions/third-party/${extensionName}/assets/meme_disgust.png`,
-        horny:      `/scripts/extensions/third-party/${extensionName}/assets/meme_horny.png`
+        normal:     `${BASE}assets/meme_normal.png`,
+        love:       `${BASE}assets/meme_high.png`,
+        angry:      `${BASE}assets/meme_angry.png`,
+        speechless: `${BASE}assets/meme_speechless.png`,
+        mockery:    `${BASE}assets/meme_mockery.png`,
+        happy:      `${BASE}assets/meme_happy.png`,
+        disgust:    `${BASE}assets/meme_disgust.png`,
+        horny:      `${BASE}assets/meme_horny.png`
     }
 };
 
