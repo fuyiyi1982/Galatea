@@ -306,6 +306,11 @@ export const UIManager = {
                             <button id="cfg-dyn-force" style="flex: 2; background:#333; color:#fff; border:none; padding:3px; cursor:pointer; font-size:10px;">⚡ 强制重构皮层</button>
                             <button id="cfg-dyn-test" style="flex: 1; background:#222; color:var(--l-cyan); border:1px solid var(--l-cyan); padding:3px; cursor:pointer; font-size:10px;">🧪 触发测试</button>
                         </div>
+
+                        <div style="display:flex; align-items:center; margin-top: 8px; border-top: 1px dotted rgba(189, 0, 255, 0.2); padding-top: 5px;">
+                            <input type="checkbox" id="cfg-glitch-enable" ${userState.enableGlitchEffect !== false ? 'checked' : ''} style="width:auto; margin-right:5px;"> 
+                            <span style="font-size:11px; color:#bd00ff; font-weight:bold;" title="理智过低时(SAN<60)允许出现全屏红色闪烁特效">理智崩坏特效 (全屏闪烁)</span>
+                        </div>
                     </div>
 
                     <div class="cfg-group" style="border-top: 1px dashed #444; margin-top: 5px; padding-top: 5px;">
@@ -1154,6 +1159,15 @@ export const UIManager = {
             if (stCheck) stCheck.checked = checked;
             saveState();
         });
+
+        document.getElementById('cfg-glitch-enable')?.addEventListener('change', (e) => {
+            const checked = e.target.checked;
+            userState.enableGlitchEffect = checked;
+            const stCheck = document.getElementById('lilith-enable-glitch');
+            if (stCheck) stCheck.checked = checked;
+            saveState();
+        });
+
         document.getElementById('cfg-dyn-interval')?.addEventListener('change', (e) => {
             const val = parseInt(e.target.value);
             userState.dynamicContentInterval = val;
@@ -1728,8 +1742,11 @@ export const UIManager = {
             const $enableGlitch = $('#lilith-enable-glitch');
             $enableGlitch.prop('checked', userState.enableGlitchEffect !== false);
             $enableGlitch.on('change', (e) => {
-                userState.enableGlitchEffect = $(e.target).prop('checked');
+                const checked = $(e.target).prop('checked');
+                userState.enableGlitchEffect = checked;
                 saveState();
+                const cfgCheck = document.getElementById('cfg-glitch-enable');
+                if (cfgCheck) cfgCheck.checked = checked;
             });
 
             $dynEnabled.on('change', (e) => {
@@ -2131,9 +2148,9 @@ export const UIManager = {
             if (!existing) {
                 existing = document.createElement('div');
                 existing.className = 'lilith-embedded-dashboard-container';
-                // 使用 margin-bottom 确保面板下方有足够空间，且不会影响消息布局
-                // 添加 background 确保渲染稳定性
-                existing.style = 'margin: 20px auto; max-width: 900px; border-top: 1px dashed rgba(255,0,85,0.2); padding-top: 10px; padding-bottom: 50px; width: 95%; clear: both; box-sizing: border-box; position: relative; z-index: 10; background: transparent;';
+                // 恢复原始尺寸：使用 100% 宽度，并根据酒馆通常布局适配 max-width
+                // position: relative 配合 margin 确保在回复流下方稳定占位
+                existing.style = 'margin: 30px auto; max-width: 1000px; border-top: 1px dashed rgba(255,0,85,0.2); padding-top: 15px; padding-bottom: 60px; width: 100%; clear: both; box-sizing: border-box; position: relative; z-index: 10; background: transparent; transition: all 0.3s ease;';
                 chatBody.appendChild(existing);
             } else if (existing.nextSibling) {
                 // 稳定性优化：确保它始终在 #chat 的最底部（没有任何兄弟节点在它后面）

@@ -162,6 +162,11 @@
                 <button id="lilith-force-generate-dynamic" class="menu_button" style="flex: 1;">立即构思内容</button>
                 <button id="lilith-test-dynamic-trigger" class="menu_button" style="flex: 1;">手动触发测试</button>
             </div>
+
+            <div class="flex-container alignItemCenter" style="margin-top: 12px; border: 1px dashed rgba(189, 0, 255, 0.3); padding: 5px; border-radius: 4px; background: rgba(189, 0, 255, 0.05);">
+                <input type="checkbox" id="lilith-enable-glitch">
+                <label for="lilith-enable-glitch" title="当理智值(SAN)过低时，全屏会出现故障闪烁特效" style="color: #bd00ff; font-weight: bold;">允许理智崩坏特效 (全屏红色闪烁)</label>
+            </div>
         </div>
 
         <hr class="sysHR" />
@@ -185,11 +190,7 @@
                     <input type="number" id="lilith-auto-lock" class="text_pole" min="0" max="1440">
                 </div>
             </div>
-            <div class="inline-drawer" style="margin-bottom: 15px;">
-                <label class="checkbox_label" title="当理智值(SAN)过低时，全屏会出现故障闪烁特效">
-                    <input type="checkbox" id="lilith-enable-glitch"> 允许理智崩坏特效 (全屏红色闪烁)
-                </label>
-            </div>
+
             <div style="margin-top: 15px; display: flex; gap: 5px;">
                 <button id="lilith-reset-pos" class="menu_button" style="flex: 1;">重置锚点位置</button>
                 <button id="lilith-toggle-panel" class="menu_button" style="flex: 1;">展开面板</button>

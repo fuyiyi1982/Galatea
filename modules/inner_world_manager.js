@@ -216,16 +216,16 @@ export const InnerWorldManager = {
                 <div class="inner-header" style="flex-shrink:0; margin-bottom:12px; border-left:4px solid var(--l-main); padding-left:10px; display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
                         <h3 style="margin:0; color:var(--l-main); font-size:16px; text-transform:uppercase; letter-spacing:1px;">LILITH · 虚空最核心 (THE_CORE)</h3>
-                        <div class="toggle-container" style="display:flex; align-items:center; gap:12px; margin-top:4px;">
+                        <div class="toggle-container" style="display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:4px;">
                             <small style="color:var(--l-cyan); opacity:0.8; font-family: 'Share Tech Mono', monospace;">链路状态: ${externalData ? '同步稳定' : '离线状态'}</small>
-                            <div class="toggle-item" style="display:flex; align-items:center; border:1px solid rgba(255,0,85,0.2); border-radius:3px; padding:1px 6px; background:rgba(255,0,85,0.05); cursor:pointer;" onclick="const cb = document.getElementById('cfg-inner-inject-dash'); if(cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }">
+                            <div class="toggle-item" title="控制聊天区域下方是否显示虚空核心看板" style="display:flex; align-items:center; border:1px solid rgba(255,0,85,0.2); border-radius:3px; padding:1px 6px; background:rgba(255,0,85,0.05); cursor:pointer;" onclick="const cb = document.getElementById('cfg-inner-inject-dash'); if(cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }">
                                 <input type="checkbox" id="cfg-inner-inject-dash" ${userState.injectDashboard ? 'checked' : ''} style="width:10px; height:10px; margin:0 4px 0 0; cursor:pointer;" onclick="event.stopPropagation();"> 
-                                <span style="font-size:9px; color:var(--l-main); font-weight:bold; white-space:nowrap; letter-spacing:0.5px;">正文链路注入</span>
+                                <span style="font-size:9px; color:var(--l-main); font-weight:bold; white-space:nowrap; letter-spacing:0.5px;">核心链路注入</span>
                             </div>
                             <!-- [新增] 一致性检测开关 -->
-                            <div class="toggle-item" style="display:flex; align-items:center; border:1px solid rgba(0,243,255,0.2); border-radius:3px; padding:1px 6px; background:rgba(0,243,255,0.05); cursor:pointer;" onclick="const cb = document.getElementById('cfg-inner-consistency-check'); if(cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }">
+                            <div class="toggle-item" title="监测不同表格间的数据关联是否正确" style="display:flex; align-items:center; border:1px solid rgba(0,243,255,0.2); border-radius:3px; padding:1px 6px; background:rgba(0,243,255,0.05); cursor:pointer;" onclick="const cb = document.getElementById('cfg-inner-consistency-check'); if(cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }">
                                 <input type="checkbox" id="cfg-inner-consistency-check" ${userState.checkConsistency !== false ? 'checked' : ''} style="width:10px; height:10px; margin:0 4px 0 0; cursor:pointer;" onclick="event.stopPropagation();"> 
-                                <span style="font-size:9px; color:var(--l-cyan); font-weight:bold; white-space:nowrap; letter-spacing:0.5px;">数据一致性监测</span>
+                                <span style="font-size:9px; color:var(--l-cyan); font-weight:bold; white-space:nowrap; letter-spacing:0.5px;">一致性监测</span>
                             </div>
                         </div>
                     </div>
