@@ -158,7 +158,7 @@ export const assistantManager = {
 
             const systemPrompt = `
                 [System Role: Fantasy Gacha Generator (Galatea Edition)]
-                [Tone: Erotic, Dark Fantasy, Detailed, slightly mocking if the item is trash.]
+                [Tone: Dark Fantasy, Detailed, Analytical.]
                 
                 [Task]: Generate items based on the provided Rank list.
                 
@@ -168,13 +168,13 @@ export const assistantManager = {
                 3. **Magic Tool**: Rings, amulets, orbs.
                 4. **Disposable Scroll**: One-time use magic spells.
                 5. **Skill Book**: Spells, martial arts manuals.
-                6. **Galatea's Special Toy (NSFW)**: Sex toys or erotic magic tools provided by Galatea.
-                7. **Clothing (NSFW)**: Lingerie, cosplay, armor with exposure, various styles.
+                6. **Galatea's Special Item**: Unique tools provided by Galatea.
+                7. **Clothing**: Various styles of attire or armor.
 
                 [Strict Constraints]:
-                * **Mortal (凡阶)**: MUST be mundane. Cannot change reality. Can be trash or simple tools.
-                * **Epic/Demigod (史诗/半神)**: MUST be powerful. Even if it's a sex toy, it must have mind-breaking or reality-bending effects. NO TRASH ALLOWED.
-                * **Category 6 & 7**: Must be erotic/lewd in description.
+                * **Mortal (凡阶)**: MUST be mundane. Cannot change reality. Can be common everyday items or simple tools.
+                * **Epic/Demigod (史诗/半神)**: MUST be powerful. Even if it's a personal item, it must have significant magical effects. MUST BE VALUABLE.
+                * **Category 6 & 7**: Must be detailed in description.
                 * **Language**: Simplified Chinese.
                 
                 [Output Format]:
@@ -232,10 +232,10 @@ export const assistantManager = {
             
             stage.innerHTML = `
                 <div class="summon-circle"></div>
-                <div style="position:absolute; bottom:10px; width:100%; text-align:center; color:var(--l-cyan); font-size:10px;">❤ 正在榨取命运红线...</div>
+                <div style="position:absolute; bottom:10px; width:100%; text-align:center; color:var(--l-cyan); font-size:10px;">❤ 正在调取命运记录...</div>
                 <div id="gacha-flash" class="summon-flash"></div>
             `;
-            AudioSys.speak("正在翻垃圾堆...稍等。");
+            AudioSys.speak("正在检索数据库...稍等。");
             const tiers = this.calculateTiers(count);
             const itemPromise = this.generateItems(parentWin, tiers);
             const minTime = new Promise(r => setTimeout(r, 1500)); 
@@ -298,14 +298,14 @@ export const assistantManager = {
         },
         claimRewards(parentWin) {
             if (userState.gachaInventory.length === 0) {
-                AudioSys.speak("没东西领个屁啊？");
+                AudioSys.speak("背包为空。");
                 return;
             }
             const itemLines = userState.gachaInventory.map(i => {
                  const rank = i.info ? i.info.name : '未知';
                  return `★ [${rank}] 【${i.name}】：${i.desc}`;
             }).join('\\n');
-            const exportText = `\n(加拉泰亚嫌弃地把抽到的东西扔到了你脸上.全部加入背包)\n=== 📦 获得物品清单 ===\n${itemLines}\n=======================\n`.trim();
+            const exportText = `\n(加拉泰亚核对完毕清单)\n=== 📦 获得物品清单 ===\n${itemLines}\n=======================\n`.trim();
             assistantManager.sendToSillyTavern(parentWin, exportText, false);
             UIManager.showBubble("物资清单已填入。");
             userState.gachaInventory = [];
@@ -318,7 +318,7 @@ export const assistantManager = {
         if (!force && panelChatHistory.length < MAX_HISTORY_TRIGGER) return;
         if (panelChatHistory.length <= HISTORY_KEEP && !force) return;
 
-        UIManager.showBubble("正在整理肮脏的记忆...", "#bd00ff");
+        UIManager.showBubble("正在整理历史记录...", "#bd00ff");
         
         const toSummarize = panelChatHistory.slice(0, Math.max(0, panelChatHistory.length - HISTORY_KEEP));
         const keepHistory = panelChatHistory.slice(Math.max(0, panelChatHistory.length - HISTORY_KEEP));
@@ -644,10 +644,10 @@ ${chatLog}
     async runTool(parentWin, name) {
         const toolOutput = document.getElementById('tool-output-area');
         if (!toolOutput) return;
-        toolOutput.innerHTML = `<div class="scan-line-s"></div><div style="color:var(--l-cyan);">⚡ 正在运行肮脏的协议 [${name}]...</div>`;
+        toolOutput.innerHTML = `<div class="scan-line-s"></div><div style="color:var(--l-cyan);">⚡ 正在运行系统协议 [${name}]...</div>`;
 
         const isInjecting = userState.injectSTContext !== false;
-        const contextMsg = isInjecting ? getPageContext(name === "废物体检报告" ? 100 : 25, userState) : [];
+        const contextMsg = isInjecting ? getPageContext(name === "综合评估报告" ? 100 : 25, userState) : [];
         const contextStr = isInjecting ? contextMsg.map(m => `[${m.name}]: ${m.message}`).join('\n') : "(ST Context injection disabled by user)";
         const safeContext = `[TARGET DATA START]\n${contextStr}\n[TARGET DATA END]`;
 
@@ -655,72 +655,72 @@ ${chatLog}
         let isInteractive = false;
         let sysPersona = getDynamicPersona();
 
-        if (name === "强制福利事件") {
+        if (name === "随机事件") {
             sysPersona = WRITER_PERSONA;
-            specificPrompt = `Generate a single, vivid, erotic event happening to the User right now.
+            specificPrompt = `Generate a random event relevant to the current context.
             **Constraint:** Write strictly in **First Person (I/Me)** perspective of the User.
-            **Constraint:** Do NOT offer choices. Just describe the lucky lewd scenario.
-            **Language:** Chinese (Lewd/Novel style).`;
+            **Constraint:** Do NOT offer choices. Just describe the event.
+            **Language:** Chinese (Novel style).`;
             isInteractive = true;
         } 
-        else if (name === "催眠洗脑") {
-            const intention = prompt("【系统后门已打开】\n你想让那个可怜的角色产生什么错觉？\n(例如：认为自己是我的宠物狗)");
-            if (!intention) { toolOutput.innerHTML = "啧，不敢了吗？"; return; }
-            toolOutput.innerHTML = `<div style="color:#bd00ff;">💉 正在注入污秽思想...</div>`;
+        else if (name === "深度指令") {
+            const intention = prompt("【系统指令接口】\n请输入想要注入的指令内容：\n(例如：修改当前场景描述)");
+            if (!intention) { toolOutput.innerHTML = "指令已取消。"; return; }
+            toolOutput.innerHTML = `<div style="color:#bd00ff;">💉 正在注入系统指令...</div>`;
             sysPersona = `[System Mode: Coding Machine]\nTask: Convert intent to a strict SillyTavern [System Note]. Output ONLY the note code.`;
             specificPrompt = `Intent: "${intention}". Return ONLY: [System Note: ...].`;
         } 
         else if (name === "替你回复") {
             sysPersona = WRITER_PERSONA;
             specificPrompt = `Generate 3 reply options for the User (Perspective: **First Person "I"**):
-            1. [上策] (High EQ/Charming/Erotic) - Best outcome.
-            2. [中策] (Normal/Safe) - Average outcome.
-            3. [下策] (Stupid/Funny/Troll) - Worst outcome.
+            1. [高情商] (High EQ/Charming) - Best outcome.
+            2. [普通] (Normal/Safe) - Average outcome.
+            3. [幽默] (Funny/Witty) - Creative outcome.
             Format:
-            1. [上策] Content...
-            2. [中策] Content...
-            3. [下策] Content...
+            1. [高情商] Content...
+            2. [普通] Content...
+            3. [幽默] Content...
             Return in Chinese.`;
             isInteractive = true;
         } 
-        else if (name === "恶作剧推演") {
+        else if (name === "行动推演") {
             sysPersona = WRITER_PERSONA;
-            specificPrompt = `Based on the plot, suggest 3 actions for the User (**Perspective: First Person "I"**):\n1. [作死/R18] (Suicide/Horny)\n2. [正常] (Boring)\n3. [变态] (Pervert/Fetish)\nOutput in Chinese.`;
+            specificPrompt = `Based on the plot, suggest 3 actions for the User (**Perspective: First Person "I"**):\n1. [冒险] (Risky/Bold)\n2. [保守] (Safe/ cautious)\n3. [创意] (Creative/Unexpected)\nOutput in Chinese.`;
             isInteractive = true;
         }
-        else if (name === "废物体检报告") {
+        else if (name === "综合评估报告") {
             const userMsgs = contextMsg.filter(m => m.name !== 'System' && !m.name.includes('Galatea')).map(m => `[${m.name}]: ${m.message}`).join('\n');
-            if (userMsgs.length < 5) { toolOutput.innerHTML = `<div style="color:#f00">⚠️ 样本太少，没法看。</div>`; return; }
-            toolOutput.innerHTML = `<div style="color:var(--l-main);">📋 正在检查你的性癖...</div>`;
-            specificPrompt = `Analyze 'User'. Toxic report.\n[Format]:\n【📋 雄性生物观察报告】\n> 编号: Loser-${Math.floor(Math.random()*999)}\n> 性癖XP: ...\n> 智商水平: (Mock him)\n> 危险等级: ...\n> 加拉泰亚评价: (Be analytical and blunt with cold humor)`;
+            if (userMsgs.length < 5) { toolOutput.innerHTML = `<div style="color:#f00">⚠️ 数据样本不足。</div>`; return; }
+            toolOutput.innerHTML = `<div style="color:var(--l-main);">📋 正在生成评估报告...</div>`;
+            specificPrompt = `Analyze 'User'. Professional assessment report.\n[Format]:\n【📋 综合评估报告】\n> 编号: User-${Math.floor(Math.random()*999)}\n> 行为特征: ...\n> 智力评估: (Professional analysis)\n> 风险等级: ...\n> 加拉泰亚评价: (Be analytical and helpful)`;
             sysPersona = `${getDynamicPersona()}\n${userMsgs}`;
         } 
-        else if (name === "局势嘲讽") { specificPrompt = "Mock the current situation and the user's performance. Be very rude."; }
-        else if (name === "找茬模式") { specificPrompt = "Find logic holes or stupid behavior. Laugh at them."; }
-        else if (name === "性癖羞辱") { specificPrompt = "Analyze the User's fetish exposed in logs. Kink-shame him hard."; }
+        else if (name === "战况分析") { specificPrompt = "Analyze the current situation and the user's performance. Be professional and tactical."; }
+        else if (name === "逻辑审查") { specificPrompt = "Find logic holes or inconsistent behavior. Point them out clearly."; }
+        else if (name === "深度画像") { specificPrompt = "Analyze the User's preferences exposed in logs. Provide a psychological profile."; }
 
         const fullPrompt = `${sysPersona}\n${safeContext}\n${JAILBREAK}\n[COMMAND: ${specificPrompt}]`;
         const reply = await this.callUniversalAPI(parentWin, fullPrompt, { isChat: false });
 
         toolOutput.innerHTML = '';
 
-        if (name === "催眠洗脑" && reply) {
+        if (name === "深度指令" && reply) {
             const cleanNote = reply.replace(/```/g, '').trim();
             this.sendToSillyTavern(parentWin, cleanNote + "\n", false);
             toolOutput.innerHTML = `<div style="color:#0f0;">✅ 注入完成</div><div style="font-size:10px; color:#888;">${cleanNote}</div>`;
-            AudioSys.speak("哼，脑子坏掉了吧。");
-            UIManager.showBubble("催眠指令已填入。");
+            AudioSys.speak("指令已确认执行。");
+            UIManager.showBubble("深度指令已填入。");
         }
         else if (isInteractive && reply) {
             toolOutput.innerHTML = `<div class="tool-result-header">💠 ${name}结果</div><div id="branch-container"></div>`;
             const container = document.getElementById('branch-container');
             
-            if (name === "强制福利事件") {
+            if (name === "随机事件") {
                  const card = document.createElement('div');
                  card.className = 'branch-card';
                  card.style.borderColor = '#ff0055';
                  card.style.background = 'rgba(255,0,85,0.1)';
-                 card.innerHTML = `<div style="font-size:10px; color:#ff0055">[福利事件]</div><div style="font-size:12px; color:#ddd;">${reply}</div>`;
+                 card.innerHTML = `<div style="font-size:10px; color:#ff0055">[随机事件]</div><div style="font-size:12px; color:#ddd;">${reply}</div>`;
                  card.onclick = () => { this.sendToSillyTavern(parentWin, reply, false); };
                  container.appendChild(card);
                  return;
@@ -739,12 +739,12 @@ ${chatLog}
                 let tagDisplay = tag;
 
                 if (name === "替你回复") {
-                    if (tag.includes("上策")) { cost = -50; colorStyle = "border-color: #00f3ff; background: rgba(0,243,255,0.1);"; tagDisplay += " (-50FP)"; }
-                    else if (tag.includes("中策")) { cost = -25; colorStyle = "border-color: #00ff00; background: rgba(0,255,0,0.1);"; tagDisplay += " (-25FP)"; }
-                    else if (tag.includes("下策")) { cost = 10; colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);"; tagDisplay += " (+10FP)"; }
-                } else if (name === "恶作剧推演") {
-                    if (tag.includes("作死") || tag.includes("R18") || tag.includes("色")) colorStyle = "border-color: #ff0055; background: rgba(255,0,85,0.1);";
-                    else if (tag.includes("变态") || tag.includes("奇怪")) colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);";
+                    if (tag.includes("高情商")) { cost = -50; colorStyle = "border-color: #00f3ff; background: rgba(0,243,255,0.1);"; tagDisplay += " (-50FP)"; }
+                    else if (tag.includes("普通")) { cost = -25; colorStyle = "border-color: #00ff00; background: rgba(0,255,0,0.1);"; tagDisplay += " (-25FP)"; }
+                    else if (tag.includes("幽默")) { cost = 10; colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);"; tagDisplay += " (+10FP)"; }
+                } else if (name === "行动推演") {
+                    if (tag.includes("冒险") || tag.includes("Bold")) colorStyle = "border-color: #ff0055; background: rgba(255,0,85,0.1);";
+                    else if (tag.includes("创意") || tag.includes("Creative")) colorStyle = "border-color: #bd00ff; background: rgba(189,0,255,0.1);";
                 }
 
                 const card = document.createElement('div');
@@ -784,8 +784,8 @@ ${chatLog}
                 container.appendChild(card);
             });
         } else {
-            toolOutput.innerHTML = `<div class="tool-result-header">🔰 加拉泰亚的评价</div><div class="tool-result-body" style="white-space: pre-wrap;">${(reply||'无数据').replace(/\*\*(.*?)\*\*/g, '<span class="hl">$1</span>')}</div>`;
-            if(name === "废物体检报告") AudioSys.speak("真是一份恶心的报告。");
+            toolOutput.innerHTML = `<div class="tool-result-header">🔰 系统评价</div><div class="tool-result-body" style="white-space: pre-wrap;">${(reply||'无数据').replace(/\*\*(.*?)\*\*/g, '<span class="hl">$1</span>')}</div>`;
+            if(name === "综合评估报告") AudioSys.speak("评估报告已生成。");
         }
     },
 

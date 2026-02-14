@@ -5,7 +5,7 @@
 
 export const UpdateManager = {
     // Current version - detected from manifest.json on init
-    localVersion: "v3.0.5-杂鱼专用版-❤",
+    localVersion: "v4.1.0-Professional",
     // Remote manifest URL
     remoteUrl: "https://raw.githubusercontent.com/fuyiyi1982/Galatea/main/manifest.json",
     

@@ -4,8 +4,8 @@
     "js": "index.js",
     "css": "style.css",
     "author": "User",
-    "version": "v4.0.0-Galatea",
-    "description": "代理人战术支援与生理机能监护系统 [v4.0.0-Galatea]，具备好感度系统、AI 动态内容生成、非侵入式浮动通知、全自动同步更新、构思状态实时反馈。",
+    "version": "v4.1.0-Professional",
+    "description": "代理人战术支援与生理机能监护系统 [v4.1.0-Professional]，具备好感度系统、AI 动态内容生成、非侵入式浮动通知、全自动同步更新、构思状态实时反馈。",
     "auto_update": true,
     "homePage": "https://github.com/fuyiyi1982/Galatea"
 }

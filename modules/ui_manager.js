@@ -148,7 +148,7 @@ export const UIManager = {
         const muteIcon = AudioSys.muted ? '🔇' : '🔊';
         panel.innerHTML = `
             <div class="lilith-panel-header">
-                <span class="lilith-title">加拉泰亚 (GALATEA) <span style="font-size:10px; color:var(--l-cyan);">v3.0.5-杂鱼专用版-❤</span></span>
+                <span class="lilith-title">加拉泰亚 (GALATEA) <span style="font-size:10px; color:var(--l-cyan);">v4.1.0-Professional</span></span>
                     <div style="display:flex; align-items:center; gap:12px; padding: 5px;">
                         <span id="lilith-world-toggle" title="触达加拉泰亚的系统核心" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${userState.isInnerWorld ? '🌟' : '👁️'}</span>
                         <span id="lilith-mute-btn" title="语音开关" style="cursor:pointer; font-size:18px; padding: 4px; display: inline-block;">${muteIcon}</span>
@@ -160,10 +160,10 @@ export const UIManager = {
             </div>
             <div class="scan-line-bg"></div>
             <div class="lilith-tabs" style="${userState.isInnerWorld ? 'display:none;' : ''}">
-                <div class="lilith-tab active" data-target="chat">😈 互动</div>
-                <div class="lilith-tab" data-target="tools">🔪 功能</div>
+                <div class="lilith-tab active" data-target="chat">� 互动</div>
+                <div class="lilith-tab" data-target="tools">🛠️ 功能</div>
                 <div class="lilith-tab" data-target="memory" style="color:#bd00ff;">🧠 记忆</div>
-                <div class="lilith-tab" data-target="gacha" style="color:var(--l-gold);">🎲 赌狗</div>
+                <div class="lilith-tab" data-target="gacha" style="color:var(--l-gold);">🎁 抽奖</div>
                 <div class="lilith-tab" data-target="config">⚙️ 设置</div>
             </div>
             <div class="lilith-content-area" style="${userState.isInnerWorld ? 'display:none;' : ''}">
@@ -171,10 +171,10 @@ export const UIManager = {
                     <div id="lilith-chat-history"></div>
                     <div class="lilith-chat-footer">
                         <div class="lilith-input-row">
-                            <button id="lilith-manual-comment-chat" title="强制吐槽" style="color:var(--l-cyan);">
+                            <button id="lilith-manual-comment-chat" title="主动回复" style="color:var(--l-cyan);">
                                 <i class="fa-solid fa-comment-dots"></i>
                             </button>
-                            <button id="lilith-polish-btn" title="搞颜色/润色" style="color:#ff0055;">
+                            <button id="lilith-polish-btn" title="内容润色" style="color:#ff0055;">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                             </button>
                             <input type="text" id="lilith-chat-input" placeholder="和${PERSONA_DB[userState.activePersona || 'galatea'].name.split(' ')[1]}聊天...">
@@ -186,21 +186,21 @@ export const UIManager = {
                 </div>
                 <div id="page-tools" class="lilith-page">
                     <div class="tools-grid">
-                        <button class="tool-btn" id="tool-analyze">🧠 局势嘲讽</button>
-                        <button class="tool-btn" id="tool-audit">⚖️ 找茬模式</button>
-                        <button class="tool-btn" id="tool-branch" style="grid-column: span 2; border-color:#ffd700;">🔮 恶作剧推演 (我)</button>
-                        <button class="tool-btn" id="tool-kink">💖 性癖羞辱</button>
-                        <button class="tool-btn" id="tool-event" style="border-color:#ff0055">💥 强制福利事件 (我)</button>
-                        <button class="tool-btn" id="tool-hack" style="border-color:#bd00ff;">💉 催眠洗脑 (纯指令)</button>
-                        <button class="tool-btn" id="tool-profile" style="border-color:#ff0055;">📋 废物体检报告</button>
-                        <button class="tool-btn" id="tool-ghost" style="grid-column: span 2; border-color:#00f3ff;">👻 替你回复 (计费)</button>
+                        <button class="tool-btn" id="tool-analyze">📈 战况分析</button>
+                        <button class="tool-btn" id="tool-audit">⚖️ 逻辑审查</button>
+                        <button class="tool-btn" id="tool-branch" style="grid-column: span 2; border-color:#ffd700;">🔮 行动推演 (我)</button>
+                        <button class="tool-btn" id="tool-kink">💖 深度画像</button>
+                        <button class="tool-btn" id="tool-event" style="border-color:#ff0055">✨ 随机事件 (我)</button>
+                        <button class="tool-btn" id="tool-hack" style="border-color:#bd00ff;">💉 深度指令 (纯指令)</button>
+                        <button class="tool-btn" id="tool-profile" style="border-color:#ff0055;">📋 综合评估报告</button>
+                        <button class="tool-btn" id="tool-ghost" style="grid-column: span 2; border-color:#00f3ff;">🤖 替你回复 (计费)</button>
                     </div>
                     <div id="tool-output-area"></div>
                 </div>
                 <div id="page-memory" class="lilith-page">
                     <div style="padding: 15px 15px 0 15px; flex-shrink: 0;">
                         <div style="font-size:12px; color:#888; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
-                            这里存放着我们过去的肮脏回忆。<br>
+                            这里存放着已归档的历史记录。<br>
                             <span style="font-size:10px; color:var(--l-cyan); font-style: italic;">*每20条对话自动总结归档，旧对话将被压缩。*</span>
                         </div>
                     </div>
@@ -211,21 +211,21 @@ export const UIManager = {
                 </div>
                 <div id="page-gacha" class="lilith-page">
                     <div class="gacha-header">
-                        <span>命运红线 (赌狗区)</span>
+                        <span>命运红线 (幸运抽取)</span>
                         <div class="fp-display">FP: <span id="gacha-fp-val" class="fp-box">${userState.fatePoints}</span></div>
                     </div>
                     <div style="background:rgba(255,255,255,0.05); padding:8px; margin:5px 0; border:1px dashed #444; display:flex; align-items:center; justify-content:space-between;">
-                        <span style="font-size:10px; color:#aaa;">点数作弊:</span>
+                        <span style="font-size:10px; color:#aaa;">点数校准:</span>
                         <div style="display:flex; gap:5px;">
                             <input type="number" id="manual-fp-input" value="${userState.fatePoints}" style="background:#000; border:1px solid #333; color:var(--l-gold); width:70px; font-size:12px; text-align:center;">
-                            <button id="btn-sync-fp" style="background:#333; color:#fff; border:none; font-size:10px; cursor:pointer; padding:2px 8px;">强制修改</button>
+                            <button id="btn-sync-fp" style="background:#333; color:#fff; border:none; font-size:10px; cursor:pointer; padding:2px 8px;">手动修改</button>
                         </div>
                     </div>
                     <div id="gacha-visual-area" class="gacha-stage">
-                        <div style="color:#444; margin-top:50px;">[ 准备好你的灵魂了吗？ ]</div>
+                        <div style="color:#444; margin-top:50px;">[ 准备好迎接命运了吗？ ]</div>
                     </div>
                     <div class="inventory-area">
-                        <div style="font-size:10px; color:var(--l-cyan);">📦 垃圾堆 (待清理)</div>
+                        <div style="font-size:10px; color:var(--l-cyan);">📦 暂存区 (待清理)</div>
                         <div id="gacha-inv-list" class="inventory-list"></div>
                     </div>
                     <div class="gacha-controls">
@@ -265,7 +265,7 @@ export const UIManager = {
                     </div>
                     
                     <div class="cfg-group">
-                        <label style="color:#00f3ff;">🎛️ 语音调校 (TTS)</label>
+                        <label style="color:#00f3ff;">🎛️ 语音设置 (TTS)</label>
                         <div style="font-size:10px; color:#888;">音频音调 (Pitch): <span id="tts-pitch-val">${userState.ttsConfig ? userState.ttsConfig.pitch : 1.2}</span></div>
                         <input type="range" id="tts-pitch" min="0.1" max="2.0" step="0.1" value="${userState.ttsConfig ? userState.ttsConfig.pitch : 1.2}">
                         
@@ -721,22 +721,22 @@ export const UIManager = {
         document.getElementById('lilith-polish-btn')?.addEventListener('click', async () => {
             const raw = input.value.trim(); if(!raw) return;
             input.value = '';
-            this.addChatMsg('user', `[魔改] ${raw}`);
-            this.addChatMsg('lilith', '✍️ 改写中...', false); // [修复] 改写提示不保存
-            const refined = await assistant.callUniversalAPI(window, `[Original]: ${raw}\n[Task]: Rewrite this to be more erotic.`, { isChat: true });
+            this.addChatMsg('user', `[润色] ${raw}`);
+            this.addChatMsg('lilith', '✍️ 润色中...', false); // [修复] 改写提示不保存
+            const refined = await assistant.callUniversalAPI(window, `[Original]: ${raw}\n[Task]: Rewrite this to be more elegant and expressive.`, { isChat: true });
             const h = document.getElementById('lilith-chat-history');
             if(h.lastChild && h.lastChild.textContent.includes('改写中')) h.lastChild.remove();
             this.addChatMsg('lilith', refined || 'Error');
         });
 
         // Tools
-        document.getElementById('tool-analyze')?.addEventListener('click', () => assistant.runTool(window, "局势嘲讽"));
-        document.getElementById('tool-audit')?.addEventListener('click', () => assistant.runTool(window, "找茬模式"));
-        document.getElementById('tool-branch')?.addEventListener('click', () => assistant.runTool(window, "恶作剧推演"));
-        document.getElementById('tool-kink')?.addEventListener('click', () => assistant.runTool(window, "性癖羞辱"));
-        document.getElementById('tool-event')?.addEventListener('click', () => assistant.runTool(window, "强制福利事件"));
-        document.getElementById('tool-hack')?.addEventListener('click', () => assistant.runTool(window, "催眠洗脑"));
-        document.getElementById('tool-profile')?.addEventListener('click', () => assistant.runTool(window, "废物体检报告"));
+        document.getElementById('tool-analyze')?.addEventListener('click', () => assistant.runTool(window, "战况分析"));
+        document.getElementById('tool-audit')?.addEventListener('click', () => assistant.runTool(window, "逻辑审查"));
+        document.getElementById('tool-branch')?.addEventListener('click', () => assistant.runTool(window, "行动推演"));
+        document.getElementById('tool-kink')?.addEventListener('click', () => assistant.runTool(window, "深度画像"));
+        document.getElementById('tool-event')?.addEventListener('click', () => assistant.runTool(window, "随机事件"));
+        document.getElementById('tool-hack')?.addEventListener('click', () => assistant.runTool(window, "深度指令"));
+        document.getElementById('tool-profile')?.addEventListener('click', () => assistant.runTool(window, "综合评估报告"));
         document.getElementById('tool-ghost')?.addEventListener('click', () => assistant.runTool(window, "替你回复"));
 
         // Gacha
@@ -759,14 +759,14 @@ export const UIManager = {
                  const newVal = parseInt(manualInput.value);
                  if (!isNaN(newVal)) {
                      this.updateFP(window, newVal);
-                     this.showBubble("作弊可耻，但有用。", "#ffd700");
+                     this.showBubble("数据已修正。", "#ffd700");
                  }
              }
         });
         
         // Force Memory
         document.getElementById('btn-force-memory')?.addEventListener('click', () => {
-            if(confirm("确定要强制压缩当前对话为记忆吗？")) assistant.checkAndSummarize(window, true);
+            if(confirm("确定要强制归档当前对话为记忆吗？")) assistant.checkAndSummarize(window, true);
         });
 
         // Config Page - Floating Panel Logic
@@ -1348,7 +1348,7 @@ export const UIManager = {
                     innerWorld.classList.add('inner-world-sink');
                     InnerWorldManager.render(innerWorld, this.showBubble.bind(this), this.showStatusChange.bind(this));
                 }
-                this.showBubble("正在下沉至底层协议... 触达加拉泰亚系统核心。", "var(--l-main)");
+                this.showBubble("正在切换至系统核心维护模式...", "var(--l-main)");
             } else {
                 if (tabs) {
                     tabs.style.display = 'flex';
@@ -1359,7 +1359,7 @@ export const UIManager = {
                     contentArea.classList.add('outer-world-sink');
                 }
                 if (innerWorld) innerWorld.style.display = 'none';
-                this.showBubble("浮出表象空间。权限已收回。", "var(--l-cyan)");
+                this.showBubble("已切换至表象交互模式。", "var(--l-cyan)");
             }
 
             // 清理特效类
