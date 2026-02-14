@@ -1,72 +1,36 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap');
 
 :root { 
-    --l-main: #ff0055;       /* 主题色 (边框/高亮) */
-    --l-cyan: #00f3ff;       /* 副色调 */
-    --l-bg: rgba(10, 10, 14, 0.95); /* 面板背景 (保持深色，不瞎眼) */
-    --l-bubble-bg: rgba(20, 0, 5, 0.9); /* 气泡背景 */
-    --l-text: #ffccdd;       /* 气泡文字颜色 */
-    --l-gold: #ffd700;
-    --l-font: 'Microsoft YaHei', 'Share Tech Mono', sans-serif;
-    --l-shadow: 0 0 25px rgba(255, 0, 85, 0.4); /* 光晕颜色 */
+    --l-main: #9b8ec4;       /* 主题色 - 薰衣草紫 */
+    --l-cyan: #7ec8c8;       /* 副色调 - 薄荷绿 */
+    --l-bg: rgba(250, 247, 255, 0.97); /* 面板背景 - 淡紫白 */
+    --l-bubble-bg: rgba(255, 255, 255, 0.95); /* 气泡背景 - 纯白 */
+    --l-text: #4a4458;       /* 气泡文字颜色 - 深紫灰 */
+    --l-gold: #d4a574;       /* 暖金 */
+    --l-font: 'Noto Sans SC', 'Inter', 'Microsoft YaHei', sans-serif;
+    --l-shadow: 0 4px 20px rgba(155, 142, 196, 0.2); /* 柔和投影 */
 }
 
-/* --- 人格主题定义 --- */
+/* --- 加拉泰亚唯一主题 (淡雅薰衣草) --- */
 
-/* 1. 😈 毒舌 (赛博霓虹 - 黑红) */
 .theme-toxic {
-    --l-main: #ff0055;
-    --l-bubble-bg: rgba(20, 0, 5, 0.9);
-    --l-text: #ffccdd;
-    --l-shadow: 0 0 35px rgba(255, 0, 85, 0.6);
-}
-
-/* 2. 🤱 妈妈 (圣光 - 米白底金字) */
-.theme-wife {
-    --l-main: #d4af37; /* 香槟金 */
-    --l-bubble-bg: #fffbf0; /* 米白色实底 */
-    --l-text: #5d4037; /* 深棕色字 (清晰) */
-    --l-shadow: 0 0 35px rgba(212, 175, 55, 0.6); /* 金色圣光 */
-    --l-font: 'Ma Shan Zheng', serif;
-}
-
-/* 3. 🩹 妹妹 (软萌 - 粉白底) */
-.theme-imouto {
-    --l-main: #ffb7c5; /* 樱花粉 */
-    --l-bubble-bg: #fff0f5; /* 浅粉白实底 */
-    --l-text: #885566; /* 灰粉字 */
-    --l-shadow: 0 0 30px rgba(255, 182, 193, 0.8);
-}
-
-/* 4. 💢 雌小鬼 (波普 - 蓝粉撞色) */
-.theme-brat {
-    --l-main: #00bfff; /* 亮蓝 */
-    --l-bubble-bg: #1a1a2e; /* 深蓝底 */
-    --l-text: #fff;
-    --l-shadow: 0 0 0 3px #ff69b4; /* 粉色硬边框光晕 */
-    --l-font: 'ZCOOL KuaiLe', sans-serif;
-}
-
-/* 5. 🤡 神人 (终端 - 黑绿) */
-.theme-meme {
-    --l-main: #00ff00;
-    --l-bubble-bg: #000;
-    --l-text: #00ff00;
-    --l-shadow: 0 0 15px #00ff00;
-    --l-font: 'Courier New', monospace;
+    --l-main: #9b8ec4;       /* 薰衣草紫 */
+    --l-bubble-bg: rgba(255, 255, 255, 0.95);
+    --l-text: #4a4458;
+    --l-shadow: 0 4px 20px rgba(155, 142, 196, 0.25);
 }
 
 #lilith-bubble-cn.special-event {
-    background: linear-gradient(135deg, rgba(20, 0, 5, 0.95) 0%, rgba(60, 0, 30, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(235, 228, 255, 0.98) 0%, rgba(220, 210, 245, 0.98) 100%);
     border-left-width: 6px;
-    box-shadow: 0 0 20px rgba(189, 0, 255, 0.5);
-    animation: lilith-pulse 2s infinite;
+    box-shadow: 0 4px 24px rgba(155, 142, 196, 0.3);
+    animation: lilith-pulse 3s infinite;
 }
 
 @keyframes lilith-pulse {
-    0% { box-shadow: 0 0 10px rgba(189, 0, 255, 0.3); }
-    50% { box-shadow: 0 0 25px rgba(189, 0, 255, 0.6); }
-    100% { box-shadow: 0 0 10px rgba(189, 0, 255, 0.3); }
+    0% { box-shadow: 0 4px 15px rgba(155, 142, 196, 0.2); }
+    50% { box-shadow: 0 4px 25px rgba(155, 142, 196, 0.35); }
+    100% { box-shadow: 0 4px 15px rgba(155, 142, 196, 0.2); }
 }
 
 /* 消息美化 (彻底重构为行内块，保护正文结构) */
@@ -94,15 +58,15 @@
 }
 
 .inner-data-card:hover {
-    background: rgba(255, 255, 255, 0.06) !important;
+    background: rgba(155, 142, 196, 0.05) !important;
     border-color: var(--l-main) !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 15px rgba(155, 142, 196, 0.15);
     transform: translateY(-2px);
 }
 
 .inner-data-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+    background: rgba(155, 142, 196, 0.05);
+    border-radius: 8px;
 }
 
 .clickable-fill:hover {
@@ -111,7 +75,7 @@
 }
 
 .inner-action-menu .menu-item:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(155, 142, 196, 0.08);
     color: var(--l-main) !important;
 }
 
@@ -120,7 +84,7 @@
 }
 
 .external-table-bubbles::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(155, 142, 196, 0.2);
     border-radius: 10px;
 }
 
@@ -135,7 +99,7 @@
     100% { transform: scale(1); opacity: 0.8; }
 }
 
-/* Galatea UI 主容器 - 恢复经典酒馆正则美化风格，防止重复定义导致的渲染闪烁 */
+/* Galatea UI 主容器 - 淡雅现代风格 */
 div.lilith-chat-ui {
     display: flex !important;
     flex-direction: column !important; 
@@ -143,14 +107,14 @@ div.lilith-chat-ui {
     max-width: 900px !important;
     gap: 0 !important;
     padding: 0 !important;
-    background: linear-gradient(90deg, rgba(48, 13, 28, 0.95) 0%, rgba(128, 20, 60, 0.9) 100%) !important;
-    border-left: 4px solid #FF69B4 !important; 
-    border-right: 4px solid #FF69B4 !important;
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(245, 240, 255, 0.98) 0%, rgba(235, 228, 248, 0.95) 100%) !important;
+    border-left: 3px solid var(--l-main) !important; 
+    border-right: none !important;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 0 15px rgba(255, 105, 180, 0.5), inset 0 0 10px rgba(0,0,0,0.3) !important;
-    margin: 5px 0 !important;
-    color: #f0f0f0 !important;
+    box-shadow: 0 4px 24px rgba(155, 142, 196, 0.15), 0 1px 4px rgba(0,0,0,0.05) !important;
+    margin: 8px 0 !important;
+    color: var(--l-text) !important;
     font-family: 'Inter', 'Noto Sans SC', sans-serif;
     cursor: help;
     transition: all 0.3s;
@@ -158,7 +122,7 @@ div.lilith-chat-ui {
 
 div.lilith-chat-ui:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.4), 0 0 15px rgba(255, 105, 180, 0.7) !important;
+    box-shadow: 0 8px 32px rgba(155, 142, 196, 0.25), 0 2px 8px rgba(0,0,0,0.08) !important;
 }
 
 /* 1. 顶部状态条 */
@@ -167,11 +131,11 @@ div.lilith-chat-ui:hover {
     align-items: center;
     width: 100%;
     font-size: 11px;
-    font-weight: bold;
-    color: #FF69B4;
-    background: rgba(0,0,0,0.2);
+    font-weight: 600;
+    color: var(--l-main);
+    background: rgba(155, 142, 196, 0.06);
     padding: 5px 12px;
-    border-bottom: 1px solid rgba(255, 105, 180, 0.2);
+    border-bottom: 1px solid rgba(155, 142, 196, 0.12);
 }
 
 /* 2. 内心独白 */
@@ -180,11 +144,11 @@ div.lilith-chat-ui:hover {
     width: 100%;
     font-size: 12px;
     font-style: italic;
-    color: #f0f0f0;
-    opacity: 0.8;
-    background: rgba(255, 105, 180, 0.05);
+    color: #7a6e8a;
+    opacity: 0.85;
+    background: rgba(155, 142, 196, 0.04);
     padding: 8px 12px;
-    border-bottom: 1px dashed rgba(255, 105, 180, 0.2);
+    border-bottom: 1px dashed rgba(155, 142, 196, 0.15);
 }
 
 /* 3. 动作描写 */
@@ -192,11 +156,10 @@ div.lilith-chat-ui:hover {
     display: block;
     width: 100%;
     font-size: 13px;
-    color: #FF69B4;
+    color: var(--l-main);
     padding: 8px 12px 2px 12px;
-    font-weight: bold;
+    font-weight: 600;
     opacity: 0.9;
-    text-shadow: 0 0 3px rgba(255, 105, 180, 0.3);
 }
 
 /* 4. 正文对话 */
@@ -213,9 +176,9 @@ div.lilith-chat-ui:hover {
     background-size: cover;
     background-position: center;
     border-radius: 50%;
-    border: 2px solid #FF69B4;
+    border: 2px solid var(--l-main);
     margin-right: 15px;
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+    box-shadow: 0 2px 12px rgba(155, 142, 196, 0.3);
     flex-shrink: 0;
 }
 
@@ -223,11 +186,10 @@ div.lilith-chat-ui:hover {
     flex: 1;
     font-size: 0.95em;
     font-weight: 500;
-    color: #f0f0f0;
+    color: var(--l-text);
     line-height: 1.6;
     word-break: break-all;
     white-space: pre-wrap;
-    text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
 }
 
 /* 悬浮助手样式更新 */
@@ -252,11 +214,11 @@ div.lilith-chat-ui:hover {
     }
 }
 
-/* 气泡 - 增加特殊事件类样式 */
+/* 特殊事件 */
 .special-event {
-    background: rgba(189, 0, 255, 0.1) !important;
-    border-color: #bd00ff !important;
-    font-weight: bold;
+    background: rgba(155, 142, 196, 0.08) !important;
+    border-color: var(--l-main) !important;
+    font-weight: 600;
 }
 
 /* 浮动数值通知 */
@@ -281,7 +243,7 @@ div.lilith-chat-ui:hover {
 
 #lilith-wrapper-cn { 
     position: fixed; z-index: 99999; display: flex; flex-direction: column; align-items: center; 
-    min-width: 90px; max-width: 95vw; font-family: var(--l-font); letter-spacing: 0.5px; pointer-events: none; 
+    min-width: 90px; max-width: 95vw; font-family: var(--l-font); letter-spacing: 0.3px; pointer-events: none; 
 }
 
 #lilith-avatar-cn { 
@@ -289,8 +251,8 @@ div.lilith-chat-ui:hover {
     width: var(--l-avatar-size); height: var(--l-avatar-size); 
     background-size: cover; background-position: center;
     border-radius: 50%; 
-    border: 2px solid var(--l-main); 
-    box-shadow: 0 0 15px var(--l-main), inset 0 0 10px rgba(0,0,0,0.5); 
+    border: 2.5px solid var(--l-main); 
+    box-shadow: 0 4px 20px rgba(155, 142, 196, 0.3); 
     cursor: move; transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1); 
     pointer-events: auto;
     touch-action: none;
@@ -326,33 +288,32 @@ div.lilith-chat-ui:hover {
     }
 }
 
-/* --- 外围激光环 (全息底座) --- */
+/* --- 外围装饰环 --- */
 #lilith-avatar-cn::before {
     content: '';
     position: absolute;
-    top: -10px; left: -10px; right: -10px; bottom: -10px;
+    top: -8px; left: -8px; right: -8px; bottom: -8px;
     border-radius: 50%;
-    border: 2px solid transparent;
+    border: 1.5px solid transparent;
     border-top-color: var(--l-main);
     border-left-color: var(--l-cyan);
-    filter: blur(2px);
-    /* 默认停止旋转，仅作为装饰框架 */
+    filter: blur(1px);
     animation: rotate-frame 10s linear infinite;
     animation-play-state: paused; 
     pointer-events: none;
     z-index: -1;
-    opacity: 0.6;
+    opacity: 0.4;
 }
 
 /* 当正在调用 API 时，激光环也跟着加速旋转 */
 /* --- 里世界仪表盘矩阵 --- */
 .inner-world-container {
-    color: #eee;
+    color: #4a4458;
 }
 
 .inner-tab.active {
-    background: rgba(255, 0, 85, 0.1);
-    box-shadow: inset 0 0 10px rgba(255, 0, 85, 0.2);
+    background: rgba(155, 142, 196, 0.1);
+    box-shadow: inset 0 0 8px rgba(155, 142, 196, 0.1);
 }
 
 .inner-dashboard-card {
@@ -360,8 +321,8 @@ div.lilith-chat-ui:hover {
 }
 
 .inner-dashboard-card:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(155, 142, 196, 0.06) !important;
+    border-color: rgba(155, 142, 196, 0.2) !important;
 }
 
 .inner-data-item {
@@ -373,11 +334,11 @@ div.lilith-chat-ui:hover {
 }
 
 .capsule-item:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #fff !important;
+    background: rgba(155, 142, 196, 0.1) !important;
+    color: var(--l-text) !important;
 }
 
-/* 隐藏滚动条但保留功能 */
+/* 滚动条 */
 .inner-scroll-area::-webkit-scrollbar,
 .inner-data-item div::-webkit-scrollbar {
     width: 3px;
@@ -385,7 +346,7 @@ div.lilith-chat-ui:hover {
 
 .inner-scroll-area::-webkit-scrollbar-thumb,
 .inner-data-item div::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(155, 142, 196, 0.2);
     border-radius: 10px;
 }
 
@@ -420,37 +381,35 @@ div.lilith-chat-ui:hover {
 
 #lilith-avatar-cn:hover { 
     transform: scale(1.05) rotate(2deg); 
-    box-shadow: 0 0 50px var(--l-main);
-    filter: brightness(1.2);
+    box-shadow: 0 6px 30px rgba(155, 142, 196, 0.4);
+    filter: brightness(1.05);
     z-index: 60;
 }
 
 @keyframes pulse-glow { 
-    0% { box-shadow: 0 0 15px var(--l-main), inset 0 0 5px rgba(0,0,0,0.5); } 
-    50% { box-shadow: 0 0 25px var(--l-main), inset 0 0 10px rgba(0,0,0,0.3); } 
-    100% { box-shadow: 0 0 15px var(--l-main), inset 0 0 5px rgba(0,0,0,0.5); } 
+    0% { box-shadow: 0 4px 15px rgba(155, 142, 196, 0.25); } 
+    50% { box-shadow: 0 4px 25px rgba(155, 142, 196, 0.4); } 
+    100% { box-shadow: 0 4px 15px rgba(155, 142, 196, 0.25); } 
 }
 
 #lilith-bubble-cn { 
     position: absolute; 
-    /* 核心定位：位于头像正上方，保留微小间距 */
     top: -15px;
     left: 50%;
     transform: translateX(-50%) translateY(-100%);
     width: 200px; 
-    background: rgba(10, 5, 10, 0.95); 
-    border: 1px solid var(--l-main);
+    background: rgba(255, 255, 255, 0.97); 
+    border: 1px solid rgba(155, 142, 196, 0.3);
     border-top: 3px solid var(--l-main);
-    color: #fff; 
+    color: var(--l-text); 
     padding: 12px; 
     font-size: 13px; 
-    box-shadow: 0 5px 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(255, 0, 85, 0.1);
-    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(155,142,196,0.15);
+    backdrop-filter: blur(12px);
     z-index: 100;
     cursor: pointer;
     pointer-events: auto;
-    border-radius: 8px;
-    /* 极致包裹修复 */
+    border-radius: 12px;
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
@@ -459,7 +418,7 @@ div.lilith-chat-ui:hover {
     animation: lilith-bubble-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* 气泡小尖角 - 增加对话感 */
+/* 气泡小尖角 */
 #lilith-bubble-cn::after {
     content: '';
     position: absolute;
@@ -512,13 +471,13 @@ div.lilith-chat-ui:hover {
     height: 520px; /* 由 JS 动态控制，这里作为兜底 */
     max-height: var(--l-panel-max-height); 
     background: var(--l-bg); 
-    border: 1px solid #444; 
+    border: 1px solid rgba(155, 142, 196, 0.2); 
     border-top: 2px solid var(--l-main); 
     display: flex; flex-direction: column; 
-    color: #fff; 
-    box-shadow: 0 10px 50px rgba(0,0,0,0.8); 
+    color: var(--l-text); 
+    box-shadow: 0 12px 48px rgba(0,0,0,0.12), 0 4px 16px rgba(155, 142, 196, 0.1); 
     transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-    clip-path: polygon(0 0, 100% 0, 100% 98%, 95% 100%, 5% 100%, 0 98%);
+    border-radius: 0 0 16px 16px;
     padding-top: 50px;
     pointer-events: auto;
     /* 初始状态用于动画 */
@@ -579,7 +538,7 @@ div.lilith-chat-ui:hover {
 
 .lilith-panel-header { 
     padding: 10px 15px; 
-    background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%); 
+    background: linear-gradient(180deg, rgba(245, 240, 255, 0.95) 0%, transparent 100%); 
     display: flex; justify-content: space-between; align-items: center; 
     border-bottom: 2px solid var(--l-main);
 }
@@ -588,31 +547,32 @@ div.lilith-chat-ui:hover {
     order: 10;
     border-bottom: none;
     border-top: 2px solid var(--l-main);
-    background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+    background: linear-gradient(0deg, rgba(245, 240, 255, 0.95) 0%, transparent 100%);
 }
 
-.lilith-title { font-weight: bold; color: #fff; text-shadow: 0 0 10px var(--l-main); font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
-.stat-row { font-size: 10px; font-weight: bold; }
+.lilith-title { font-weight: 600; color: var(--l-text); font-family: 'Inter', 'Noto Sans SC', sans-serif; letter-spacing: 0.5px; }
+.stat-row { font-size: 10px; font-weight: 600; }
 
-.scan-line-bg { height: 2px; width: 100%; background: var(--l-cyan); opacity: 0.3; animation: scan 3s infinite linear; position:absolute; pointer-events:none; z-index:1; top:60px; }
+.scan-line-bg { height: 1px; width: 100%; background: var(--l-cyan); opacity: 0.15; animation: scan 3s infinite linear; position:absolute; pointer-events:none; z-index:1; top:60px; }
 @keyframes scan { 0%{transform:translateY(0)} 100%{transform:translateY(450px); opacity:0} }
 
 .lilith-tabs { 
     display: flex; 
-    background: #000; 
-    border-bottom: 1px solid #222; 
+    background: rgba(245, 240, 255, 0.8); 
+    border-bottom: 1px solid rgba(155, 142, 196, 0.15); 
     margin-top: 0; 
-    padding: 2px;
+    padding: 4px;
+    gap: 2px;
 }
 .lilith-tab { 
-    flex: 1; padding: 10px; text-align: center; font-size: 11px; color: #555; cursor: pointer; 
-    transition: 0.2s; border-radius: 4px; border: none;
+    flex: 1; padding: 10px; text-align: center; font-size: 11px; color: #9a8fad; cursor: pointer; 
+    transition: 0.2s; border-radius: 8px; border: none;
 }
-.lilith-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.lilith-tab:hover { color: var(--l-text); background: rgba(155, 142, 196, 0.08); }
 .lilith-tab.active { 
-    color: var(--l-cyan); 
-    background: rgba(0, 243, 255, 0.1); 
-    text-shadow: 0 0 8px var(--l-cyan); 
+    color: var(--l-main); 
+    background: rgba(155, 142, 196, 0.12); 
+    font-weight: 600;
 }
 
 .lilith-content-area { 
@@ -622,7 +582,7 @@ div.lilith-chat-ui:hover {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    background: #0a0a0a; 
+    background: #fcfaff; 
 }
 
 .lilith-page { 
@@ -666,19 +626,19 @@ div.lilith-chat-ui:hover {
     gap: 12px;
     min-height: 0;
     scrollbar-width: thin; 
-    scrollbar-color: var(--l-cyan) #000;
+    scrollbar-color: var(--l-main) rgba(155, 142, 196, 0.1);
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
     pointer-events: auto;
 }
 #lilith-chat-history::-webkit-scrollbar { width: 4px; }
-#lilith-chat-history::-webkit-scrollbar-thumb { background: var(--l-cyan); border-radius: 2px; }
+#lilith-chat-history::-webkit-scrollbar-thumb { background: var(--l-main); border-radius: 4px; opacity: 0.5; }
 
 .lilith-chat-footer {
     padding: 10px 15px 15px 15px;
-    background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
-    border-top: 1px solid rgba(255,255,255,0.05);
+    background: linear-gradient(0deg, rgba(250, 247, 255, 0.95) 0%, transparent 100%);
+    border-top: 1px solid rgba(155, 142, 196, 0.1);
     flex-shrink: 0;
     z-index: 10;
 }
@@ -693,14 +653,14 @@ div.lilith-chat-ui:hover {
     white-space: pre-wrap; 
     border-left: 2px solid transparent; 
     line-height: 1.5; 
-    position: relative; 
+    position: relative;
+    border-radius: 12px;
 }
-.msg.user { background: rgba(255,255,255,0.05); align-self: flex-end; margin-left: auto; border-left: none; border-right: 2px solid #666; color: #aaa; }
+.msg.user { background: rgba(155, 142, 196, 0.06); align-self: flex-end; margin-left: auto; border-left: none; border-right: 2px solid rgba(155, 142, 196, 0.3); color: #6b5f7e; }
 .msg.lilith { 
-    background: rgba(255,0,85,0.08); 
-    color: #ffccdd; 
+    background: rgba(155, 142, 196, 0.08); 
+    color: var(--l-text); 
     border-left: 2px solid var(--l-main); 
-    text-shadow: 0 0 2px rgba(255,0,85,0.3); 
     display: flex;
     gap: 12px;
     align-items: flex-start;
@@ -710,11 +670,11 @@ div.lilith-chat-ui:hover {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 1px solid var(--l-main);
+    border: 1.5px solid var(--l-main);
     flex-shrink: 0;
     object-fit: cover;
-    background: rgba(0,0,0,0.5);
-    box-shadow: 0 0 5px var(--l-main);
+    background: rgba(155,142,196,0.1);
+    box-shadow: 0 2px 8px rgba(155,142,196,0.2);
 }
 
 .lilith-chat-content {
@@ -723,57 +683,57 @@ div.lilith-chat-ui:hover {
 }
 
 #lilith-chat-input { 
-    flex: 1; background: #050505; border: 1px solid #444; color: var(--l-cyan); 
+    flex: 1; background: rgba(255,255,255,0.8); border: 1px solid rgba(155,142,196,0.2); color: var(--l-text); 
     padding: 8px; font-family: var(--l-font); font-size: 12px;
-    border-radius: 4px;
+    border-radius: 8px;
 }
-#lilith-chat-input:focus { border-color: var(--l-cyan); outline: none; box-shadow: 0 0 10px rgba(0,243,255,0.1); }
+#lilith-chat-input:focus { border-color: var(--l-main); outline: none; box-shadow: 0 0 0 3px rgba(155,142,196,0.15); }
 #lilith-chat-send, #lilith-polish-btn { 
-    background: #111; border: 1px solid #444; color: #fff; width: 35px; cursor: pointer; transition: 0.2s;
+    background: rgba(255,255,255,0.8); border: 1px solid rgba(155,142,196,0.2); color: var(--l-text); width: 35px; cursor: pointer; transition: 0.2s;
 }
-#lilith-chat-send:hover { background: var(--l-main); border-color: var(--l-main); box-shadow: 0 0 10px var(--l-main); }
+#lilith-chat-send:hover { background: var(--l-main); border-color: var(--l-main); color: #fff; box-shadow: 0 2px 8px rgba(155,142,196,0.3); }
 
 .cfg-group { 
     margin-bottom: 15px; 
-    background: rgba(255,255,255,0.03); 
+    background: rgba(155, 142, 196, 0.04); 
     padding: 12px; 
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(155, 142, 196, 0.1);
     transition: 0.2s;
 }
 .cfg-group:focus-within {
     border-color: var(--l-main);
-    background: rgba(255,255,255,0.07);
+    background: rgba(155, 142, 196, 0.08);
 }
-.cfg-group label { display: block; margin-bottom: 8px; font-size: 13px; }
+.cfg-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #5a4f6e; }
 .lilith-select, .lilith-input {
-    width: 100%; padding: 8px; background: #000; border: 1px solid #333; color: #fff;
-    border-radius: 4px; font-family: var(--l-font);
+    width: 100%; padding: 8px; background: rgba(255,255,255,0.8); border: 1px solid rgba(155, 142, 196, 0.2); color: var(--l-text);
+    border-radius: 8px; font-family: var(--l-font);
 }
 .cfg-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
 .tool-btn { 
-    background: rgba(0,0,0,0.5); border: 1px solid #444; color: #888; padding: 10px; 
+    background: rgba(255,255,255,0.6); border: 1px solid rgba(155, 142, 196, 0.2); color: #6b5f7e; padding: 10px; 
     cursor: pointer; font-family: var(--l-font); font-size: 11px; 
-    clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    border-radius: 8px;
     transition: 0.2s;
 }
-.tool-btn:hover { border-color: var(--l-cyan); color: #fff; text-shadow: 0 0 5px var(--l-cyan); background: rgba(0,243,255,0.1); }
+.tool-btn:hover { border-color: var(--l-main); color: var(--l-main); background: rgba(155, 142, 196, 0.08); }
 
-#tool-output-area { flex:1; overflow-y: auto; border: 1px solid #333; background: #000; padding: 10px; font-size: 11px; color: #aaa; }
+#tool-output-area { flex:1; overflow-y: auto; border: 1px solid rgba(155, 142, 196, 0.15); background: rgba(255,255,255,0.5); padding: 10px; font-size: 11px; color: #6b5f7e; border-radius: 8px; }
 .hl { color: var(--l-gold); font-weight:bold; }
 
-.btn-cyan { background: #008b8b; flex:1; border:none; padding:8px; color:#fff; cursor:pointer; }
-.btn-main { background: var(--l-main); flex:1; border:none; padding:8px; color:#fff; cursor:pointer; }
-.btn-danger { background: #500; border:none; padding:8px; color:#fff; cursor:pointer; font-size:10px; }
+.btn-cyan { background: var(--l-cyan); flex:1; border:none; padding:8px; color:#fff; cursor:pointer; border-radius: 8px; }
+.btn-main { background: var(--l-main); flex:1; border:none; padding:8px; color:#fff; cursor:pointer; border-radius: 8px; }
+.btn-danger { background: #e57373; border:none; padding:8px; color:#fff; cursor:pointer; font-size:10px; border-radius: 8px; }
 
 .cfg-group { margin-bottom: 8px; }
-.cfg-group input, .cfg-group select { width: 100%; background: #000; border: 1px solid #333; color: var(--l-cyan); padding: 5px; box-sizing:border-box; }
+.cfg-group input, .cfg-group select { width: 100%; background: rgba(255,255,255,0.8); border: 1px solid rgba(155, 142, 196, 0.2); color: var(--l-text); padding: 5px; box-sizing:border-box; border-radius: 8px; }
 
 .gacha-header { 
-    background: rgba(0,0,0,0.6); padding: 10px; border-bottom: 1px solid #333; 
+    background: rgba(155, 142, 196, 0.06); padding: 10px; border-bottom: 1px solid rgba(155, 142, 196, 0.15); 
     display: flex; justify-content: space-between; align-items: center; font-size: 12px;
 }
-.fp-box { color: var(--l-gold); font-weight: bold; font-size: 14px; text-shadow: 0 0 5px var(--l-gold); }
+.fp-box { color: var(--l-gold); font-weight: bold; font-size: 14px; }
 
 .gacha-stage {
     min-height: 220px;
@@ -783,20 +743,21 @@ div.lilith-chat-ui:hover {
     justify-content: center;
     gap: 8px;
     align-content: flex-start;
-    background: radial-gradient(circle at center, #222 0%, #000 100%);
+    background: radial-gradient(circle at center, rgba(245,240,255,1) 0%, rgba(235,228,248,1) 100%);
     position: relative;
     overflow: hidden;
-    border: 1px solid #333;
+    border: 1px solid rgba(155, 142, 196, 0.15);
+    border-radius: 12px;
 }
 
-.gacha-controls { display: flex; gap: 10px; padding: 10px; border-top: 1px solid #333; }
+.gacha-controls { display: flex; gap: 10px; padding: 10px; border-top: 1px solid rgba(155, 142, 196, 0.15); }
 .gacha-close-btn {
     position: absolute; top: 5px; right: 5px;
-    background: rgba(0,0,0,0.7); color: #fff; border: 1px solid #555;
+    background: rgba(255,255,255,0.9); color: #6b5f7e; border: 1px solid rgba(155, 142, 196, 0.3);
     border-radius: 50%; width: 20px; height: 20px; font-size: 10px;
     cursor: pointer; z-index: 50; display: flex; align-items: center; justify-content: center;
 }
-.gacha-close-btn:hover { background: #f00; border-color: #f00; }
+.gacha-close-btn:hover { background: #e57373; border-color: #e57373; color: #fff; }
 
 .summon-circle {
     width: 100px; height: 100px;
@@ -820,14 +781,15 @@ div.lilith-chat-ui:hover {
 
 .gacha-card {
     width: 70px; height: 95px;
-    background: #151515; border: 1px solid #444;
+    background: rgba(255,255,255,0.8); border: 1px solid rgba(155, 142, 196, 0.2);
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     padding: 5px 2px;
     position: relative; overflow: hidden; opacity: 0;
-    cursor: pointer; transition: transform 0.1s; box-shadow: 0 2px 5px #000;
+    cursor: pointer; transition: transform 0.1s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 8px;
 }
-.gacha-card:hover { transform: scale(1.1); z-index: 10; background: #222; }
-.gacha-card .tier-bar { width: 100%; height: 3px; position: absolute; bottom: 0; left: 0; }
+.gacha-card:hover { transform: scale(1.1); z-index: 10; background: #fff; }
+.gacha-card .tier-bar { width: 100%; height: 3px; position: absolute; bottom: 0; left: 0; border-radius: 0 0 8px 8px; }
 
 .gacha-card.legendary { box-shadow: 0 0 15px #a335ee; border-color: #a335ee; }
 .gacha-card.epic { box-shadow: 0 0 15px #ffd700; border-color: #ffd700; }
@@ -840,23 +802,24 @@ div.lilith-chat-ui:hover {
 }
 
 .inventory-list { 
-    font-size: 11px; color: #888; max-height: 100px; overflow-y: auto; 
-    padding: 5px; background: rgba(0,0,0,0.3); margin-top: 5px; border: 1px dashed #333;
+    font-size: 11px; color: #6b5f7e; max-height: 100px; overflow-y: auto; 
+    padding: 5px; background: rgba(155, 142, 196, 0.04); margin-top: 5px; border: 1px dashed rgba(155, 142, 196, 0.2);
+    border-radius: 8px;
 }
-.inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #222; }
+.inv-item { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid rgba(155, 142, 196, 0.1); }
 
 @keyframes card-shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 50% { transform: translate(-1px, -1px) rotate(-1deg); } 100% { transform: translate(1px, 1px) rotate(0deg); } }
 
 .avatar-breathing { animation: breathing 3s infinite ease-in-out; }
 @keyframes breathing {
-    0% { transform: scale(1); box-shadow: 0 0 15px var(--l-main); }
-    50% { transform: scale(1.03); box-shadow: 0 0 25px var(--l-main); }
-    100% { transform: scale(1); box-shadow: 0 0 15px var(--l-main); }
+    0% { transform: scale(1); box-shadow: 0 4px 15px rgba(155, 142, 196, 0.25); }
+    50% { transform: scale(1.03); box-shadow: 0 4px 25px rgba(155, 142, 196, 0.4); }
+    100% { transform: scale(1); box-shadow: 0 4px 15px rgba(155, 142, 196, 0.25); }
 }
 
 .lilith-jealous {
-    border-color: #ff0000 !important; box-shadow: 0 0 30px #ff0000 !important;
-    filter: sepia(1) hue-rotate(-50deg) saturate(3) !important;
+    border-color: #e57373 !important; box-shadow: 0 4px 20px rgba(229, 115, 115, 0.4) !important;
+    filter: sepia(0.3) hue-rotate(-20deg) saturate(1.5) !important;
 }
 
 .screen-glitch-layer {
@@ -890,7 +853,7 @@ div.lilith-chat-ui:hover {
 @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px,0); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px,0); } 40% { clip-path: inset(70% 0 30% 0); transform: translate(2px,0); } 60% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 80% { clip-path: inset(50% 0 20% 0); transform: translate(2px,0); } 100% { clip-path: inset(10% 0 80% 0); transform: translate(-2px,0); } }
 
 .msg.lilith {
-    color: #ffb3c1;
+    color: var(--l-text);
     border-left: 2px solid var(--l-main);
 }
 
@@ -898,8 +861,8 @@ div.lilith-chat-ui:hover {
     display: flex;
     align-items: center;
     gap: 0;
-    background: rgba(20, 20, 20, 0.9);
-    border: 1px solid #333;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(155, 142, 196, 0.2);
     border-radius: 20px;
     padding: 2px 5px;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -907,14 +870,14 @@ div.lilith-chat-ui:hover {
 
 .lilith-input-row:focus-within {
     border-color: var(--l-main);
-    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+    box-shadow: 0 0 0 3px rgba(155, 142, 196, 0.12);
 }
 
 .lilith-input-row input {
     flex: 1;
     background: transparent !important;
     border: none !important;
-    color: #fff;
+    color: var(--l-text);
     padding: 6px 10px;
     font-size: 13px;
     outline: none !important;
@@ -922,7 +885,7 @@ div.lilith-chat-ui:hover {
 
 .lilith-input-row button {
     background: transparent;
-    color: #888;
+    color: #9a8fad;
     border: none;
     padding: 5px;
     cursor: pointer;
@@ -937,36 +900,36 @@ div.lilith-chat-ui:hover {
 }
 
 .lilith-input-row button:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--l-text);
+    background: rgba(155, 142, 196, 0.1);
 }
 
 .lilith-input-row button#lilith-chat-send {
-    color: var(--l-cyan);
+    color: var(--l-main);
 }
 
 .lilith-input-row button#lilith-chat-send:hover {
     color: #fff;
-    background: var(--l-cyan);
-    box-shadow: 0 0 10px var(--l-cyan);
+    background: var(--l-main);
+    box-shadow: 0 2px 8px rgba(155, 142, 196, 0.3);
 }
 
 .lilith-input-row button#lilith-manual-comment-chat {
-    color: #bd00ff;
+    color: #b39ddb;
 }
 
 .lilith-input-row button#lilith-manual-comment-chat:hover {
-    background: rgba(189, 0, 255, 0.2);
-    color: #d880ff;
+    background: rgba(179, 157, 219, 0.15);
+    color: #9575cd;
 }
 
 .lilith-input-row button#lilith-polish-btn {
-    color: #ff0055;
+    color: var(--l-main);
     font-size: 12px;
 }
 
 .lilith-input-row button#lilith-polish-btn:hover {
-    background: rgba(255, 0, 85, 0.2);
+    background: rgba(155, 142, 196, 0.1);
 }
 
 /* 气泡样式已在上合并，此处移除重复定义 */
@@ -997,8 +960,8 @@ div.lilith-chat-ui:hover {
 /* 抽卡相关 */
 .gacha-stage {
     height: 150px;
-    background: #000;
-    border: 1px solid #222;
+    background: rgba(245,240,255,0.9);
+    border: 1px solid rgba(155, 142, 196, 0.15);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -1006,15 +969,17 @@ div.lilith-chat-ui:hover {
     align-content: flex-start;
     gap: 4px;
     padding: 5px;
+    border-radius: 12px;
 }
 
 .gacha-card {
     width: 55px;
     height: 75px;
-    background: #111;
-    border: 1px solid #333;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(155, 142, 196, 0.2);
     padding: 4px;
     cursor: help;
+    border-radius: 8px;
 }
 
 @keyframes card-entry {
@@ -1030,16 +995,17 @@ div.lilith-chat-ui:hover {
 }
 
 .tool-btn {
-    background: #111;
-    border: 1px solid #444;
-    color: #ddd;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(155, 142, 196, 0.2);
+    color: #6b5f7e;
     padding: 8px;
     font-size: 11px;
     cursor: pointer;
     transition: 0.2s;
+    border-radius: 8px;
 }
 
-.tool-btn:hover { background: #222; border-color: var(--l-main); }
+.tool-btn:hover { background: rgba(155, 142, 196, 0.08); border-color: var(--l-main); color: var(--l-main); }
 
 /* 扫描线效果 */
 .scan-line-bg::after {
@@ -1069,13 +1035,13 @@ div.lilith-chat-ui:hover {
     transform: translateX(100%);
 }
 
-.l-cfg-box input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: rgba(255,255,255,0.1); border-radius: 10px; height: 6px; }
-.l-cfg-box input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #00f3ff; cursor: pointer; box-shadow: 0 0 10px #00f3ff; }
+.l-cfg-box input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: rgba(155, 142, 196, 0.15); border-radius: 10px; height: 6px; }
+.l-cfg-box input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--l-main); cursor: pointer; box-shadow: 0 2px 8px rgba(155,142,196,0.3); }
 
-.l-trivia-box { background: rgba(0,0,0,0.8); border: 2px solid #00f3ff; padding: 15px; color: #fff; width: 300px; text-align: center; }
-.l-trivia-timer { height: 4px; background: #00f3ff; width: 100%; transition: width linear 1s; }
-.l-ans-btn { display: block; width: 100%; margin: 5px 0; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #555; color: #fff; cursor: pointer; }
-.l-ans-btn:hover { background: rgba(0, 243, 255, 0.2); }
+.l-trivia-box { background: rgba(255,255,255,0.97); border: 2px solid var(--l-main); padding: 15px; color: var(--l-text); width: 300px; text-align: center; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+.l-trivia-timer { height: 4px; background: var(--l-main); width: 100%; transition: width linear 1s; border-radius: 2px; }
+.l-ans-btn { display: block; width: 100%; margin: 5px 0; padding: 8px; background: rgba(155, 142, 196, 0.06); border: 1px solid rgba(155, 142, 196, 0.2); color: var(--l-text); cursor: pointer; border-radius: 8px; }
+.l-ans-btn:hover { background: rgba(155, 142, 196, 0.12); }
 
 #lilith-glitch-layer { pointer-events: none; }
 .sanity-critical { animation: sanity-shake 0.1s infinite !important; filter: contrast(200%) brightness(150%) hue-rotate(90deg) !important; }
@@ -1093,16 +1059,16 @@ div.lilith-chat-ui:hover {
     width: 100%;
     max-width: 900px; 
     margin: 5px 0; 
-    background: linear-gradient(90deg, rgba(48, 13, 28, 0.95) 0%, rgba(128, 20, 60, 0.9) 100%);
-    border-left: 4px solid #FF69B4; 
-    border-right: 4px solid #FF69B4;
-    box-shadow: 0 0 15px rgba(255, 105, 180, 0.5), inset 0 0 10px rgba(0,0,0,0.3);
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(245, 240, 255, 0.98) 0%, rgba(235, 228, 248, 0.95) 100%);
+    border-left: 3px solid var(--l-main); 
+    border-right: none;
+    box-shadow: 0 4px 24px rgba(155, 142, 196, 0.15), 0 1px 4px rgba(0,0,0,0.05);
+    border-radius: 16px;
     display: flex;
     align-items: center;
     padding: 10px;
     overflow: hidden;
-    color: #f0f0f0;
+    color: var(--l-text);
     font-family: 'Inter', 'Noto Sans SC', sans-serif;
 }
 .lilith-chat-avatar {
@@ -1113,15 +1079,15 @@ div.lilith-chat-ui:hover {
     background-size: cover;
     background-position: center;
     border-radius: 50%;
-    border: 2px solid #FF69B4;
+    border: 2px solid var(--l-main);
     margin-right: 15px;
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+    box-shadow: 0 2px 12px rgba(155, 142, 196, 0.3);
 }
 .lilith-chat-text {
     font-size: 0.95em;
     line-height: 1.6;
     font-weight: 500;
-    text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+    color: var(--l-text);
     flex: 1;
 }
 
@@ -1134,16 +1100,16 @@ div.lilith-chat-ui:hover {
     background: var(--l-bubble-bg) !important;
     border: 1px solid var(--l-main) !important;
     border-left: 4px solid var(--l-main) !important;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 12px rgba(155, 142, 196, 0.15) !important;
     margin-bottom: 10px;
     min-width: 200px;
 }
 
 .msg.lilith.complex-msg .lilith-chat-avatar {
     margin: 10px 0 10px 10px;
-    border-color: rgba(255,255,255,0.2);
+    border-color: rgba(155, 142, 196, 0.3);
 }
 
 .msg.lilith.complex-msg .lilith-chat-content {
@@ -1160,21 +1126,21 @@ div.lilith-chat-ui:hover {
 /* 1. 顶部状态条 */
 .l-status-bar {
     display: block; width: 100%;
-    font-size: 10px; font-weight: bold; 
+    font-size: 10px; font-weight: 600; 
     color: var(--l-main); 
-    background: rgba(0,0,0,0.05);
+    background: rgba(155, 142, 196, 0.04);
     padding: 3px 8px;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(155, 142, 196, 0.1);
 }
 
 /* 2. 内心独白 */
 .l-inner-thought {
     display: block; width: 100%;
     font-size: 11px; font-style: italic;
-    color: var(--l-text); opacity: 0.7;
-    background: rgba(0,0,0,0.02);
+    color: #7a6e8a; opacity: 0.8;
+    background: rgba(155, 142, 196, 0.03);
     padding: 5px 8px;
-    border-bottom: 1px dashed rgba(128,128,128,0.3);
+    border-bottom: 1px dashed rgba(155, 142, 196, 0.15);
 }
 
 /* 3. 动作描写 */
@@ -1182,13 +1148,13 @@ div.lilith-chat-ui:hover {
     display: block; width: 100%;
     font-size: 12px; color: var(--l-main); 
     padding: 5px 8px 0 8px;
-    font-weight: bold; opacity: 0.9;
+    font-weight: 600; opacity: 0.9;
 }
 
 /* 4. 正文对话 */
 .l-speech-text {
     display: block; width: 100%;
-    font-size: 14px; font-weight: bold;
+    font-size: 14px; font-weight: 600;
     color: var(--l-text);
     padding: 5px 8px 8px 8px;
     line-height: 1.5;
@@ -1204,18 +1170,18 @@ div.lilith-chat-ui:hover {
 @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px,0); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(2px,0); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px,0); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(2px,0); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(-2px,0); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(2px,0); } }
 @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px,0); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px,0); } 40% { clip-path: inset(70% 0 30% 0); transform: translate(2px,0); } 60% { clip-path: inset(20% 0 60% 0); transform: translate(-2px,0); } 80% { clip-path: inset(50% 0 20% 0); transform: translate(2px,0); } 100% { clip-path: inset(10% 0 80% 0); transform: translate(-2px,0); } }
 
-/* --- 头像呼吸特效 --- */
+/* 头像呼吸特效 */
 .avatar-breathing { animation: breathing 3s infinite ease-in-out; }
-@keyframes breathing { 0% { transform: scale(1); box-shadow: 0 0 15px var(--l-main); } 50% { transform: scale(1.03); box-shadow: 0 0 25px var(--l-main); } 100% { transform: scale(1); box-shadow: 0 0 15px var(--l-main); } }
-.lilith-jealous { border-color: #ff0000 !important; box-shadow: 0 0 30px #ff0000 !important; filter: sepia(1) hue-rotate(-50deg) saturate(3) !important; }
+@keyframes breathing { 0% { transform: scale(1); box-shadow: 0 4px 15px rgba(155, 142, 196, 0.25); } 50% { transform: scale(1.03); box-shadow: 0 4px 25px rgba(155, 142, 196, 0.4); } 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(155, 142, 196, 0.25); } }
+.lilith-jealous { border-color: #e57373 !important; box-shadow: 0 4px 20px rgba(229, 115, 115, 0.4) !important; filter: sepia(0.3) hue-rotate(-20deg) saturate(1.5) !important; }
 
 /* 扫描线背景 */
-.scan-line-bg { height: 2px; width: 100%; background: var(--l-cyan); opacity: 0.3; animation: scan 3s infinite linear; position:absolute; pointer-events:none; z-index:1; top:60px; }
+.scan-line-bg { height: 1px; width: 100%; background: var(--l-cyan); opacity: 0.1; animation: scan 3s infinite linear; position:absolute; pointer-events:none; z-index:1; top:60px; }
 @keyframes scan { 0%{transform:translateY(0)} 100%{transform:translateY(450px); opacity:0} }
 
 
 
-/* --- 加载动画 --- */
+/* 加载动画 */
 .loading {
     display: flex;
     align-items: center;
@@ -1225,7 +1191,7 @@ div.lilith-chat-ui:hover {
 .loading .dot { 
     animation: blink 1.4s infinite both; 
     font-size: 24px; 
-    color: var(--l-cyan); 
+    color: var(--l-main); 
     line-height: 1;
 }
 .loading .dot:nth-child(2) { animation-delay: 0.2s; }
@@ -1331,7 +1297,7 @@ div.lilith-chat-ui:hover {
 }
 
 .inner-table-wrapper table tr:hover td {
-    background: rgba(255, 0, 85, 0.08) !important;
+    background: rgba(155, 142, 196, 0.06) !important;
     transition: background 0.2s ease;
 }
 
@@ -1353,13 +1319,13 @@ div.lilith-chat-ui:hover {
 
 /* 里世界标签切换样式 */
 #lilith-inner-world .inner-tab:hover {
-    border-color: var(--l-cyan) !important;
-    color: var(--l-cyan) !important;
-    background: rgba(0, 229, 255, 0.05) !important;
+    border-color: var(--l-main) !important;
+    color: var(--l-main) !important;
+    background: rgba(155, 142, 196, 0.06) !important;
 }
 
 #lilith-inner-world .inner-tab.active {
-    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+    box-shadow: 0 0 8px rgba(155, 142, 196, 0.15);
 }
 
 #lilith-inner-world .prompt-log::-webkit-scrollbar {
@@ -1371,7 +1337,7 @@ div.lilith-chat-ui:hover {
 }
 
 #lilith-inner-world .inner-scroll-area::-webkit-scrollbar-thumb {
-    background: rgba(255, 0, 85, 0.3);
+    background: rgba(155, 142, 196, 0.2);
     border-radius: 4px;
 }
 
@@ -1442,13 +1408,13 @@ div.lilith-chat-ui:hover {
 }
 
 .inner-action-menu .menu-item:hover {
-    background: rgba(255, 0, 85, 0.15) !important;
-    color: #fff !important;
+    background: rgba(155, 142, 196, 0.1) !important;
+    color: var(--l-text) !important;
 }
 
 .inner-action-menu .menu-item {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 .inner-data-card {
@@ -1456,19 +1422,19 @@ div.lilith-chat-ui:hover {
 }
 
 .inner-data-card:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(255, 0, 85, 0.3) !important;
+    background: rgba(155, 142, 196, 0.06) !important;
+    border-color: rgba(155, 142, 196, 0.2) !important;
 }
 
-/* --- [自动锁定 & 看板折叠] --- */
+/* 自动锁定遮罩 */
 #lilith-lock-overlay {
     position: fixed;
-    top: 60px; /* 避开ST顶栏 */
+    top: 60px;
     left: 0;
     width: 100vw;
     height: calc(100vh - 60px);
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px) grayscale(0.5);
+    background: rgba(250, 247, 255, 0.6);
+    backdrop-filter: blur(12px) saturate(0.8);
     z-index: 2147483647;
     display: flex;
     align-items: center;
@@ -1478,7 +1444,7 @@ div.lilith-chat-ui:hover {
 }
 
 .lilith-locked-blur {
-    filter: blur(12px) grayscale(0.8) !important;
+    filter: blur(12px) grayscale(0.5) !important;
     pointer-events: none !important;
     transition: filter 0.5s ease;
 }
@@ -1487,12 +1453,12 @@ div.lilith-chat-ui:hover {
     cursor: pointer;
     transition: all 0.3s ease;
     padding: 0 10px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    background: rgba(155, 142, 196, 0.04);
 }
 
 .lilith-header-trigger:hover {
-    background: rgba(255, 0, 85, 0.1);
+    background: rgba(155, 142, 196, 0.1);
 }
 
 .lilith-header-trigger .pulse-text {
@@ -1525,22 +1491,21 @@ div.lilith-chat-ui:hover {
 
 /* 1. 现代加拉泰亚 (Modern Galatea - Default) */
 .dash-style-modern {
-    background: rgba(30, 5, 15, 0.7) !important;
+    background: rgba(250, 247, 255, 0.95) !important;
     backdrop-filter: blur(12px) !important;
-    border: 1px solid var(--l-main) !important;
-    border-left: 4px solid var(--l-main) !important;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(255, 0, 85, 0.15);
-    color: #eee !important;
+    border: 1px solid rgba(155, 142, 196, 0.2) !important;
+    border-left: 3px solid var(--l-main) !important;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(155, 142, 196, 0.15);
+    color: var(--l-text) !important;
 }
 .dash-style-modern .dash-slot-item {
-    background: rgba(255, 0, 85, 0.05);
-    border: 1px solid rgba(255, 0, 85, 0.15);
-    border-radius: 6px;
+    background: rgba(155, 142, 196, 0.05);
+    border: 1px solid rgba(155, 142, 196, 0.12);
+    border-radius: 10px;
 }
 .dash-style-modern .dash-slot-title {
     color: var(--l-main) !important;
-    text-shadow: 0 0 5px rgba(255, 0, 85, 0.3);
 }
 .dash-style-modern .dash-header-text { color: var(--l-main) !important; }
 
@@ -1614,18 +1579,18 @@ div.lilith-chat-ui:hover {
 
 /* 5. 极简工业风 (Cyberpunk Industrial) */
 .dash-style-industrial {
-    background: #1a1a1a !important;
-    border-left: 5px solid #bd00ff !important;
-    border-right: 1px solid #333 !important;
-    border-top: 1px solid #333 !important;
-    border-bottom: 1px solid #333 !important;
-    color: #d1d1d1 !important;
-    border-radius: 0 !important;
+    background: #f5f2fa !important;
+    border-left: 4px solid var(--l-main) !important;
+    border-right: 1px solid rgba(155, 142, 196, 0.15) !important;
+    border-top: 1px solid rgba(155, 142, 196, 0.15) !important;
+    border-bottom: 1px solid rgba(155, 142, 196, 0.15) !important;
+    color: var(--l-text) !important;
+    border-radius: 12px !important;
 }
 .dash-style-industrial .dash-slot-item {
-    background: #222 !important;
-    border: 1px solid #333 !important;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%) !important;
+    background: rgba(255,255,255,0.6) !important;
+    border: 1px solid rgba(155, 142, 196, 0.15) !important;
+    border-radius: 8px !important;
     margin-bottom: 10px;
 }
 
