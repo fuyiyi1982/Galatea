@@ -727,7 +727,8 @@ div.lilith-chat-ui:hover {
 .btn-danger { background: #e57373; border:none; padding:8px; color:#fff; cursor:pointer; font-size:10px; border-radius: 8px; }
 
 .cfg-group { margin-bottom: 8px; }
-.cfg-group input, .cfg-group select { width: 100%; background: rgba(255,255,255,0.8); border: 1px solid rgba(155, 142, 196, 0.2); color: var(--l-text); padding: 5px; box-sizing:border-box; border-radius: 8px; }
+.cfg-group input:not([type="checkbox"]):not([type="radio"]), .cfg-group select { width: 100%; background: rgba(255,255,255,0.8); border: 1px solid rgba(155, 142, 196, 0.2); color: var(--l-text); padding: 5px; box-sizing:border-box; border-radius: 8px; }
+.cfg-group input[type="checkbox"] { width: auto; cursor: pointer; accent-color: var(--l-main); }
 
 .gacha-header { 
     background: rgba(155, 142, 196, 0.06); padding: 10px; border-bottom: 1px solid rgba(155, 142, 196, 0.15); 
